@@ -7,12 +7,12 @@ const Pipeline = sequelize.define("Pipeline", {
     allowNull: false,
   },
   stages: {
-    type: DataTypes.TEXT, 
+    type: DataTypes.TEXT,
     allowNull: false,
     defaultValue: "New,Initial Meeting,Due Diligence,Commitment,Closed"
   },
   companyId: {
-    type: DataTypes.UUID, // 🟢 FIXED: INTEGER se badal kar UUID kar diya
+    type: DataTypes.UUID,
     allowNull: false
   }
 }, {

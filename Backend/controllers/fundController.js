@@ -1,13 +1,12 @@
 const { Fund, Investor } = require("../models/index");
 const fs = require('fs');
 const csv = require('csv-parser');
-const { Op } = require("sequelize"); // Search functionality ke liye zaroori hai
+const { Op } = require("sequelize");
 
-// 1. GET ALL FUNDS (With Search & Filters for UI Tabs)
 exports.getAllFunds = async (req, res) => {
   try {
     const { search, type, category } = req.query;
-    
+
     // Check if user/company info exists
     if (!req.user || !req.user.companyId) {
       return res.status(400).json({ error: "User company information missing" });
@@ -15,22 +14,18 @@ exports.getAllFunds = async (req, res) => {
 
     let whereClause = { companyId: req.user.companyId };
 
-    // UI Search Bar Logic
+
     if (search) {
-      whereClause.name = { [Op.iLike]: `%${search}%` }; // Case-insensitive search
+      whereClause.name = { [Op.iLike]: `%${search}%` };
     }
 
-    // UI Dropdown "All Types" Logic
     if (type && type !== 'All Types') {
       whereClause.type = type;
     }
 
-    // UI Tabs Logic (e.g., AI based funds)
     if (category === 'AI based funds') {
-      // Assuming industry is an array or string
       whereClause.industry = { [Op.overlap]: ['AI', 'Artificial Intelligence'] };
     } else if (category === 'GeoPref') {
-      // Add logic for GeoPref tab if needed
     }
 
     const funds = await Fund.findAll({
@@ -46,7 +41,6 @@ exports.getAllFunds = async (req, res) => {
   }
 };
 
-// 2. CREATE FUND (Fixed 'stage' bug and naming)
 exports.createFund = async (req, res) => {
   try {
     const { fundName, type, location, website, industry, stage } = req.body;
@@ -60,12 +54,12 @@ exports.createFund = async (req, res) => {
     }
 
     const newFund = await Fund.create({
-      name: fundName, // Mapping frontend 'fundName' to backend 'name'
+      name: fundName,
       type: type || "Venture",
       location,
       website,
       industry: industry || [],
-      stage: stage || [], // Fixed: Now it won't throw undefined error
+      stage: stage || [],
       companyId: req.user.companyId
     });
 
@@ -76,11 +70,10 @@ exports.createFund = async (req, res) => {
   }
 };
 
-// 3. UPDATE FUND
 exports.updateFund = async (req, res) => {
   try {
-    const fund = await Fund.findOne({ 
-      where: { id: req.params.id, companyId: req.user.companyId } 
+    const fund = await Fund.findOne({
+      where: { id: req.params.id, companyId: req.user.companyId }
     });
 
     if (!fund) return res.status(404).json({ error: "Fund not found" });
@@ -93,11 +86,10 @@ exports.updateFund = async (req, res) => {
   }
 };
 
-// 4. DELETE FUND
 exports.deleteFund = async (req, res) => {
   try {
-    const fund = await Fund.findOne({ 
-      where: { id: req.params.id, companyId: req.user.companyId } 
+    const fund = await Fund.findOne({
+      where: { id: req.params.id, companyId: req.user.companyId }
     });
 
     if (!fund) {
@@ -111,17 +103,16 @@ exports.deleteFund = async (req, res) => {
   }
 };
 
-// 5. IMPORT FUNDS (CSV)
 exports.importFunds = async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
   const results = [];
-  
+
   fs.createReadStream(req.file.path)
     .pipe(csv())
     .on('data', (data) => {
       results.push({
-        name: data.name || data.fundName, // Support both headers
+        name: data.name || data.fundName,
         type: data.type || 'Venture',
         location: data.location,
         website: data.website,

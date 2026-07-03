@@ -4,19 +4,17 @@ const multer = require('multer');
 const fundController = require("../controllers/fundController");
 const { protect } = require("../middlewares/authMiddleware");
 
-// --- Yahan change karein ---
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/') // Ensure karein ke project root mein 'uploads' folder bana hua ho
+    cb(null, 'uploads/')
   },
   filename: function (req, file, cb) {
-    // Ye file ko unique naam dega aur extension (jaise .csv) ko save rakhega
     cb(null, Date.now() + '-' + file.originalname)
   }
 });
 
 const upload = multer({ storage: storage });
-// ---------------------------
+
 
 router.get("/", protect, fundController.getAllFunds);
 router.post("/", protect, fundController.createFund);

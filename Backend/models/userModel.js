@@ -21,14 +21,14 @@ const User = sequelize.define("User", {
   },
   role: {
     type: DataTypes.STRING,
-    defaultValue: "user", 
+    defaultValue: "user",
   },
   companyId: {
     type: DataTypes.UUID,
-    allowNull: false, // User hamesha kisi company ka hona chahiye
+    allowNull: false,
   }
 }, {
-  timestamps: true // Behtar hai ke create/update time track ho
+  timestamps: true
 });
 
 module.exports = User;

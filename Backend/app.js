@@ -5,7 +5,7 @@ const authRoutes = require("./routes/authRoutes");
 const fundRoutes = require("./routes/fundRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const investorRoutes = require("./routes/investorRoutes");
-const pipelineRoutes = require("./routes/pipelineRoutes"); // 🟢 FIXED 1: Pipeline routes ko import kiya
+const pipelineRoutes = require("./routes/pipelineRoutes");
 const cors = require("cors");
 
 const app = express();
@@ -19,19 +19,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// 🟢 ROUTES CONFIGURATION
+
 app.use("/api/auth", authRoutes);
 app.use("/api/investors", investorRoutes);
 app.use("/api/funds", fundRoutes);
 app.use("/api/tasks", taskRoutes);
-app.use("/api/pipelines", pipelineRoutes); // 🟢 FIXED 2: Pipeline routes ko register kar diya
+app.use("/api/pipelines", pipelineRoutes);
 
-// Database Sync aur Server Start
 console.log("Attempting to sync database...");
 sequelize.sync({ alter: true })
   .then(() => {
     console.log("Database & tables synced!");
-    
+
     app.listen(PORT, () => {
       console.log(`🚀 Server is successfully running on port ${PORT}`);
     });
@@ -40,7 +39,7 @@ sequelize.sync({ alter: true })
     console.error("❌ Failed to sync database:", err);
   });
 
-// Process crash hone se rokne ke liye
+
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });

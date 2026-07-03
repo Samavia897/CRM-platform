@@ -1,16 +1,16 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db"); // Aapka db connection path
+const sequelize = require("../config/db");
 
 const Task = sequelize.define("Task", {
-  // 1. UUID Primary Key Configuration
+
   id: {
     type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4, // Auto-generates unique UUID strings
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
     allowNull: false
   },
-  title: { 
-    type: DataTypes.STRING, 
+  title: {
+    type: DataTypes.STRING,
     allowNull: false,
     validate: {
       isNotNumeric(value) {
@@ -24,38 +24,35 @@ const Task = sequelize.define("Task", {
       }
     }
   },
-  description: { 
+  description: {
     type: DataTypes.TEXT,
-    allowNull: true 
+    allowNull: true
   },
-  dueDate: { 
-    type: DataTypes.DATE, 
-    allowNull: false 
+  dueDate: {
+    type: DataTypes.DATE,
+    allowNull: false
   },
-  // Investor ka full name frontend display aur validations ke liye
-  investor: { 
-    type: DataTypes.STRING, 
-    allowNull: false 
+  investor: {
+    type: DataTypes.STRING,
+    allowNull: false
   },
-  status: { 
-    type: DataTypes.ENUM("Pending", "Completed"), 
-    defaultValue: "Pending" 
+  status: {
+    type: DataTypes.ENUM("Pending", "Completed"),
+    defaultValue: "Pending"
   },
-  priority: { 
-    type: DataTypes.ENUM("Low", "Medium", "High"), 
-    defaultValue: "Medium" 
+  priority: {
+    type: DataTypes.ENUM("Low", "Medium", "High"),
+    defaultValue: "Medium"
   },
-  
-  // 2. Foreign Key for Relational Integration
+
   investorId: {
-    type: DataTypes.UUID, // Chunkay Investor ki ID UUID hai, iska type bhi UUID hoga
+    type: DataTypes.UUID,
     allowNull: false,
     references: {
-      model: 'investors', // Aapke Investors table ka naam (Sequelize by default plural banata hai)
-      key: 'id'
+      model: 'investors',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE' // Investor delete ho to task bhi auto-delete ho jaye (jo humne pehle fix kiya)
+    onDelete: 'CASCADE'
   }
 });
 

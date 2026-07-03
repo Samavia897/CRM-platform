@@ -11,42 +11,37 @@ exports.getTasks = async (req, res) => {
 
 exports.createTask = async (req, res) => {
   try {
-    // 1. Ensure investorId is coming from request body
+
     const { title, description, dueDate, priority, investor, investorId, status } = req.body;
-    
+
     const newTask = await Task.create({
       title,
       description,
       dueDate,
       priority,
       investor,
-      investorId, // Yeh line database mein UUID store karne ke liye lazmi hai
+      investorId,
       status: status || "Pending"
     });
-    
+
     res.status(201).json(newTask);
   } catch (error) {
     const errorMessage = error.errors ? error.errors[0].message : error.message;
-    console.error("Task Create Error:", errorMessage); // Error logs dekhne ke liye
+    console.error("Task Create Error:", errorMessage);
     res.status(400).json({ message: errorMessage });
   }
 };
 
-// ======= CHANGED: Isko update kiya taake Edit Modal aur Status Toggle dono ka data handle ho sake =======
-// controllers/taskController.js
-
 exports.updateTaskStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; // Frontend se 'Pending' ya 'Completed' aayega
+    const { status } = req.body;
 
-    // Check karein ke task exist karta hai
     const task = await Task.findByPk(id);
     if (!task) {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    // Status update kar ke save karein
     task.status = status;
     await task.save();
 
@@ -57,12 +52,11 @@ exports.updateTaskStatus = async (req, res) => {
   }
 };
 
-// ======= NEW FUNCTION: Task Delete karne ke liye =======
 exports.deleteTask = async (req, res) => {
   try {
     const { id } = req.params;
     const task = await Task.findByPk(id);
-    
+
     if (!task) {
       return res.status(404).json({ message: "Task not found." });
     }

@@ -1,7 +1,6 @@
 const authService = require("../services/authService");
 const { generateToken } = require("../utils/token");
 const jwt = require("jsonwebtoken");
-// Models index file se hi lein
 const { User } = require("../models/index");
 
 exports.signup = async (req, res) => {
@@ -15,14 +14,14 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body; 
+    const { email, password } = req.body;
     const user = await authService.login(email, password);
     const token = generateToken(user);
 
     res.json({
       token,
       username: user.username,
-      role: user.role,     
+      role: user.role,
       email: user.email
     });
   } catch (err) {
@@ -33,7 +32,7 @@ exports.login = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
-      where: { companyId: req.user.companyId } 
+      where: { companyId: req.user.companyId }
     });
     res.json(users);
   } catch (error) {
@@ -50,7 +49,6 @@ exports.addMember = async (req, res) => {
   }
 };
 
-// Protect middleware ko bhi exports.protect ke taur par likhein
 exports.protect = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -59,12 +57,10 @@ exports.protect = (req, res, next) => {
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; 
+    req.user = decoded;
     next();
   } catch (err) {
     console.log("JWT Error:", err.message);
     res.status(401).json("Invalid token");
   }
 };
-
-// AB AKHIR MEIN module.exports WALI LINE HATA DEIN

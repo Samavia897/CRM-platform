@@ -5,9 +5,7 @@ const { protect } = require("../middlewares/authMiddleware");
 
 router.get("/", taskController.getTasks);
 router.post("/", taskController.createTask);
-router.patch("/:id", taskController.updateTaskStatus); // Yeh ab edit aur status toggle dono sambhal lega
-
-// ======= NEW ROUTE ADDED =======
-router.delete("/:id", taskController.deleteTask); // Delete handler link kiya
+router.patch("/:id", taskController.updateTaskStatus); 
+router.delete("/:id", taskController.deleteTask); 
 
 module.exports = router;

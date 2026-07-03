@@ -2,10 +2,10 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
 const Investor = sequelize.define("Investor", {
-  id: { 
-    type: DataTypes.UUID, 
-    defaultValue: DataTypes.UUIDV4, 
-    primaryKey: true 
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
   },
   firstName: { type: DataTypes.STRING, allowNull: false },
   lastName: { type: DataTypes.STRING },
@@ -13,25 +13,25 @@ const Investor = sequelize.define("Investor", {
   officePhone: { type: DataTypes.STRING },
   mobilePhone: { type: DataTypes.STRING },
   jobTitle: { type: DataTypes.STRING },
-  status: { 
+  status: {
     type: DataTypes.STRING,
     allowNull: false,
     defaultValue: 'New'
   },
-  fundId: { 
-    type: DataTypes.UUID, 
-    allowNull: false 
+  fundId: {
+    type: DataTypes.UUID,
+    allowNull: false
   },
-  companyId: { 
-    type: DataTypes.UUID, 
-    allowNull: true 
+  companyId: {
+    type: DataTypes.UUID,
+    allowNull: true
   },
-  pipelineId: { 
-    type: DataTypes.UUID, // 🟢 FIXED: Changed from INTEGER to UUID to match dynamic board IDs
+  pipelineId: {
+    type: DataTypes.UUID,
     allowNull: false
   }
 }, {
-  tableName: 'investors', 
+  tableName: 'investors',
   freezeTableName: true
 });
 
