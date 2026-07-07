@@ -1,0 +1,8 @@
+# Client 
+client/node_modules/
+
+
+# Backend
+Backend/node_modules/
+Backend/.env
+Backend/uploads/
