@@ -15,7 +15,6 @@
     "react-router-dom": "^7.14.1",
     "react-scripts": "5.0.1",
     "sweetalert2": "^11.26.24",
-    "proxy": "http://localhost:5000",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
