@@ -1,13 +1,13 @@
 const { Sequelize } = require("sequelize");
 
-// Agar DATABASE_URL maujood hai (Neon/Render ke liye), toh string use karega, warna local variables
+
 const sequelize = process.env.DATABASE_URL
   ? new Sequelize(process.env.DATABASE_URL, {
       dialect: "postgres",
       dialectOptions: {
         ssl: {
           require: true,
-          rejectUnauthorized: false, // Neon/Cloud DB ke liye yeh line lazmi hai
+          rejectUnauthorized: false, 
         },
       },
     })

@@ -12,13 +12,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: "http://localhost:3000",
+
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 app.use(express.json());
-
 
 app.use("/api/auth", authRoutes);
 app.use("/api/investors", investorRoutes);
@@ -27,7 +27,8 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/pipelines", pipelineRoutes);
 
 console.log("Attempting to sync database...");
-sequelize.sync({ alter: true })
+
+sequelize.sync({ force: true })
   .then(() => {
     console.log("Database & tables synced!");
 
@@ -38,7 +39,6 @@ sequelize.sync({ alter: true })
   .catch(err => {
     console.error("❌ Failed to sync database:", err);
   });
-
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
