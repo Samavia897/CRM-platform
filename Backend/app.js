@@ -6,6 +6,7 @@ const fundRoutes = require("./routes/fundRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const investorRoutes = require("./routes/investorRoutes");
 const pipelineRoutes = require("./routes/pipelineRoutes");
+const indexRoutes = require('./routes/indexRoutes');
 const cors = require("cors");
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.use('/', indexRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/investors", investorRoutes);
 app.use("/api/funds", fundRoutes);
@@ -33,11 +35,11 @@ sequelize.sync({ force: true })
     console.log("Database & tables synced!");
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server is successfully running on port ${PORT}`);
+      console.log(`Server is successfully running on port ${PORT}`);
     });
   })
   .catch(err => {
-    console.error("❌ Failed to sync database:", err);
+    console.error("Failed to sync database:", err);
   });
 
 process.on('unhandledRejection', (reason, promise) => {
