@@ -27,7 +27,7 @@ const Investor = sequelize.define("Investor", {
     allowNull: true
   },
   pipelineId: {
-    type: DataTypes.INTEGER,
+   type: DataTypes.UUID,
     allowNull: false
   }
 }, {
