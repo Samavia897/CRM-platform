@@ -53,16 +53,20 @@ export default function Pipeline() {
 
   useEffect(() => {
     if (pipelines.length > 0) {
-      const currentId = activePipelineId || pipelines[0].id;
-      if (!activePipelineId) {
+      // Agar koi activePipelineId set nahi hai, to pehli pipeline ki ID set karein
+      const currentId = activePipelineId !== "" ? activePipelineId : pipelines[0].id;
+      
+      if (activePipelineId === "") {
         setActivePipelineId(currentId);
       }
 
+      // 100% accurate string comparison taake type (int vs string) ka koi masla na aaye
       const currentBoard = pipelines.find(
-        (p) => p.id?.toString() === currentId?.toString()
+        (p) => String(p.id) === String(currentId)
       );
 
       if (currentBoard && currentBoard.stages) {
+        // Columns ko comma se split kar ke set karna
         const stagesArray = currentBoard.stages.split(",").map(s => s.trim());
         setDynamicStages(stagesArray);
         setFormData((prev) => ({ ...prev, status: stagesArray[0] || "" }));
