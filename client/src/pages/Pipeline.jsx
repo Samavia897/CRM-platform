@@ -4,7 +4,6 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { HiPlus, HiPencilAlt, HiTrash, HiViewGridAdd, HiClock, HiX } from "react-icons/hi";
 import Swal from "sweetalert2";
 
-
 const getStageColor = (stageName) => {
   const name = stageName ? stageName.toLowerCase() : "";
   if (name.includes("new") || name.includes("lead")) return "bg-emerald-50 text-emerald-600 border-emerald-100";
@@ -20,27 +19,23 @@ export default function Pipeline() {
   const [selectedInvestor, setSelectedInvestor] = useState(null);
   const [funds, setFunds] = useState([]);
 
-
   const [pipelines, setPipelines] = useState([]);
   const [activePipelineId, setActivePipelineId] = useState("");
   const [dynamicStages, setDynamicStages] = useState([]);
-
 
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBoardModal, setShowBoardModal] = useState(false);
 
-const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newBoardName, setNewBoardName] = useState("");
   const [newBoardStages, setNewBoardStages] = useState("");
-
 
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDueDate, setTaskDueDate] = useState("");
   const [taskPriority, setTaskPriority] = useState("Medium");
   const [taskDescription, setTaskDescription] = useState("");
-
 
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", email: "", officePhone: "",
@@ -49,6 +44,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
+  const BASE_URL = "https://crm-backend-live-4541.onrender.com";
 
   useEffect(() => {
     fetchFunds();
@@ -56,33 +52,32 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   }, []);
 
   useEffect(() => {
-  if (pipelines.length > 0) {
-    const currentId = activePipelineId || pipelines[0].id;
-    if (!activePipelineId) {
-      setActivePipelineId(currentId);
+    if (pipelines.length > 0) {
+      const currentId = activePipelineId || pipelines[0].id;
+      if (!activePipelineId) {
+        setActivePipelineId(currentId);
+      }
+
+      const currentBoard = pipelines.find(
+        (p) => p.id?.toString() === currentId?.toString()
+      );
+
+      if (currentBoard && currentBoard.stages) {
+        const stagesArray = currentBoard.stages.split(",").map(s => s.trim());
+        setDynamicStages(stagesArray);
+        setFormData((prev) => ({ ...prev, status: stagesArray[0] || "" }));
+      } else {
+        setDynamicStages([]);
+      }
+      
+      fetchInvestors();
     }
-
-    const currentBoard = pipelines.find(
-      (p) => p.id?.toString() === currentId?.toString()
-    );
-
-    if (currentBoard && currentBoard.stages) {
-      const stagesArray = currentBoard.stages.split(",").map(s => s.trim());
-      setDynamicStages(stagesArray);
-
-      setFormData((prev) => ({ ...prev, status: stagesArray[0] || "" }));
-    } else {
-      setDynamicStages([]);
-    }
-    
-    fetchInvestors();
-  }
-}, [activePipelineId, pipelines]);
+  }, [activePipelineId, pipelines]);
 
   const fetchPipelines = async (setFirstActive = false) => {
     try {
       const currentToken = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/pipelines", {
+      const res = await axios.get(`${BASE_URL}/api/pipelines`, {
         headers: { Authorization: `Bearer ${currentToken}` }
       });
       setPipelines(res.data);
@@ -97,7 +92,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   const fetchFunds = async () => {
     try {
       const currentToken = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/funds", {
+      const res = await axios.get(`${BASE_URL}/api/funds`, {
         headers: { Authorization: `Bearer ${currentToken}` }
       });
       setFunds(res.data);
@@ -107,38 +102,38 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   const fetchInvestors = async () => {
     try {
       const currentToken = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/investors", {
+      const res = await axios.get(`${BASE_URL}/api/investors`, {
         headers: { Authorization: `Bearer ${currentToken}` }
       });
       setInvestors(res.data);
     } catch (err) { console.error("Fetch Error:", err); }
   };
 
- const handleCreateBoard = async (e) => {
-  e.preventDefault();
-  if (!newBoardName.trim() || !newBoardStages.trim() || isSubmitting) return;
+  const handleCreateBoard = async (e) => {
+    e.preventDefault();
+    if (!newBoardName.trim() || !newBoardStages.trim() || isSubmitting) return;
 
-  setIsSubmitting(true); 
+    setIsSubmitting(true); 
 
-  try {
-    const response = await axios.post("http://localhost:5000/api/pipelines", {
-      name: newBoardName,
-      stages: newBoardStages
-    }, { headers });
+    try {
+      const response = await axios.post(`${BASE_URL}/api/pipelines`, {
+        name: newBoardName,
+        stages: newBoardStages
+      }, { headers });
 
-    if (response.status === 201 || response.status === 200) {
-      Swal.fire("Success!", "New custom pipeline created.", "success");
-      setNewBoardName("");
-      setNewBoardStages("");
-      setShowBoardModal(false);
-      await fetchPipelines();
+      if (response.status === 201 || response.status === 200) {
+        Swal.fire("Success!", "New custom pipeline created.", "success");
+        setNewBoardName("");
+        setNewBoardStages("");
+        setShowBoardModal(false);
+        await fetchPipelines();
+      }
+    } catch (err) {
+      Swal.fire("Error", "Could not create custom workflow pipeline board", "error");
+    } finally {
+      setIsSubmitting(false); 
     }
-  } catch (err) {
-    Swal.fire("Error", "Could not create custom workflow pipeline board", "error");
-  } finally {
-    setIsSubmitting(false); 
-  }
-};
+  };
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -152,7 +147,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
     }
 
     try {
-      await axios.post("http://localhost:5000/api/tasks", {
+      await axios.post(`${BASE_URL}/api/tasks`, {
         title: taskTitle,
         dueDate: taskDueDate,
         priority: taskPriority || "Medium",
@@ -174,58 +169,46 @@ const [isSubmitting, setIsSubmitting] = useState(false);
       Swal.fire("Error", err.response?.data?.error || "Could not add task from pipeline", "error");
     }
   };
-const handleAddNew = async (e) => {
-  e.preventDefault();
 
-  if (!formData.fundId) {
-    alert("Error: Please select a Fund.");
-    return;
-  }
+  const handleAddNew = async (e) => {
+    e.preventDefault();
 
-  const backendPayload = {
-    firstName: formData.firstName.trim(),
-    lastName: formData.lastName.trim(),
-    email: formData.email.trim(),
-    jobTitle: formData.jobTitle ? formData.jobTitle.trim() : "",
-    officePhone: formData.officePhone || "",
-    mobilePhone: formData.mobilePhone || "",
-    fundId: Number(formData.fundId),       // 🌟 Number mein convert lazmi karein
-    pipelineId: Number(activePipelineId), // 🌟 Custom board ki active ID
-    status: formData.status || dynamicStages[0] || "New"
+    if (!formData.fundId) {
+      alert("Error: Please select a Fund.");
+      return;
+    }
+
+    const currentPipelineId = typeof activePipelineId !== 'undefined' ? activePipelineId : formData.pipelineId;
+    const currentStatus = formData.status || (typeof dynamicStages !== 'undefined' && dynamicStages[0]) || "New";
+
+    const backendPayload = {
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      email: formData.email.trim(),
+      jobTitle: formData.jobTitle ? formData.jobTitle.trim() : "",
+      officePhone: formData.officePhone || "",
+      mobilePhone: formData.mobilePhone || "",
+      fundId: Number(formData.fundId),       
+      pipelineId: Number(currentPipelineId), 
+      status: currentStatus.trim()
+    };
+
+    try {
+      const requestHeaders = typeof headers !== 'undefined' ? { headers } : {};
+      const response = await axios.post(`${BASE_URL}/api/investors`, backendPayload, requestHeaders);
+
+      if (response.status === 201 || response.status === 200) {
+        alert("New Lead Added successfully!");
+        setShowAddModal(false);
+        setFormData({ firstName: "", lastName: "", email: "", officePhone: "", mobilePhone: "", jobTitle: "", fundId: "", status: "" });
+        
+        if (typeof fetchInvestors === "function") fetchInvestors();
+      }
+    } catch (err) {
+      alert("Failed to add lead: " + (err.response?.data?.error || err.message));
+    }
   };
 
-  try {
-    await axios.post("https://crm-backend-live-4541.onrender.com/api/investors", backendPayload, { headers });
-    alert("New Lead Added successfully!");
-    setShowAddModal(false);
-    setFormData({ firstName: "", lastName: "", email: "", officePhone: "", mobilePhone: "", jobTitle: "", fundId: "", status: "" });
-    if (typeof fetchInvestors === "function") fetchInvestors();
-  } catch (err) {
-    alert("Failed to add lead: " + (err.response?.data?.error || err.message));
-  }
-};
-
-  try {
-    const response = await axios.post("http://localhost:5000/api/investors", backendPayload, { headers });
-
-    if (response.status === 201 || response.status === 200) {
-      alert("New Lead Added successfully!");
-      setShowAddModal(false); 
-      
-
-      setFormData({ 
-        firstName: "", lastName: "", email: "", officePhone: "", 
-        mobilePhone: "", jobTitle: "", fundId: "", status: "" 
-      });
-      
-
-      if (typeof fetchInvestors === "function") fetchInvestors();
-    }
-  } catch (err) {
-    console.error("Backend Error:", err.response?.data);
-    alert("Failed to add lead: " + (err.response?.data?.error || err.message));
-  }
-};
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?", text: "This will remove investor and all linked tasks!", icon: "warning",
@@ -234,8 +217,8 @@ const handleAddNew = async (e) => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/tasks/investor/${id}`, { headers });
-        await axios.delete(`http://localhost:5000/api/investors/${id}`, { headers });
+        await axios.delete(`${BASE_URL}/api/tasks/investor/${id}`, { headers });
+        await axios.delete(`${BASE_URL}/api/investors/${id}`, { headers });
         Swal.fire("Deleted!", "Record removed.", "success");
         fetchInvestors();
       } catch (err) { Swal.fire("Error!", "Could not delete.", "error"); }
@@ -247,7 +230,7 @@ const handleAddNew = async (e) => {
     if (!selectedInvestor?.id) return;
 
     try {
-      await axios.put(`http://localhost:5000/api/investors/${selectedInvestor.id}`, formData, { headers });
+      await axios.put(`${BASE_URL}/api/investors/${selectedInvestor.id}`, formData, { headers });
       Swal.fire("Success", "Updated successfully!", "success");
       setShowEditModal(false);
       fetchInvestors();
@@ -268,7 +251,7 @@ const handleAddNew = async (e) => {
       const newStage = destination.droppableId;
 
       const response = await axios.post(
-        "http://localhost:5000/api/pipelines/move",
+        `${BASE_URL}/api/pipelines/move`,
         {
           investorId: draggableId,
           pipelineId: parseInt(activePipelineId, 10),
@@ -293,7 +276,6 @@ const handleAddNew = async (e) => {
 
   return (
     <div className="p-8 bg-[#F5F7FA] min-h-screen font-sans">
-
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-10">
         <div>
           <h1 className="text-3xl font-extrabold text-[#001f3f] tracking-tight">Dynamic Deal Pipelines</h1>
@@ -302,10 +284,10 @@ const handleAddNew = async (e) => {
 
         <div className="flex items-center gap-3">
           <select
-  value={activePipelineId}
-  onChange={(e) => setActivePipelineId(Number(e.target.value))} 
-  className="..."
->
+            value={activePipelineId}
+            onChange={(e) => setActivePipelineId(Number(e.target.value))} 
+            className="p-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500"
+          >
             {pipelines.map((p) => (
               <option key={p.id} value={p.id}>💼 {p.name}</option>
             ))}
@@ -320,14 +302,14 @@ const handleAddNew = async (e) => {
           </button>
 
           <button 
-  onClick={() => {
-    setFormData(prev => ({ ...prev, status: dynamicStages[0] || "" }));
-    setShowAddModal(true);
-  }} 
-  className="flex items-center gap-2 bg-[#001f3f] text-white px-5 py-2.5 rounded-lg font-bold hover:bg-blue-950 transition-all shadow-md text-sm whitespace-nowrap"
->
-  <HiViewGridAdd size={19} /> New Lead
-</button>
+            onClick={() => {
+              setFormData(prev => ({ ...prev, status: dynamicStages[0] || "" }));
+              setShowAddModal(true);
+            }} 
+            className="flex items-center gap-2 bg-[#001f3f] text-white px-5 py-2.5 rounded-lg font-bold hover:bg-blue-950 transition-all shadow-md text-sm whitespace-nowrap"
+          >
+            <HiViewGridAdd size={19} /> New Lead
+          </button>
         </div>
       </div>
 
@@ -425,12 +407,12 @@ const handleAddNew = async (e) => {
                 <p className="text-[11px] text-gray-400 mt-1 italic ml-1">Separate columns with commas. You can add as many as you like!</p>
               </div>
               <button 
-  type="submit" 
-  disabled={isSubmitting}
-  className={`w-full py-4 text-white font-bold rounded-2xl shadow-xl transition-all uppercase text-xs tracking-widest mt-4 ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
->
-  {isSubmitting ? "Generating..." : "Generate Custom Board"}
-</button>
+                type="submit" 
+                disabled={isSubmitting}
+                className={`w-full py-4 text-white font-bold rounded-2xl shadow-xl transition-all uppercase text-xs tracking-widest mt-4 ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+              >
+                {isSubmitting ? "Generating..." : "Generate Custom Board"}
+              </button>
             </form>
           </div>
         </div>
@@ -446,28 +428,23 @@ const handleAddNew = async (e) => {
 
             <form onSubmit={handleAddNew} className="space-y-4">
               <div>
-  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-    Select Fund *
-  </label>
-  <select
-    className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
-    required
-    value={formData.fundId}
-    onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
-  >
-    <option value="">-- Choose a Fund --</option>
-    {funds && funds.length > 0 ? (
-      funds.map((f) => (
-        /* 🌟 CRITICAL FIX: key aur value dono main f.id hona chahiye, f.name nahi! */
-        <option key={f.id} value={f.id}>
-          {f.name}
-        </option>
-      ))
-    ) : (
-      <option disabled value="">No funds available</option>
-    )}
-  </select>
-</div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Select Fund *</label>
+                <select
+                  className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                  value={formData.fundId}
+                  onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
+                >
+                  <option value="">-- Choose a Fund --</option>
+                  {funds && funds.length > 0 ? (
+                    funds.map((f) => (
+                      <option key={f.id} value={f.id}>{f.name}</option>
+                    ))
+                  ) : (
+                    <option disabled value="">No funds available</option>
+                  )}
+                </select>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
@@ -506,24 +483,20 @@ const handleAddNew = async (e) => {
             </div>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              {/* 🌟 PIPELINE FILE KE ANDAR SELECT FUND DROPDOWN */}
-<div className="flex flex-col gap-1">
-  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">
-    Select Fund
-  </label>
-  <select 
-    className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-sm font-semibold" 
-    value={formData.fundId} 
-    onChange={(e) => setFormData({ ...formData, fundId: e.target.value })} 
-    required
-  >
-    <option value="">-- Select Fund --</option>
-    {funds && funds.length > 0 && funds.map(f => (
-      // 🌟 ID value mein jayegi taakay database ko number miley, naam nahi!
-      <option key={f.id} value={f.id}>{f.name}</option>
-    ))}
-  </select>
-</div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Select Fund</label>
+                <select 
+                  className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-sm font-semibold" 
+                  value={formData.fundId} 
+                  onChange={(e) => setFormData({ ...formData, fundId: e.target.value })} 
+                  required
+                >
+                  <option value="">-- Select Fund --</option>
+                  {funds && funds.length > 0 && funds.map(f => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
+                </select>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
