@@ -198,8 +198,8 @@ const handleAddNew = async (e) => {
     officePhone: formData.officePhone || "",
     mobilePhone: formData.mobilePhone || "",
     fundId: Number(formData.fundId),
-    pipelineId: Number(activePipelineId), // 🌟 Yahan hum dropdown wali active ID bhej rahe hain
-    status: formData.status || dynamicStages[0] || "New" // Agar status select nahi kiya to pehli stage mil jaye
+    pipelineId: Number(activePipelineId), 
+    status: formData.status || dynamicStages[0] || "New" 
   };
 
   try {
@@ -207,15 +207,15 @@ const handleAddNew = async (e) => {
 
     if (response.status === 201 || response.status === 200) {
       alert("New Lead Added successfully!");
-      setShowAddModal(false); // Modal band karein
+      setShowAddModal(false); 
       
-      // Form ko reset karein
+
       setFormData({ 
         firstName: "", lastName: "", email: "", officePhone: "", 
         mobilePhone: "", jobTitle: "", fundId: "", status: "" 
       });
       
-      // Data dobara fetch karein taakay naya lead board par dikhe
+
       if (typeof fetchInvestors === "function") fetchInvestors();
     }
   } catch (err) {
@@ -442,13 +442,29 @@ const handleAddNew = async (e) => {
             </div>
 
             <form onSubmit={handleAddNew} className="space-y-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Select Fund</label>
-                <select className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-sm font-semibold" value={formData.fundId} onChange={(e) => setFormData({ ...formData, fundId: e.target.value })} required>
-                  <option value="">-- Select Fund --</option>
-                  {funds.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                </select>
-              </div>
+              <div>
+  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+    Select Fund *
+  </label>
+  <select
+    className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+    required
+    value={formData.fundId}
+    onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
+  >
+    <option value="">-- Choose a Fund --</option>
+    {funds && funds.length > 0 ? (
+      funds.map((f) => (
+        /* 🌟 CRITICAL FIX: key aur value dono main f.id hona chahiye, f.name nahi! */
+        <option key={f.id} value={f.id}>
+          {f.name}
+        </option>
+      ))
+    ) : (
+      <option disabled value="">No funds available</option>
+    )}
+  </select>
+</div>
 
               <div className="grid grid-cols-2 gap-3">
                 <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
