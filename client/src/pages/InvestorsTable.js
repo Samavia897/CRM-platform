@@ -210,47 +210,51 @@ const backendPayload = {
 
             <form onSubmit={handleAddInvestor} className="space-y-3">
 
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-                  Select Fund *
-                </label>
-                <select
-                  className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  value={formData.fundId}
-                  onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
-                >
-                  <option value="">-- Choose a Fund --</option>
-                  {funds && funds.length > 0 ? (
-                    funds.map((f) => (
-                      <option key={f.id} value={f.id}>{f.name}</option>
-                    ))
-                  ) : (
-                    <option disabled value="">No funds available</option>
-                  )}
-                </select>
-              </div>
+{/* 1. SELECT FUND DROPDOWN */}
+<div>
+  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+    Select Fund *
+  </label>
+  <select
+    className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+    required
+    value={formData.fundId}
+    onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
+  >
+    <option value="">-- Choose a Fund --</option>
+    {funds && funds.length > 0 ? (
+      funds.map((f) => (
+        // 🌟 FIX: value mein f.id hona chahiye taakay number jaye, naam nahi
+        <option key={f.id} value={f.id}>{f.name}</option>
+      ))
+    ) : (
+      <option disabled value="">No funds available</option>
+    )}
+  </select>
+</div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-                  Assign to Pipeline Board *
-                </label>
-                <select
-                  className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                  value={formData.pipelineId}
-                  onChange={(e) => setFormData({ ...formData, pipelineId: e.target.value, status: "" })}
-                >
-                  <option value="">-- Choose a Pipeline Board --</option>
-                  {pipelines && pipelines.length > 0 ? (
-                    pipelines.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))
-                  ) : (
-                    <option disabled value="">No pipeline boards found</option>
-                  )}
-                </select>
-              </div>
+{/* 2. ASSIGN TO PIPELINE BOARD DROPDOWN */}
+<div>
+  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+    Assign to Pipeline Board *
+  </label>
+  <select
+    className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+    required
+    value={formData.pipelineId}
+    onChange={(e) => setFormData({ ...formData, pipelineId: e.target.value, status: "" })}
+  >
+    <option value="">-- Choose a Pipeline Board --</option>
+    {pipelines && pipelines.length > 0 ? (
+      pipelines.map((p) => (
+        // 🌟 FIX: value mein p.id hona chahiye taakay number jaye, naam nahi
+        <option key={p.id} value={p.id}>{p.name}</option>
+      ))
+    ) : (
+      <option disabled value="">No pipeline boards found</option>
+    )}
+  </select>
+</div>
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
