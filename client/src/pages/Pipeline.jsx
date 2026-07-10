@@ -174,37 +174,38 @@ const [isSubmitting, setIsSubmitting] = useState(false);
       Swal.fire("Error", err.response?.data?.error || "Could not add task from pipeline", "error");
     }
   };
-
-  const handleAddNew = async (e) => {
+const handleAddNew = async (e) => {
   e.preventDefault();
   
   if (!formData.fundId) {
-    Swal.fire("Warning", "Please select a fund first.", "warning");
+    alert("Warning: Please select a fund first.");
     return;
   }
 
-  // CRITICAL CHECK: Agar activePipelineId khali hai ya valid nahi hai
   if (!activePipelineId) {
-    Swal.fire("Warning", "Please select a pipeline board from the dropdown first.", "warning");
+    alert("Error: Active Pipeline Board could not be detected.");
     return;
   }
+
+  const payload = {
+    ...formData,
+    pipelineId: Number(activePipelineId),
+    status: formData.status || dynamicStages[0] || "New" 
+  };
 
   try {
-    await axios.post("http://localhost:5000/api/investors", {
-      ...formData,
-      pipelineId: Number(activePipelineId) // Ensure karein k yeh valid number ja raha hai
-    }, { headers });
+    await axios.post("http://localhost:5000/api/investors", payload, { headers });
 
     setShowAddModal(false);
     setFormData({
       firstName: "", lastName: "", email: "", officePhone: "",
       mobilePhone: "", jobTitle: "", fundId: "", status: dynamicStages[0] || ""
     });
-    Swal.fire("Success!", "New Lead Added directly to custom board workflow.", "success");
+    alert("Success: New Lead Added directly to custom board workflow.");
     fetchInvestors();
   } catch (err) {
     console.error("Add Lead Error:", err.response?.data);
-    Swal.fire("Error!", err.response?.data?.error || "Add failed.", "error");
+    alert("Error: " + (err.response?.data?.error || "Add failed."));
   }
 };
   const handleDelete = async (id) => {
@@ -283,10 +284,10 @@ const [isSubmitting, setIsSubmitting] = useState(false);
 
         <div className="flex items-center gap-3">
           <select
-            value={activePipelineId}
-            onChange={(e) => setActivePipelineId(Number(e.target.value))}
-            className="p-2.5 border border-gray-200 bg-white text-gray-700 font-semibold rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-sm cursor-pointer"
-          >
+  value={activePipelineId}
+  onChange={(e) => setActivePipelineId(Number(e.target.value))} 
+  className="..."
+>
             {pipelines.map((p) => (
               <option key={p.id} value={p.id}>💼 {p.name}</option>
             ))}

@@ -74,15 +74,15 @@ export default function InvestorsTable() {
       return;
     }
 
-    const backendPayload = {
-      ...formData,
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      email: formData.email.trim(),
-      fundId: formData.fundId,
-      pipelineId: formData.pipelineId,
-      status: formData.status.trim()
-    };
+const backendPayload = {
+  ...formData,
+  firstName: formData.firstName.trim(),
+  lastName: formData.lastName.trim(),
+  email: formData.email.trim(),
+  fundId: Number(formData.fundId),      
+  pipelineId: Number(formData.pipelineId), 
+  status: formData.status.trim()
+};
 
     try {
       const response = await axios.post("http://localhost:5000/api/investors", backendPayload, { headers });
