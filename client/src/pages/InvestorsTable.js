@@ -221,14 +221,10 @@ const backendPayload = {
     onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
   >
     <option value="">-- Choose a Fund --</option>
-    {funds && funds.length > 0 ? (
-      funds.map((f) => (
-        // 🌟 FIX: value mein f.id hona chahiye taakay number jaye, naam nahi
-        <option key={f.id} value={f.id}>{f.name}</option>
-      ))
-    ) : (
-      <option disabled value="">No funds available</option>
-    )}
+    {funds && funds.length > 0 && funds.map((f) => (
+      // 🌟 ID value main jayegi taakay database ko number miley
+      <option key={f.id} value={f.id}>{f.name}</option>
+    ))}
   </select>
 </div>
 
@@ -244,17 +240,12 @@ const backendPayload = {
     onChange={(e) => setFormData({ ...formData, pipelineId: e.target.value, status: "" })}
   >
     <option value="">-- Choose a Pipeline Board --</option>
-    {pipelines && pipelines.length > 0 ? (
-      pipelines.map((p) => (
-        // 🌟 FIX: value mein p.id hona chahiye taakay number jaye, naam nahi
-        <option key={p.id} value={p.id}>{p.name}</option>
-      ))
-    ) : (
-      <option disabled value="">No pipeline boards found</option>
-    )}
+    {pipelines && pipelines.length > 0 && pipelines.map((p) => (
+      // 🌟 ID value main jayegi taakay database ko number miley
+      <option key={p.id} value={p.id}>{p.name}</option>
+    ))}
   </select>
 </div>
-
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                   Stage / Status *
