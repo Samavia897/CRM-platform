@@ -176,36 +176,51 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   };
 const handleAddNew = async (e) => {
   e.preventDefault();
-  
-  if (!formData.fundId) {
-    alert("Warning: Please select a fund first.");
+
+  // 1. Check karein k fund selected hai ya nahi
+  if (!formData.fundId || formData.fundId === "") {
+    alert("Error: Please select a Fund.");
     return;
   }
 
+  // 2. 🌟 CRITICAL FIX: formData ki bajaye activePipelineId ko check karein
   if (!activePipelineId) {
-    alert("Error: Active Pipeline Board could not be detected.");
+    alert("Error: Active Pipeline Board could not be detected. Please select a board from the main dropdown.");
     return;
   }
 
-  const payload = {
-    ...formData,
-    pipelineId: Number(activePipelineId),
-    status: formData.status || dynamicStages[0] || "New" 
+  // Backend ko data bhejne ke liye payload tyar karein
+  const backendPayload = {
+    firstName: formData.firstName.trim(),
+    lastName: formData.lastName.trim(),
+    email: formData.email.trim(),
+    jobTitle: formData.jobTitle ? formData.jobTitle.trim() : "",
+    officePhone: formData.officePhone || "",
+    mobilePhone: formData.mobilePhone || "",
+    fundId: Number(formData.fundId),
+    pipelineId: Number(activePipelineId), // 🌟 Yahan hum dropdown wali active ID bhej rahe hain
+    status: formData.status || dynamicStages[0] || "New" // Agar status select nahi kiya to pehli stage mil jaye
   };
 
   try {
-    await axios.post("http://localhost:5000/api/investors", payload, { headers });
+    const response = await axios.post("http://localhost:5000/api/investors", backendPayload, { headers });
 
-    setShowAddModal(false);
-    setFormData({
-      firstName: "", lastName: "", email: "", officePhone: "",
-      mobilePhone: "", jobTitle: "", fundId: "", status: dynamicStages[0] || ""
-    });
-    alert("Success: New Lead Added directly to custom board workflow.");
-    fetchInvestors();
+    if (response.status === 201 || response.status === 200) {
+      alert("New Lead Added successfully!");
+      setShowAddModal(false); // Modal band karein
+      
+      // Form ko reset karein
+      setFormData({ 
+        firstName: "", lastName: "", email: "", officePhone: "", 
+        mobilePhone: "", jobTitle: "", fundId: "", status: "" 
+      });
+      
+      // Data dobara fetch karein taakay naya lead board par dikhe
+      if (typeof fetchInvestors === "function") fetchInvestors();
+    }
   } catch (err) {
-    console.error("Add Lead Error:", err.response?.data);
-    alert("Error: " + (err.response?.data?.error || "Add failed."));
+    console.error("Backend Error:", err.response?.data);
+    alert("Failed to add lead: " + (err.response?.data?.error || err.message));
   }
 };
   const handleDelete = async (id) => {
