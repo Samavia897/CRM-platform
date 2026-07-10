@@ -56,18 +56,30 @@ export default function Pipeline() {
   }, []);
 
   useEffect(() => {
-    if (activePipelineId && pipelines.length > 0) {
-      const currentBoard = pipelines.find(p => Number(p.id) === Number(activePipelineId));
-      if (currentBoard && currentBoard.stages) {
-        const stagesArray = currentBoard.stages.split(",");
-        setDynamicStages(stagesArray);
-
-        setFormData(prev => ({ ...prev, status: stagesArray[0] || "" }));
-      }
-      fetchInvestors();
+  if (pipelines.length > 0) {
+    // Agar activePipelineId nahi set, to pehli pipeline ki ID pick kar lein
+    const currentId = activePipelineId || pipelines[0].id;
+    if (!activePipelineId) {
+      setActivePipelineId(currentId);
     }
 
-  }, [activePipelineId, pipelines]);
+    // Dono ko strings main convert kar k compare karein taakay type mismatch ka khatma ho
+    const currentBoard = pipelines.find(
+      (p) => p.id?.toString() === currentId?.toString()
+    );
+
+    if (currentBoard && currentBoard.stages) {
+      const stagesArray = currentBoard.stages.split(",").map(s => s.trim());
+      setDynamicStages(stagesArray);
+
+      setFormData((prev) => ({ ...prev, status: stagesArray[0] || "" }));
+    } else {
+      setDynamicStages([]);
+    }
+    
+    fetchInvestors();
+  }
+}, [activePipelineId, pipelines]);
 
   const fetchPipelines = async (setFirstActive = false) => {
     try {
