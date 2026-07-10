@@ -24,32 +24,34 @@ export default function InvestorsTable() {
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
+  const BASE_URL = "https://crm-backend-live-4541.onrender.com";
 
   const fetchPipelines = async () => {
-  try {
-    const response = await axios.get("https://crm-backend-live-4541.onrender.com/api/pipelines", { headers });
-    setPipelines(response.data);
-  } catch (err) {
-    console.error("Error fetching pipelines:", err);
-  }
-};
- const fetchInvestors = async () => {
-  try {
-    const res = await axios.get("https://crm-backend-live-4541.onrender.com/api/investors", { headers });
-    setInvestors(res.data);
-  } catch (err) {
-    console.error("Fetch Error:", err.response?.data || err.message);
-  }
-};
+    try {
+      const response = await axios.get(`${BASE_URL}/api/pipelines`, { headers });
+      setPipelines(response.data);
+    } catch (err) {
+      console.error("Error fetching pipelines:", err);
+    }
+  };
 
- const fetchFunds = async () => {
-  try {
-    const res = await axios.get("https://crm-backend-live-4541.onrender.com/api/funds", { headers });
-    setFunds(res.data);
-  } catch (err) {
-    console.error("Fetch funds error:", err);
-  }
-};
+  const fetchInvestors = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/investors`, { headers });
+      setInvestors(res.data);
+    } catch (err) {
+      console.error("Fetch Error:", err.response?.data || err.message);
+    }
+  };
+
+  const fetchFunds = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/funds`, { headers });
+      setFunds(res.data);
+    } catch (err) {
+      console.error("Fetch funds error:", err);
+    }
+  };
 
   useEffect(() => {
     fetchInvestors();
@@ -73,20 +75,21 @@ export default function InvestorsTable() {
       return;
     }
 
-const backendPayload = {
-  ...formData,
-  firstName: formData.firstName.trim(),
-  lastName: formData.lastName.trim(),
-  email: formData.email.trim(),
-  fundId: Number(formData.fundId),      
-  pipelineId: Number(formData.pipelineId),
-  status: formData.status.trim()
-};
+    // UUID formats ko intact rakhne ke liye Number() hata diya gaya hai
+    const backendPayload = {
+      ...formData,
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      email: formData.email.trim(),
+      fundId: String(formData.fundId),      
+      pipelineId: String(formData.pipelineId),
+      status: formData.status.trim()
+    };
 
     try {
-      const response = await axios.post("http://localhost:5000/api/investors", backendPayload, { headers });
+      const response = await axios.post(`${BASE_URL}/api/investors`, backendPayload, { headers });
 
-      if (response.status === 201) {
+      if (response.status === 201 || response.status === 200) {
         alert("Investor added successfully!");
         setShowModal(false);
         setFormData({ firstName: "", lastName: "", email: "", officePhone: "", mobilePhone: "", jobTitle: "", pipelineId: "", fundId: "", status: "" });
@@ -94,14 +97,14 @@ const backendPayload = {
       }
     } catch (err) {
       console.error("Backend Error:", err.response?.data);
-      alert("Failed to add: " + (err.response?.data?.message || err.message));
+      alert("Failed to add: " + (err.response?.data?.error || err.response?.data?.message || err.message));
     }
   };
 
   const toggleStatus = async (investor) => {
     const newStatus = investor.status === "New" ? "Follow-Up" : "New";
     try {
-      await axios.patch(`http://localhost:5000/api/investors/status/${investor.id}`, { status: newStatus }, { headers });
+      await axios.patch(`${BASE_URL}/api/investors/status/${investor.id}`, { status: newStatus }, { headers });
       await fetchInvestors();
     } catch (err) {
       console.error("Status Update Error:", err);
@@ -208,44 +211,42 @@ const backendPayload = {
             </div>
 
             <form onSubmit={handleAddInvestor} className="space-y-3">
+              {/* 1. SELECT FUND DROPDOWN */}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                  Select Fund *
+                </label>
+                <select
+                  className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                  value={formData.fundId}
+                  onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
+                >
+                  <option value="">-- Choose a Fund --</option>
+                  {funds && funds.length > 0 && funds.map((f) => (
+                    <option key={f.id} value={f.id}>{f.name}</option>
+                  ))}
+                </select>
+              </div>
 
-{/* 1. SELECT FUND DROPDOWN */}
-<div>
-  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-    Select Fund *
-  </label>
-  <select
-    className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
-    required
-    value={formData.fundId}
-    onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
-  >
-    <option value="">-- Choose a Fund --</option>
-    {funds && funds.length > 0 && funds.map((f) => (
-      // 🌟 ID value main jayegi taakay database ko number miley
-      <option key={f.id} value={f.id}>{f.name}</option>
-    ))}
-  </select>
-</div>
+              {/* 2. ASSIGN TO PIPELINE BOARD DROPDOWN */}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                  Assign to Pipeline Board *
+                </label>
+                <select
+                  className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                  value={formData.pipelineId}
+                  onChange={(e) => setFormData({ ...formData, pipelineId: e.target.value, status: "" })}
+                >
+                  <option value="">-- Choose a Pipeline Board --</option>
+                  {pipelines && pipelines.length > 0 && pipelines.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
 
-{/* 2. ASSIGN TO PIPELINE BOARD DROPDOWN */}
-<div>
-  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-    Assign to Pipeline Board *
-  </label>
-  <select
-    className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
-    required
-    value={formData.pipelineId}
-    onChange={(e) => setFormData({ ...formData, pipelineId: e.target.value, status: "" })}
-  >
-    <option value="">-- Choose a Pipeline Board --</option>
-    {pipelines && pipelines.length > 0 && pipelines.map((p) => (
-      // 🌟 ID value main jayegi taakay database ko number miley
-      <option key={p.id} value={p.id}>{p.name}</option>
-    ))}
-  </select>
-</div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                   Stage / Status *
