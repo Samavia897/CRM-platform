@@ -26,31 +26,30 @@ export default function InvestorsTable() {
   const headers = { Authorization: `Bearer ${token}` };
 
   const fetchPipelines = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/pipelines", { headers });
-      setPipelines(response.data);
-    } catch (err) {
-      console.error("Error fetching pipelines:", err);
-    }
-  };
+  try {
+    const response = await axios.get("https://crm-backend-live-4541.onrender.com/api/pipelines", { headers });
+    setPipelines(response.data);
+  } catch (err) {
+    console.error("Error fetching pipelines:", err);
+  }
+};
+ const fetchInvestors = async () => {
+  try {
+    const res = await axios.get("https://crm-backend-live-4541.onrender.com/api/investors", { headers });
+    setInvestors(res.data);
+  } catch (err) {
+    console.error("Fetch Error:", err.response?.data || err.message);
+  }
+};
 
-  const fetchInvestors = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/investors", { headers });
-      setInvestors(res.data);
-    } catch (err) {
-      console.error("Fetch Error:", err.response?.data || err.message);
-    }
-  };
-
-  const fetchFunds = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/funds", { headers });
-      setFunds(res.data);
-    } catch (err) {
-      console.error("Fetch funds error:", err);
-    }
-  };
+ const fetchFunds = async () => {
+  try {
+    const res = await axios.get("https://crm-backend-live-4541.onrender.com/api/funds", { headers });
+    setFunds(res.data);
+  } catch (err) {
+    console.error("Fetch funds error:", err);
+  }
+};
 
   useEffect(() => {
     fetchInvestors();
