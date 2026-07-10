@@ -53,20 +53,18 @@ export default function Pipeline() {
 
   useEffect(() => {
     if (pipelines.length > 0) {
-      // Agar koi activePipelineId set nahi hai, to pehli pipeline ki ID set karein
       const currentId = activePipelineId !== "" ? activePipelineId : pipelines[0].id;
       
       if (activePipelineId === "") {
         setActivePipelineId(currentId);
       }
 
-      // 100% accurate string comparison taake type (int vs string) ka koi masla na aaye
+      // Loose comparison (==) use kiya hai taake agar ek string "5" ho aur dusra number 5, to bhi match ho jaye
       const currentBoard = pipelines.find(
-        (p) => String(p.id) === String(currentId)
+        (p) => p.id == currentId
       );
 
       if (currentBoard && currentBoard.stages) {
-        // Columns ko comma se split kar ke set karna
         const stagesArray = currentBoard.stages.split(",").map(s => s.trim());
         setDynamicStages(stagesArray);
         setFormData((prev) => ({ ...prev, status: stagesArray[0] || "" }));
@@ -182,8 +180,9 @@ export default function Pipeline() {
       return;
     }
 
-    const currentPipelineId = typeof activePipelineId !== 'undefined' ? activePipelineId : formData.pipelineId;
-    const currentStatus = formData.status || (typeof dynamicStages !== 'undefined' && dynamicStages[0]) || "New";
+    // Active pipeline ID ko sahi format mein nikalna
+    const currentPipelineId = activePipelineId || formData.pipelineId || (pipelines[0] && pipelines[0].id);
+    const currentStatus = formData.status || (dynamicStages && dynamicStages[0]) || "New";
 
     const backendPayload = {
       firstName: formData.firstName.trim(),
@@ -193,22 +192,21 @@ export default function Pipeline() {
       officePhone: formData.officePhone || "",
       mobilePhone: formData.mobilePhone || "",
       fundId: Number(formData.fundId),       
-      pipelineId: Number(currentPipelineId), 
+      pipelineId: currentPipelineId, // Isko direct bhej rahe hain bina strict Number forced ke
       status: currentStatus.trim()
     };
 
     try {
-      const requestHeaders = typeof headers !== 'undefined' ? { headers } : {};
-      const response = await axios.post(`${BASE_URL}/api/investors`, backendPayload, requestHeaders);
+      const response = await axios.post(`${BASE_URL}/api/investors`, backendPayload, { headers });
 
       if (response.status === 201 || response.status === 200) {
         alert("New Lead Added successfully!");
         setShowAddModal(false);
         setFormData({ firstName: "", lastName: "", email: "", officePhone: "", mobilePhone: "", jobTitle: "", fundId: "", status: "" });
-        
-        if (typeof fetchInvestors === "function") fetchInvestors();
+        fetchInvestors(); // Board data refresh karne ke liye
       }
     } catch (err) {
+      console.error("Add Lead Error Detail:", err.response?.data);
       alert("Failed to add lead: " + (err.response?.data?.error || err.message));
     }
   };
