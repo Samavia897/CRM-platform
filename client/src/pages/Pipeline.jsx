@@ -177,19 +177,11 @@ const [isSubmitting, setIsSubmitting] = useState(false);
 const handleAddNew = async (e) => {
   e.preventDefault();
 
-  // 1. Check karein k fund selected hai ya nahi
-  if (!formData.fundId || formData.fundId === "") {
+  if (!formData.fundId) {
     alert("Error: Please select a Fund.");
     return;
   }
 
-  // 2. 🌟 CRITICAL FIX: formData ki bajaye activePipelineId ko check karein
-  if (!activePipelineId) {
-    alert("Error: Active Pipeline Board could not be detected. Please select a board from the main dropdown.");
-    return;
-  }
-
-  // Backend ko data bhejne ke liye payload tyar karein
   const backendPayload = {
     firstName: formData.firstName.trim(),
     lastName: formData.lastName.trim(),
@@ -197,10 +189,21 @@ const handleAddNew = async (e) => {
     jobTitle: formData.jobTitle ? formData.jobTitle.trim() : "",
     officePhone: formData.officePhone || "",
     mobilePhone: formData.mobilePhone || "",
-    fundId: Number(formData.fundId),
-    pipelineId: Number(activePipelineId), 
-    status: formData.status || dynamicStages[0] || "New" 
+    fundId: Number(formData.fundId),       // 🌟 Number mein convert lazmi karein
+    pipelineId: Number(activePipelineId), // 🌟 Custom board ki active ID
+    status: formData.status || dynamicStages[0] || "New"
   };
+
+  try {
+    await axios.post("https://crm-backend-live-4541.onrender.com/api/investors", backendPayload, { headers });
+    alert("New Lead Added successfully!");
+    setShowAddModal(false);
+    setFormData({ firstName: "", lastName: "", email: "", officePhone: "", mobilePhone: "", jobTitle: "", fundId: "", status: "" });
+    if (typeof fetchInvestors === "function") fetchInvestors();
+  } catch (err) {
+    alert("Failed to add lead: " + (err.response?.data?.error || err.message));
+  }
+};
 
   try {
     const response = await axios.post("http://localhost:5000/api/investors", backendPayload, { headers });
@@ -503,13 +506,24 @@ const handleAddNew = async (e) => {
             </div>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Select Fund</label>
-                <select className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-sm font-semibold" value={formData.fundId} onChange={(e) => setFormData({ ...formData, fundId: e.target.value })} required>
-                  <option value="">-- Select Fund --</option>
-                  {funds.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                </select>
-              </div>
+              {/* 🌟 PIPELINE FILE KE ANDAR SELECT FUND DROPDOWN */}
+<div className="flex flex-col gap-1">
+  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">
+    Select Fund
+  </label>
+  <select 
+    className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-sm font-semibold" 
+    value={formData.fundId} 
+    onChange={(e) => setFormData({ ...formData, fundId: e.target.value })} 
+    required
+  >
+    <option value="">-- Select Fund --</option>
+    {funds && funds.length > 0 && funds.map(f => (
+      // 🌟 ID value mein jayegi taakay database ko number miley, naam nahi!
+      <option key={f.id} value={f.id}>{f.name}</option>
+    ))}
+  </select>
+</div>
 
               <div className="grid grid-cols-2 gap-3">
                 <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
