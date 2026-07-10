@@ -80,7 +80,7 @@ const backendPayload = {
   lastName: formData.lastName.trim(),
   email: formData.email.trim(),
   fundId: Number(formData.fundId),      
-  pipelineId: Number(formData.pipelineId), 
+  pipelineId: Number(formData.pipelineId),
   status: formData.status.trim()
 };
 
