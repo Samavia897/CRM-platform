@@ -31,7 +31,7 @@ export default function Pipeline() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBoardModal, setShowBoardModal] = useState(false);
 
-
+const [isSubmitting, setIsSubmitting] = useState(false);
   const [newBoardName, setNewBoardName] = useState("");
   const [newBoardStages, setNewBoardStages] = useState("");
 
@@ -57,13 +57,11 @@ export default function Pipeline() {
 
   useEffect(() => {
   if (pipelines.length > 0) {
-    // Agar activePipelineId nahi set, to pehli pipeline ki ID pick kar lein
     const currentId = activePipelineId || pipelines[0].id;
     if (!activePipelineId) {
       setActivePipelineId(currentId);
     }
 
-    // Dono ko strings main convert kar k compare karein taakay type mismatch ka khatma ho
     const currentBoard = pipelines.find(
       (p) => p.id?.toString() === currentId?.toString()
     );
@@ -116,31 +114,31 @@ export default function Pipeline() {
     } catch (err) { console.error("Fetch Error:", err); }
   };
 
-  const handleCreateBoard = async (e) => {
-    e.preventDefault();
-    if (!newBoardName.trim() || !newBoardStages.trim()) return;
+ const handleCreateBoard = async (e) => {
+  e.preventDefault();
+  if (!newBoardName.trim() || !newBoardStages.trim() || isSubmitting) return;
 
-    try {
-      const response = await axios.post("http://localhost:5000/api/pipelines", {
-        name: newBoardName,
-        stages: newBoardStages
-      }, { headers });
+  setIsSubmitting(true); 
 
-      if (response.status === 201 || response.status === 200) {
-        Swal.fire("Success!", "New custom pipeline created.", "success");
-        setNewBoardName("");
-        setNewBoardStages("");
-        setShowBoardModal(false);
-        const addedBoard = response.data;
-        await fetchPipelines();
-        if (addedBoard && addedBoard.id) {
-          setActivePipelineId(addedBoard.id);
-        }
-      }
-    } catch (err) {
-      Swal.fire("Error", "Could not create custom workflow pipeline board", "error");
+  try {
+    const response = await axios.post("http://localhost:5000/api/pipelines", {
+      name: newBoardName,
+      stages: newBoardStages
+    }, { headers });
+
+    if (response.status === 201 || response.status === 200) {
+      Swal.fire("Success!", "New custom pipeline created.", "success");
+      setNewBoardName("");
+      setNewBoardStages("");
+      setShowBoardModal(false);
+      await fetchPipelines();
     }
-  };
+  } catch (err) {
+    Swal.fire("Error", "Could not create custom workflow pipeline board", "error");
+  } finally {
+    setIsSubmitting(false); 
+  }
+};
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -178,31 +176,37 @@ export default function Pipeline() {
   };
 
   const handleAddNew = async (e) => {
-    e.preventDefault();
-    if (!formData.fundId) {
-      Swal.fire("Warning", "Please select a fund first.", "warning");
-      return;
-    }
+  e.preventDefault();
+  
+  if (!formData.fundId) {
+    Swal.fire("Warning", "Please select a fund first.", "warning");
+    return;
+  }
 
-    try {
-      await axios.post("http://localhost:5000/api/investors", {
-        ...formData,
-        pipelineId: Number(activePipelineId)
-      }, { headers });
+  // CRITICAL CHECK: Agar activePipelineId khali hai ya valid nahi hai
+  if (!activePipelineId) {
+    Swal.fire("Warning", "Please select a pipeline board from the dropdown first.", "warning");
+    return;
+  }
 
-      setShowAddModal(false);
-      setFormData({
-        firstName: "", lastName: "", email: "", officePhone: "",
-        mobilePhone: "", jobTitle: "", fundId: "", status: dynamicStages[0] || ""
-      });
-      Swal.fire("Success!", "New Lead Added directly to custom board workflow.", "success");
-      fetchInvestors();
-    } catch (err) {
-      console.error("Add Lead Error:", err.response?.data);
-      Swal.fire("Error!", err.response?.data?.error || "Add failed.", "error");
-    }
-  };
+  try {
+    await axios.post("http://localhost:5000/api/investors", {
+      ...formData,
+      pipelineId: Number(activePipelineId) // Ensure karein k yeh valid number ja raha hai
+    }, { headers });
 
+    setShowAddModal(false);
+    setFormData({
+      firstName: "", lastName: "", email: "", officePhone: "",
+      mobilePhone: "", jobTitle: "", fundId: "", status: dynamicStages[0] || ""
+    });
+    Swal.fire("Success!", "New Lead Added directly to custom board workflow.", "success");
+    fetchInvestors();
+  } catch (err) {
+    console.error("Add Lead Error:", err.response?.data);
+    Swal.fire("Error!", err.response?.data?.error || "Add failed.", "error");
+  }
+};
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?", text: "This will remove investor and all linked tasks!", icon: "warning",
@@ -296,9 +300,15 @@ export default function Pipeline() {
             <HiPlus size={18} />
           </button>
 
-          <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 bg-[#001f3f] text-white px-5 py-2.5 rounded-lg font-bold hover:bg-blue-950 transition-all shadow-md text-sm whitespace-nowrap">
-            <HiViewGridAdd size={19} /> New Lead
-          </button>
+          <button 
+  onClick={() => {
+    setFormData(prev => ({ ...prev, status: dynamicStages[0] || "" }));
+    setShowAddModal(true);
+  }} 
+  className="flex items-center gap-2 bg-[#001f3f] text-white px-5 py-2.5 rounded-lg font-bold hover:bg-blue-950 transition-all shadow-md text-sm whitespace-nowrap"
+>
+  <HiViewGridAdd size={19} /> New Lead
+</button>
         </div>
       </div>
 
@@ -395,9 +405,13 @@ export default function Pipeline() {
                 <textarea required rows={3} placeholder="Prospect, Contacted, Initial Pitch, Terms Sheet, Closed" value={newBoardStages} onChange={(e) => setNewBoardStages(e.target.value)} className="w-full mt-1 p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
                 <p className="text-[11px] text-gray-400 mt-1 italic ml-1">Separate columns with commas. You can add as many as you like!</p>
               </div>
-              <button type="submit" className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-xl hover:bg-blue-700 transition-all uppercase text-xs tracking-widest mt-4">
-                Generate Custom Board
-              </button>
+              <button 
+  type="submit" 
+  disabled={isSubmitting}
+  className={`w-full py-4 text-white font-bold rounded-2xl shadow-xl transition-all uppercase text-xs tracking-widest mt-4 ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+>
+  {isSubmitting ? "Generating..." : "Generate Custom Board"}
+</button>
             </form>
           </div>
         </div>

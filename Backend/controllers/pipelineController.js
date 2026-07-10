@@ -3,6 +3,22 @@ const { Pipeline, Investor } = require("../models/index");
 exports.createPipeline = async (req, res) => {
   try {
     const { name, stages } = req.body;
+    const companyId = req.user.companyId; 
+
+    if (!name || name.trim() === "") {
+      return res.status(400).json({ error: "Pipeline name is required." });
+    }
+
+    const existingPipeline = await Pipeline.findOne({
+      where: {
+        name: name.trim(),
+        companyId: companyId
+      }
+    });
+
+    if (existingPipeline) {
+      return res.status(400).json({ error: "A pipeline with this name already exists." });
+    }
 
     let cleanStages = "New,Initial Meeting,Due Diligence,Commitment,Closed";
     if (stages && stages.trim() !== "") {
@@ -10,9 +26,9 @@ exports.createPipeline = async (req, res) => {
     }
 
     const newPipeline = await Pipeline.create({
-      name,
+      name: name.trim(),
       stages: cleanStages,
-      companyId: req.user.companyId
+      companyId: companyId
     });
 
     res.status(201).json(newPipeline);
