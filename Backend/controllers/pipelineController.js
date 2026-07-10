@@ -45,7 +45,7 @@ exports.moveInvestor = async (req, res) => {
     if (!investor) return res.status(404).json({ error: "Investor not found" });
 
     if (pipelineId) {
-      investor.pipelineId = parseInt(pipelineId, 10);
+      investor.pipelineId = String(pipelineId); // Fixed: Removed parseInt
     }
 
     if (newStage) {

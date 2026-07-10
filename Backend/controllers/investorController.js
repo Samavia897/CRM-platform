@@ -55,7 +55,7 @@ exports.createInvestor = async (req, res) => {
       jobTitle: jobTitle || null,
       fundId: fundId,
       companyId: companyId,
-      pipelineId: pipelineId,
+      pipelineId: pipelineId, // Keep as UUID string
       status: String(status).trim()
     });
 
@@ -63,10 +63,9 @@ exports.createInvestor = async (req, res) => {
   } catch (error) {
     console.error("CREATE INVESTOR ERROR:", error);
 
-    // Catch Sequelize specific validation errors cleanly
-    if (error.name === 'SequelizeValidationError') {
+    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
       const detailedErrors = error.errors.map(err => `${err.path}: ${err.message}`).join(", ");
-      return res.status(400).json({ error: `Database Fields Validation Failed: ${detailedErrors}` });
+      return res.status(400).json({ error: `Database Validation Failed: ${detailedErrors}` });
     }
 
     res.status(500).json({ error: error.message });
@@ -94,7 +93,7 @@ exports.updateInvestor = async (req, res) => {
     investor.status = status || investor.status;
 
     if (pipelineId !== undefined) {
-      investor.pipelineId = pipelineId ? parseInt(pipelineId, 10) : null;
+      investor.pipelineId = pipelineId ? String(pipelineId) : null; // Fixed: parseInt hata kar String lagaya
     }
 
     await investor.save();
@@ -122,7 +121,7 @@ exports.updateInvestorStatus = async (req, res) => {
     if (!investor) return res.status(404).json({ error: "Investor not found" });
 
     if (status) investor.status = status;
-    if (pipelineId) investor.pipelineId = parseInt(pipelineId, 10);
+    if (pipelineId) investor.pipelineId = String(pipelineId); // Fixed: parseInt hata diya
 
     await investor.save();
     res.json({ message: "Investor updated successfully", investor });
