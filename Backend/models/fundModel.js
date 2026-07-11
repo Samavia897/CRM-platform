@@ -20,7 +20,18 @@ const Fund = sequelize.define("Fund", {
   },
   website: {
     type: DataTypes.STRING,
-    validate: { isUrl: true }
+    allowNull: true,
+    validate: {
+      // Custom validation setup for avoiding empty crashes
+      isUrlSafe(value) {
+        if (value && value !== "" && value !== "---") {
+          const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+          if (!urlRegex.test(value)) {
+            throw new Error('Invalid URL format specified.');
+          }
+        }
+      }
+    }
   },
   geographics: {
     type: DataTypes.JSON,

@@ -41,15 +41,20 @@ exports.moveInvestor = async (req, res) => {
   try {
     const { investorId, pipelineId, newStage } = req.body;
 
+    if (!investorId) {
+      return res.status(400).json({ error: "Investor ID is required for moving steps." });
+    }
+
     const investor = await Investor.findByPk(investorId);
     if (!investor) return res.status(404).json({ error: "Investor not found" });
 
+    // 🌟 Standardizing safe assignment without breaking UUID formats
     if (pipelineId) {
-      investor.pipelineId = String(pipelineId); 
+      investor.pipelineId = String(pipelineId).trim(); 
     }
 
     if (newStage) {
-      investor.status = newStage;
+      investor.status = String(newStage).trim();
     }
 
     await investor.save();
