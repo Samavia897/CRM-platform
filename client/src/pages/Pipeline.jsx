@@ -59,10 +59,7 @@ export default function Pipeline() {
         setActivePipelineId(currentId);
       }
 
-      // Loose comparison (==) use kiya hai taake agar ek string "5" ho aur dusra number 5, to bhi match ho jaye
-      const currentBoard = pipelines.find(
-        (p) => p.id == currentId
-      );
+      const currentBoard = pipelines.find((p) => String(p.id) === String(currentId));
 
       if (currentBoard && currentBoard.stages) {
         const stagesArray = currentBoard.stages.split(",").map(s => s.trim());
@@ -180,7 +177,6 @@ export default function Pipeline() {
       return;
     }
 
-    // UUID hamesha string hoti hai, isliye direct values uthein
     const currentPipelineId = activePipelineId || formData.pipelineId || (pipelines[0] && pipelines[0].id);
     const currentStatus = formData.status || (dynamicStages && dynamicStages[0]) || "New";
 
@@ -191,8 +187,8 @@ export default function Pipeline() {
       jobTitle: formData.jobTitle ? formData.jobTitle.trim() : "",
       officePhone: formData.officePhone || "",
       mobilePhone: formData.mobilePhone || "",
-      fundId: String(formData.fundId),       // Strictly String for UUID
-      pipelineId: String(currentPipelineId), // Strictly String for UUID
+      fundId: String(formData.fundId),       
+      pipelineId: String(currentPipelineId), 
       status: currentStatus.trim()
     };
 
@@ -210,6 +206,7 @@ export default function Pipeline() {
       alert("Failed to add lead: " + (err.response?.data?.error || err.message));
     }
   };
+
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?", text: "This will remove investor and all linked tasks!", icon: "warning",
@@ -218,7 +215,6 @@ export default function Pipeline() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`${BASE_URL}/api/tasks/investor/${id}`, { headers });
         await axios.delete(`${BASE_URL}/api/investors/${id}`, { headers });
         Swal.fire("Deleted!", "Record removed.", "success");
         fetchInvestors();
@@ -251,12 +247,12 @@ export default function Pipeline() {
     try {
       const newStage = destination.droppableId;
 
-      const response = await axios.post(
-        `${BASE_URL}/api/pipelines/move`,
+      // 🌟 Fixed: Cast activePipelineId to String for UUID compatibility instead of parseInt
+      const response = await axios.patch(
+        `${BASE_URL}/api/investors/status/${draggableId}`,
         {
-          investorId: draggableId,
-          pipelineId: parseInt(activePipelineId, 10),
-          newStage: newStage
+          status: newStage,
+          pipelineId: String(activePipelineId)
         },
         { headers }
       );
@@ -285,14 +281,14 @@ export default function Pipeline() {
 
         <div className="flex items-center gap-3">
           <select
-  value={activePipelineId}
-  onChange={(e) => setActivePipelineId(e.target.value)} 
-  className="p-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500"
->
-  {pipelines.map((p) => (
-    <option key={p.id} value={p.id}>💼 {p.name}</option>
-  ))}
-</select>
+            value={activePipelineId}
+            onChange={(e) => setActivePipelineId(e.target.value)} 
+            className="p-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {pipelines.map((p) => (
+              <option key={p.id} value={p.id}>💼 {p.name}</option>
+            ))}
+          </select>
 
           <button
             onClick={() => setShowBoardModal(true)}
@@ -317,8 +313,9 @@ export default function Pipeline() {
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-6">
           {dynamicStages.map((stage) => {
+            // 🌟 Fixed: Pure string lookup for dynamic stages filtering
             const filteredInvestors = investors.filter(
-              inv => Number(inv.pipelineId) === Number(activePipelineId) && inv.status === stage
+              inv => String(inv.pipelineId) === String(activePipelineId) && inv.status === stage
             );
 
             return (
@@ -389,6 +386,7 @@ export default function Pipeline() {
         </div>
       </DragDropContext>
 
+      {/* Board Management Modal */}
       {showBoardModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[120] p-4">
           <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
@@ -419,6 +417,7 @@ export default function Pipeline() {
         </div>
       )}
 
+      {/* Add Lead Entry Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[110] p-4">
           <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -475,6 +474,7 @@ export default function Pipeline() {
         </div>
       )}
 
+      {/* Edit Entry Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[110] p-4">
           <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -527,6 +527,7 @@ export default function Pipeline() {
         </div>
       )}
 
+      {/* Task Creation Modal */}
       {showTaskModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[110]">
           <div className="bg-white p-6 rounded-xl w-96 shadow-2xl">

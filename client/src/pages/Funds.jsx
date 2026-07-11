@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from 'sweetalert2';
-import { HiPlus, HiX, HiExternalLink, HiLocationMarker, HiFilter, HiDownload, HiPencilAlt, HiTrash, HiSearch } from "react-icons/hi";
+import { HiPlus, HiX, HiLocationMarker, HiDownload, HiPencilAlt, HiTrash, HiSearch } from "react-icons/hi";
 
 export default function Funds() {
   const [funds, setFunds] = useState([]);
@@ -22,11 +22,17 @@ export default function Funds() {
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
+  
+  // 🌟 Fixed: Pointing to your live deployed backend API
+  const BASE_URL = "https://crm-backend-live-4541.onrender.com";
 
   const fetchFunds = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/funds", { headers });
+      const currentToken = localStorage.getItem("token");
+      const res = await axios.get(`${BASE_URL}/api/funds`, { 
+        headers: { Authorization: `Bearer ${currentToken}` } 
+      });
       setFunds(res.data);
     } catch (err) {
       console.error("Error fetching funds", err);
@@ -38,14 +44,19 @@ export default function Funds() {
   useEffect(() => { fetchFunds(); }, []);
 
   const filteredFunds = funds.filter(fund => {
-    const matchesSearch =
-      fund.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fund.location?.toLowerCase().includes(searchTerm.toLowerCase());
+    const nameMatch = fund.name ? fund.name.toLowerCase() : "";
+    const locMatch = fund.location ? fund.location.toLowerCase() : "";
+    const searchLower = searchTerm.toLowerCase();
 
+    const matchesSearch = nameMatch.includes(searchLower) || locMatch.includes(searchLower);
     const matchesType = filterType === "All" || fund.type === filterType;
 
     if (activeTab === "AI based funds") {
-      return matchesSearch && matchesType && fund.industry?.some(i => i.toLowerCase().includes('ai'));
+      return matchesSearch && matchesType && fund.industry && (
+        Array.isArray(fund.industry) 
+          ? fund.industry.some(i => i.toLowerCase().includes('ai'))
+          : String(fund.industry).toLowerCase().includes('ai')
+      );
     }
     if (activeTab === "GeoPref") {
       return matchesSearch && matchesType && (fund.location && fund.location !== "---");
@@ -57,12 +68,18 @@ export default function Funds() {
   const handleEdit = (fund) => {
     setIsEditing(true);
     setCurrentFundId(fund.id);
+    
+    let industryString = "";
+    if (fund.industry) {
+      industryString = Array.isArray(fund.industry) ? fund.industry.join(', ') : fund.industry;
+    }
+
     setFundData({
-      name: fund.name,
+      name: fund.name || "",
       type: fund.type || "Venture",
       location: fund.location || "",
       website: fund.website || "",
-      industry: fund.industry ? fund.industry.join(', ') : "",
+      industry: industryString,
     });
     setShowModal(true);
   };
@@ -80,7 +97,10 @@ export default function Funds() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/funds/${id}`, { headers });
+        const currentToken = localStorage.getItem("token");
+        await axios.delete(`${BASE_URL}/api/funds/${id}`, { 
+          headers: { Authorization: `Bearer ${currentToken}` } 
+        });
         Swal.fire('Deleted!', 'Fund has been removed.', 'success');
         fetchFunds();
       } catch (err) {
@@ -94,32 +114,28 @@ export default function Funds() {
     try {
       let industryArray = [];
       if (typeof fundData.industry === 'string') {
-        industryArray = fundData.industry ? fundData.industry.split(',').map(i => i.trim()) : [];
-      } else {
+        industryArray = fundData.industry ? fundData.industry.split(',').map(i => i.trim()).filter(Boolean) : [];
+      } else if (Array.isArray(fundData.industry)) {
         industryArray = fundData.industry;
       }
 
+      // 🌟 Fixed: Normalized schema payload names to match your backend database structure
       const payload = {
-        fundName: fundData.name,
+        name: fundData.name.trim(),
         type: fundData.type,
-        location: fundData.location,
-        website: fundData.website,
-        industry: industryArray,
-        stage: []
+        location: fundData.location ? fundData.location.trim() : "",
+        website: fundData.website ? fundData.website.trim() : "",
+        industry: industryArray
       };
 
+      const currentToken = localStorage.getItem("token");
+      const requestHeaders = { Authorization: `Bearer ${currentToken}` };
+
       if (isEditing) {
-        const updatePayload = {
-          name: fundData.name,
-          type: fundData.type,
-          location: fundData.location,
-          website: fundData.website,
-          industry: industryArray
-        };
-        await axios.put(`http://localhost:5000/api/funds/${currentFundId}`, updatePayload, { headers });
+        await axios.put(`${BASE_URL}/api/funds/${currentFundId}`, payload, { headers: requestHeaders });
         Swal.fire('Updated!', 'Fund details updated successfully.', 'success');
       } else {
-        await axios.post("http://localhost:5000/api/funds", payload, { headers });
+        await axios.post(`${BASE_URL}/api/funds`, payload, { headers: requestHeaders });
         Swal.fire('Success!', 'New fund created.', 'success');
       }
 
@@ -130,6 +146,7 @@ export default function Funds() {
       Swal.fire('Error!', err.response?.data?.error || 'Operation failed.', 'error');
     }
   };
+
   const handleImportClick = () => {
     document.getElementById('csvImportInput').click();
   };
@@ -138,32 +155,43 @@ export default function Funds() {
     const file = e.target.files[0];
     if (!file) return;
 
-
     if (file.type !== "text/csv" && !file.name.endsWith('.csv')) {
       return Swal.fire('Error', 'Please upload a valid CSV file', 'error');
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
+    const fileFormData = new FormData();
+    fileFormData.append("file", file);
 
     Swal.fire({
       title: 'Importing...',
+      text: 'Please wait while records are uploading',
+      allowOutsideClick: false,
       didOpen: () => { Swal.showLoading(); }
     });
 
     try {
-      await axios.post("http://localhost:5000/api/funds/import", formData, {
+      const currentToken = localStorage.getItem("token");
+      
+      // 🌟 Fixed: Full header encapsulation injection for multipart uploads
+      await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
         headers: {
-          ...headers,
+          Authorization: `Bearer ${currentToken}`,
           "Content-Type": "multipart/form-data"
         }
       });
+      
       Swal.fire('Success', 'Funds imported successfully!', 'success');
+      
+      // Reset input element so same file can be chosen again
+      e.target.value = "";
       fetchFunds();
     } catch (err) {
-      Swal.fire('Import Failed', err.response?.data?.error || 'Something went wrong', 'error');
+      console.error("Import Crash Error Trace:", err.response?.data);
+      Swal.fire('Import Failed', err.response?.data?.error || 'Could not parse the CSV formatting structure', 'error');
+      e.target.value = "";
     }
   };
+
   const closeModal = () => {
     setShowModal(false);
     setIsEditing(false);
@@ -207,7 +235,6 @@ export default function Funds() {
             onChange={handleFileChange}
           />
 
-
           <button
             onClick={handleImportClick}
             className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all"
@@ -235,49 +262,65 @@ export default function Funds() {
       </div>
 
       <div className="overflow-visible border border-slate-100 rounded-2xl shadow-sm bg-white">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50/50 border-b border-slate-100">
-            <tr>
-              <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Fund Name</th>
-              <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Type</th>
-              <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Location</th>
-              <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Website</th>
-              <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Industry</th>
-              <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {filteredFunds.length > 0 ? (
-              filteredFunds.map(fund => (
-                <tr key={fund.id} className="hover:bg-slate-50/80 transition-all group">
-                  <td className="p-5 font-bold text-slate-900 text-[14px]">{fund.name}</td>
-                  <td className="p-5 text-slate-600 text-sm">{fund.type}</td>
-                  <td className="p-5 text-slate-500 text-sm flex items-center gap-1.5"><HiLocationMarker size={14} /> {fund.location || "---"}</td>
-                  <td className="p-5 text-blue-600 text-sm font-medium hover:underline cursor-pointer">{fund.website || "---"}</td>
-                  <td className="p-5">
-                    <div className="flex flex-wrap gap-1">
-                      {fund.industry?.map((tag, i) => (
-                        <span key={i} className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase">{tag}</span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="p-5 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => handleEdit(fund)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><HiPencilAlt size={18} /></button>
-                      <button onClick={() => handleDelete(fund.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><HiTrash size={18} /></button>
-                    </div>
+        {loading ? (
+          <div className="p-20 text-center text-slate-400 text-sm font-semibold">Loading funds configuration...</div>
+        ) : (
+          <table className="w-full text-left">
+            <thead className="bg-slate-50/50 border-b border-slate-100">
+              <tr>
+                <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Fund Name</th>
+                <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Type</th>
+                <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Location</th>
+                <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Website</th>
+                <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Industry</th>
+                <th className="p-5 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {filteredFunds.length > 0 ? (
+                filteredFunds.map(fund => (
+                  <tr key={fund.id} className="hover:bg-slate-50/80 transition-all group">
+                    <td className="p-5 font-bold text-slate-900 text-[14px]">{fund.name}</td>
+                    <td className="p-5 text-slate-600 text-sm">{fund.type}</td>
+                    <td className="p-5 text-slate-500 text-sm flex items-center gap-1.5"><HiLocationMarker size={14} /> {fund.location || "---"}</td>
+                    <td className="p-5 text-blue-600 text-sm font-medium hover:underline cursor-pointer">
+                      {fund.website ? (
+                        <a href={fund.website.startsWith('http') ? fund.website : `https://${fund.website}`} target="_blank" rel="noreferrer">
+                          {fund.website}
+                        </a>
+                      ) : "---"}
+                    </td>
+                    <td className="p-5">
+                      <div className="flex flex-wrap gap-1">
+                        {fund.industry && (
+                          Array.isArray(fund.industry) 
+                            ? fund.industry.map((tag, i) => (
+                                <span key={i} className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase">{tag}</span>
+                              ))
+                            : String(fund.industry).split(',').map((tag, i) => (
+                                <span key={i} className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase">{tag.trim()}</span>
+                              ))
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-5 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => handleEdit(fund)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><HiPencilAlt size={18} /></button>
+                        <button onClick={() => handleDelete(fund.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><HiTrash size={18} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="p-20 text-center text-slate-400 font-medium italic">
+                    No funds found matching your criteria.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="p-20 text-center text-slate-400 font-medium italic">
-                  No funds found matching your criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {showModal && (
