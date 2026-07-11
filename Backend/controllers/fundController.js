@@ -2,6 +2,7 @@ const { Fund, Investor } = require("../models/index");
 const fs = require('fs');
 const csv = require('csv-parser');
 const { Op } = require("sequelize");
+const { Readable } = require('stream');
 
 exports.getAllFunds = async (req, res) => {
   try {
@@ -116,21 +117,25 @@ exports.deleteFund = async (req, res) => {
 };
 
 exports.importFunds = async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  // Check if file buffer exists in memory
+  if (!req.file || !req.file.buffer) {
+    return res.status(400).json({ error: "No file uploaded or file buffer is empty" });
+  }
 
   const results = [];
 
-  fs.createReadStream(req.file.path)
+  // 🌟 FIXED: Reading directly from live memory buffer instead of disk path
+  const stream = Readable.from(req.file.buffer.toString());
+
+  stream
     .pipe(csv())
     .on('data', (data) => {
-      // 🌟 URL sanitation during bulk import to stop validation engine from crashing
       let rawUrl = data.website || data.Website || '';
       rawUrl = rawUrl.trim();
       if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
         rawUrl = `https://${rawUrl}`;
       }
 
-      // Check for generic column header names commonly found in CSVs
       const fundName = data.name || data.Name || data.fundName || data.FundName;
       
       if (fundName) {
@@ -147,14 +152,12 @@ exports.importFunds = async (req, res) => {
     .on('end', async () => {
       try {
         if (results.length > 0) {
-          await Fund.bulkCreate(results, { validate: false }); // 🌟 Safe bulk insert bypasses individual string crashes
+          await Fund.bulkCreate(results, { validate: false });
         }
-        if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
         res.status(200).json({ message: "Import successful", count: results.length });
       } catch (error) {
         console.error("IMPORT ERROR:", error);
-        if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-        res.status(500).json({ error: "Database error during bulk conversion setup" });
+        res.status(500).json({ error: "Database error during memory stream bulk insert" });
       }
     });
 };
