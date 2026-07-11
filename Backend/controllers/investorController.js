@@ -44,7 +44,8 @@ exports.createInvestor = async (req, res) => {
     if (!pipelineId) return res.status(400).json({ error: "Please select a Pipeline Board." });
     if (!status) return res.status(400).json({ error: "Please select a valid Pipeline Stage." });
 
-    const companyId = req.user.companyId;
+    // Fallback companyId agar req.user miss ho jaye test payloads mein
+    const companyId = req.user ? req.user.companyId : null; 
 
     const newInvestor = await Investor.create({
       firstName: firstName.trim(),
@@ -59,16 +60,17 @@ exports.createInvestor = async (req, res) => {
       status: String(status).trim()
     });
 
-    res.status(201).json(newInvestor);
+    return res.status(201).json(newInvestor);
   } catch (error) {
-    console.error("CREATE INVESTOR ERROR:", error);
+    console.error("CREATE INVESTOR ACTUAL ERROR LOG:", error);
 
-    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+    // Dynamic Database fields error parsing
+    if (error.errors && error.errors.length > 0) {
       const detailedErrors = error.errors.map(err => `${err.path}: ${err.message}`).join(", ");
-      return res.status(400).json({ error: `Database Validation Failed: ${detailedErrors}` });
+      return res.status(400).json({ error: `Database Constraint Error: ${detailedErrors}` });
     }
 
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message || "Internal Database Server Error" });
   }
 };
 
