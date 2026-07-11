@@ -1,4 +1,4 @@
-const { Investor, Fund, Task, Pipeline } = require("../models/index");
+const { Investor, Fund, Task } = require("../models/index");
 
 exports.getInvestors = async (req, res) => {
   try {
@@ -48,14 +48,14 @@ exports.createInvestor = async (req, res) => {
 
     const newInvestor = await Investor.create({
       firstName: firstName.trim(),
-      lastName: lastName.trim(),
+      lastName: lastName ? lastName.trim() : null,
       email: email.trim(),
       officePhone: officePhone || null,
       mobilePhone: mobilePhone || null,
       jobTitle: jobTitle || null,
       fundId: fundId,
       companyId: companyId,
-      pipelineId: pipelineId, // Keep as UUID string
+      pipelineId: pipelineId, 
       status: String(status).trim()
     });
 
@@ -93,7 +93,7 @@ exports.updateInvestor = async (req, res) => {
     investor.status = status || investor.status;
 
     if (pipelineId !== undefined) {
-      investor.pipelineId = pipelineId ? String(pipelineId) : null; // Fixed: parseInt hata kar String lagaya
+      investor.pipelineId = pipelineId ? String(pipelineId) : null;
     }
 
     await investor.save();
@@ -120,34 +120,14 @@ exports.updateInvestorStatus = async (req, res) => {
 
     if (!investor) return res.status(404).json({ error: "Investor not found" });
 
-    if (status) investor.status = status;
-    if (pipelineId) investor.pipelineId = String(pipelineId); // Fixed: parseInt hata diya
+    if (status) investor.status = String(status).trim();
+    if (pipelineId) investor.pipelineId = String(pipelineId);
 
     await investor.save();
     res.json({ message: "Investor updated successfully", investor });
   } catch (error) {
+    console.error("STATUS UPDATE ERROR:", error);
     res.status(500).json({ error: error.message });
-  }
-};
-
-exports.updateStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    const investor = await Investor.findByPk(id);
-
-    if (!investor) {
-      return res.status(404).json({ error: "Investor not found" });
-    }
-
-    investor.status = status;
-    await investor.save();
-
-    res.status(200).json(investor);
-  } catch (error) {
-    console.error("Status Update Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

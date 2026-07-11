@@ -29,7 +29,7 @@ export default function InvestorsTable() {
   const fetchPipelines = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/pipelines`, { headers });
-      setPipelines(response.data);
+      setPipelines(response.data || []);
     } catch (err) {
       console.error("Error fetching pipelines:", err);
     }
@@ -38,7 +38,7 @@ export default function InvestorsTable() {
   const fetchInvestors = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/investors`, { headers });
-      setInvestors(res.data);
+      setInvestors(res.data || []);
     } catch (err) {
       console.error("Fetch Error:", err.response?.data || err.message);
     }
@@ -47,7 +47,7 @@ export default function InvestorsTable() {
   const fetchFunds = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/funds`, { headers });
-      setFunds(res.data);
+      setFunds(res.data || []);
     } catch (err) {
       console.error("Fetch funds error:", err);
     }
@@ -75,12 +75,13 @@ export default function InvestorsTable() {
       return;
     }
 
-    // UUID formats ko intact rakhne ke liye Number() hata diya gaya hai
     const backendPayload = {
-      ...formData,
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
       email: formData.email.trim(),
+      jobTitle: formData.jobTitle ? formData.jobTitle.trim() : "",
+      officePhone: formData.officePhone || "",
+      mobilePhone: formData.mobilePhone || "",
       fundId: String(formData.fundId),      
       pipelineId: String(formData.pipelineId),
       status: formData.status.trim()
@@ -104,10 +105,12 @@ export default function InvestorsTable() {
   const toggleStatus = async (investor) => {
     const newStatus = investor.status === "New" ? "Follow-Up" : "New";
     try {
+      // 🌟 Note: Agar aapka route '/api/investors/:id/status' hai to endpoint zaroor check karein backend file mein
       await axios.patch(`${BASE_URL}/api/investors/status/${investor.id}`, { status: newStatus }, { headers });
       await fetchInvestors();
     } catch (err) {
       console.error("Status Update Error:", err);
+      alert("Failed to update status. Please check backend route setup.");
     }
   };
 
@@ -135,7 +138,6 @@ export default function InvestorsTable() {
       </div>
 
       <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
-        {/* Toolbar */}
         <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50/50">
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -164,7 +166,6 @@ export default function InvestorsTable() {
           </div>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -186,7 +187,7 @@ export default function InvestorsTable() {
                   <td className="p-4 text-sm text-blue-600">{inv.email}</td>
                   <td className="p-4 text-sm text-gray-600">{inv.officePhone || inv.office_phone || "N/A"}</td>
                   <td className="p-4 text-sm text-gray-600">{inv.mobilePhone || inv.mobile_phone || "N/A"}</td>
-                  <td className="p-4 text-sm font-semibold text-gray-800">{inv.Fund?.name || "N/A"}</td>
+                  <td className="p-4 text-sm font-semibold text-gray-800">{inv.Fund?.name || inv.fund?.name || "N/A"}</td>
                   <td className="p-4 text-center">
                     <span
                       onClick={() => toggleStatus(inv)}
@@ -211,7 +212,6 @@ export default function InvestorsTable() {
             </div>
 
             <form onSubmit={handleAddInvestor} className="space-y-3">
-              {/* 1. SELECT FUND DROPDOWN */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                   Select Fund *
@@ -229,7 +229,6 @@ export default function InvestorsTable() {
                 </select>
               </div>
 
-              {/* 2. ASSIGN TO PIPELINE BOARD DROPDOWN */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                   Assign to Pipeline Board *
