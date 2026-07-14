@@ -139,14 +139,16 @@ exports.importFunds = async (req, res) => {
       const fundName = data.name || data.Name || data.fundName || data.FundName;
       
       if (fundName) {
-        results.push({
-          name: fundName.trim(),
-          type: data.type || data.Type || 'Venture',
-          location: data.location || data.Location || '',
-          website: rawUrl || null,
-          industry: data.industry || data.Industry ? (data.industry || data.Industry).split(',').map(s => s.trim()).filter(Boolean) : [],
-          companyId: req.user.companyId
-        });
+results.push({
+  name: fundName.trim(),
+  type: data.type || data.Type || 'Venture',
+  location: data.location || data.Location || '',
+  website: rawUrl || null,
+  industry: data.industry || data.Industry 
+    ? JSON.stringify((data.industry || data.Industry).split(',').map(s => s.trim()).filter(Boolean)) 
+    : JSON.stringify([]),
+  companyId: req.user.companyId
+});
       }
     })
     .on('end', async () => {
