@@ -64,7 +64,6 @@ exports.createInvestor = async (req, res) => {
   } catch (error) {
     console.error("CREATE INVESTOR ACTUAL ERROR LOG:", error);
 
-    // Dynamic Database fields error parsing
     if (error.errors && error.errors.length > 0) {
       const detailedErrors = error.errors.map(err => `${err.path}: ${err.message}`).join(", ");
       return res.status(400).json({ error: `Database Constraint Error: ${detailedErrors}` });
