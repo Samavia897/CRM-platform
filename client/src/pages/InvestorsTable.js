@@ -29,7 +29,7 @@ export default function InvestorsTable() {
   const fetchPipelines = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/pipelines`, { headers });
-      setPipelines(response.data || []);
+      setPipelines(response.data);
     } catch (err) {
       console.error("Error fetching pipelines:", err);
     }
@@ -38,7 +38,7 @@ export default function InvestorsTable() {
   const fetchInvestors = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/investors`, { headers });
-      setInvestors(res.data || []);
+      setInvestors(res.data);
     } catch (err) {
       console.error("Fetch Error:", err.response?.data || err.message);
     }
@@ -47,7 +47,7 @@ export default function InvestorsTable() {
   const fetchFunds = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/api/funds`, { headers });
-      setFunds(res.data || []);
+      setFunds(res.data);
     } catch (err) {
       console.error("Fetch funds error:", err);
     }
@@ -75,13 +75,12 @@ export default function InvestorsTable() {
       return;
     }
 
+    // UUID formats ko intact rakhne ke liye Number() hata diya gaya hai
     const backendPayload = {
+      ...formData,
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
       email: formData.email.trim(),
-      jobTitle: formData.jobTitle ? formData.jobTitle.trim() : "",
-      officePhone: formData.officePhone || "",
-      mobilePhone: formData.mobilePhone || "",
       fundId: String(formData.fundId),      
       pipelineId: String(formData.pipelineId),
       status: formData.status.trim()
@@ -105,7 +104,6 @@ export default function InvestorsTable() {
   const toggleStatus = async (investor) => {
     const newStatus = investor.status === "New" ? "Follow-Up" : "New";
     try {
-      // 🌟 Note: Agar aapka route '/api/investors/:id/status' hai to endpoint zaroor check karein backend file mein
       await axios.patch(`${BASE_URL}/api/investors/status/${investor.id}`, { status: newStatus }, { headers });
       await fetchInvestors();
     } catch (err) {
@@ -212,6 +210,7 @@ export default function InvestorsTable() {
             </div>
 
             <form onSubmit={handleAddInvestor} className="space-y-3">
+              {/* 1. SELECT FUND DROPDOWN */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                   Select Fund *
@@ -229,6 +228,7 @@ export default function InvestorsTable() {
                 </select>
               </div>
 
+              {/* 2. ASSIGN TO PIPELINE BOARD DROPDOWN */}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                   Assign to Pipeline Board *

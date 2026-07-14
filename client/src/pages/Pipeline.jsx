@@ -177,6 +177,7 @@ export default function Pipeline() {
       return;
     }
 
+    // UUID hamesha string hoti hai, isliye direct values uthein
     const currentPipelineId = activePipelineId || formData.pipelineId || (pipelines[0] && pipelines[0].id);
     const currentStatus = formData.status || (dynamicStages && dynamicStages[0]) || "New";
 
@@ -187,8 +188,8 @@ export default function Pipeline() {
       jobTitle: formData.jobTitle ? formData.jobTitle.trim() : "",
       officePhone: formData.officePhone || "",
       mobilePhone: formData.mobilePhone || "",
-      fundId: String(formData.fundId),       
-      pipelineId: String(currentPipelineId), 
+      fundId: String(formData.fundId),       // Strictly String for UUID
+      pipelineId: String(currentPipelineId), // Strictly String for UUID
       status: currentStatus.trim()
     };
 
@@ -206,7 +207,6 @@ export default function Pipeline() {
       alert("Failed to add lead: " + (err.response?.data?.error || err.message));
     }
   };
-
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?", text: "This will remove investor and all linked tasks!", icon: "warning",
@@ -281,14 +281,14 @@ export default function Pipeline() {
 
         <div className="flex items-center gap-3">
           <select
-            value={activePipelineId}
-            onChange={(e) => setActivePipelineId(e.target.value)} 
-            className="p-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {pipelines.map((p) => (
-              <option key={p.id} value={p.id}>💼 {p.name}</option>
-            ))}
-          </select>
+  value={activePipelineId}
+  onChange={(e) => setActivePipelineId(e.target.value)} 
+  className="p-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500"
+>
+  {pipelines.map((p) => (
+    <option key={p.id} value={p.id}>💼 {p.name}</option>
+  ))}
+</select>
 
           <button
             onClick={() => setShowBoardModal(true)}
