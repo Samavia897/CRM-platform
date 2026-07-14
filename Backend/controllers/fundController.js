@@ -116,54 +116,67 @@ exports.deleteFund = async (req, res) => {
   }
 };
 
+// controllers/fundController.js ke andar pooray importFunds function ko is se replace karein:
+
 exports.importFunds = async (req, res) => {
-  // Check if file buffer exists in memory
-  if (!req.file || !req.file.buffer) {
-    return res.status(400).json({ error: "No file uploaded or file buffer is empty" });
-  }
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
 
-  const results = [];
+    const results = [];
+    const stream = Readable.from(req.file.buffer);
 
-  // 🌟 FIXED: Reading directly from live memory buffer instead of disk path
-  const stream = Readable.from(req.file.buffer.toString());
+    stream
+      .pipe(csv())
+      .on('data', (data) => {
+        const fundName = data.name || data.Name || data.fundName || data.FundName;
+        let rawUrl = data.website || data.Website || '';
 
-  stream
-    .pipe(csv())
-    .on('data', (data) => {
-      let rawUrl = data.website || data.Website || '';
-      rawUrl = rawUrl.trim();
-      if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
-        rawUrl = `https://${rawUrl}`;
-      }
+        if (fundName) {
+          // 1. Website link ko format karna taake Postgres validate kar sakay
+          if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+            rawUrl = `https://${rawUrl.trim()}`;
+          } else if (rawUrl) {
+            rawUrl = rawUrl.trim();
+          }
 
-      const fundName = data.name || data.Name || data.fundName || data.FundName;
+          // 2. Industry Array ko process karna
+          const industryArray = data.industry || data.Industry
+            ? (data.industry || data.Industry).split(',').map(s => s.trim()).filter(Boolean)
+            : [];
 
-if (fundName) {
-  // industry ko stringify karna hai taake PostgreSQL error na de
-  const industryArray = data.industry || data.Industry 
-    ? (data.industry || data.Industry).split(',').map(s => s.trim()).filter(Boolean) 
-    : [];
-
-  results.push({
-    name: fundName.trim(),
-    type: data.type || data.Type || 'Venture',
-    location: data.location || data.Location || '',
-    website: rawUrl || null,
-    industry: JSON.stringify(industryArray), // 🌟 FIXED HERE
-    companyId: req.user.companyId
-  });
-
-      }
-    })
-    .on('end', async () => {
-      try {
-        if (results.length > 0) {
-          await Fund.bulkCreate(results, { validate: false });
+          results.push({
+            name: fundName.trim(),
+            type: data.type || data.Type || 'Venture',
+            location: data.location || data.Location || '',
+            website: rawUrl || null,
+            // PostgreSQL JSON field ke liye safely stringify karein
+            industry: JSON.stringify(industryArray),
+            companyId: req.user.companyId
+          });
         }
-        res.status(200).json({ message: "Import successful", count: results.length });
-      } catch (error) {
-        console.error("IMPORT ERROR:", error);
-        res.status(500).json({ error: "Database error during memory stream bulk insert" });
-      }
-    });
+      })
+      .on('end', async () => {
+        try {
+          if (results.length > 0) {
+            // Bulk insert execute karein
+            await Fund.bulkCreate(results);
+          }
+          return res.status(200).json({ message: 'Funds imported successfully', count: results.length });
+        } catch (dbError) {
+          // Agar database validation fail ho to backend log mein poora error print ho
+          console.error('=== DATABASE IMPORT ERROR ===', dbError);
+          return res.status(500).json({ 
+            message: 'Database save failed', 
+            error: dbError.message,
+            details: dbError.errors ? dbError.errors.map(e => e.message) : dbError
+          });
+        }
+      });
+
+  } catch (error) {
+    console.error('=== SYSTEM IMPORT ERROR ===', error);
+    return res.status(500).json({ message: 'Internal server error during import', error: error.message });
+  }
 };
