@@ -5,7 +5,7 @@ const { protect } = require("../middlewares/authMiddleware");
 
 router.get("/", protect, investorController.getInvestors);
 router.post("/", protect, investorController.createInvestor);
-router.patch('/status/:id', protect, investorController.updateStatus);
+router.patch('/status/:id', protect, investorController.updateInvestorStatus);
 
 router.put("/:id", protect, investorController.updateInvestor);
 router.delete("/:id", protect, investorController.deleteInvestor);
