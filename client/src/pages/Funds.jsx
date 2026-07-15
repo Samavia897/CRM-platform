@@ -19,19 +19,17 @@ export default function Funds() {
   const [fundData, setFundData] = useState({
     name: "", type: "Venture", location: "", website: "", industry: "",
   });
-
-  const token = localStorage.getItem("token");
-  const headers = { Authorization: `Bearer ${token}` };
   
-  // 🌟 Fixed: Pointing to your live deployed backend API
+  // 🌟 Live deployed backend API Base URL
   const BASE_URL = "https://crm-backend-live-4541.onrender.com";
 
+  // 1. Fetch Funds Request
   const fetchFunds = async () => {
     try {
       setLoading(true);
-      const currentToken = localStorage.getItem("token");
+      const currentToken = localStorage.getItem("token"); // 🌟 Fresh token read inside function
       const res = await axios.get(`${BASE_URL}/api/funds`, { 
-        headers: { Authorization: `Bearer ${currentToken}` } 
+        headers: { "Authorization": `Bearer ${currentToken}` } 
       });
       setFunds(res.data);
     } catch (err) {
@@ -84,6 +82,7 @@ export default function Funds() {
     setShowModal(true);
   };
 
+  // 2. Delete Request
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -97,9 +96,9 @@ export default function Funds() {
 
     if (result.isConfirmed) {
       try {
-        const currentToken = localStorage.getItem("token");
+        const currentToken = localStorage.getItem("token"); // 🌟 Fresh token read inside function
         await axios.delete(`${BASE_URL}/api/funds/${id}`, { 
-          headers: { Authorization: `Bearer ${currentToken}` } 
+          headers: { "Authorization": `Bearer ${currentToken}` } 
         });
         Swal.fire('Deleted!', 'Fund has been removed.', 'success');
         fetchFunds();
@@ -109,6 +108,7 @@ export default function Funds() {
     }
   };
 
+  // 3. Submit Form Request (Add/Edit Fund)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -119,7 +119,6 @@ export default function Funds() {
         industryArray = fundData.industry;
       }
 
-      // 🌟 Fixed: Normalized schema payload names to match your backend database structure
       const payload = {
         name: fundData.name.trim(),
         type: fundData.type,
@@ -128,14 +127,14 @@ export default function Funds() {
         industry: industryArray
       };
 
-      const currentToken = localStorage.getItem("token");
-      const requestHeaders = { Authorization: `Bearer ${currentToken}` };
+      const currentToken = localStorage.getItem("token"); // 🌟 Fresh token read inside function
+      const requestConfig = { headers: { "Authorization": `Bearer ${currentToken}` } };
 
       if (isEditing) {
-        await axios.put(`${BASE_URL}/api/funds/${currentFundId}`, payload, { headers: requestHeaders });
+        await axios.put(`${BASE_URL}/api/funds/${currentFundId}`, payload, requestConfig);
         Swal.fire('Updated!', 'Fund details updated successfully.', 'success');
       } else {
-        await axios.post(`${BASE_URL}/api/funds`, payload, { headers: requestHeaders });
+        await axios.post(`${BASE_URL}/api/funds`, payload, requestConfig);
         Swal.fire('Success!', 'New fund created.', 'success');
       }
 
@@ -151,6 +150,7 @@ export default function Funds() {
     document.getElementById('csvImportInput').click();
   };
 
+  // 4. Import CSV File Request
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -170,19 +170,17 @@ export default function Funds() {
     });
 
     try {
-      const currentToken = localStorage.getItem("token");
+      const currentToken = localStorage.getItem("token"); // 🌟 Fresh token read inside function
       
-      // 🌟 Fixed: Full header encapsulation injection for multipart uploads
       await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
         headers: {
-          Authorization: `Bearer ${currentToken}`,
+          "Authorization": `Bearer ${currentToken}`, // 🌟 Clean casing token validation
           "Content-Type": "multipart/form-data"
         }
       });
       
       Swal.fire('Success', 'Funds imported successfully!', 'success');
       
-      // Reset input element so same file can be chosen again
       e.target.value = "";
       fetchFunds();
     } catch (err) {

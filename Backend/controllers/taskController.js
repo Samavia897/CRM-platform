@@ -35,20 +35,28 @@ exports.createTask = async (req, res) => {
 exports.updateTaskStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { title, description, dueDate, priority, investor, investorId, status } = req.body;
 
     const task = await Task.findByPk(id);
     if (!task) {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    task.status = status;
+    if (title !== undefined) task.title = title;
+    if (description !== undefined) task.description = description;
+    if (dueDate !== undefined) task.dueDate = dueDate;
+    if (priority !== undefined) task.priority = priority;
+    if (investor !== undefined) task.investor = investor;
+    if (investorId !== undefined) task.investorId = investorId;
+    if (status !== undefined) task.status = status;
+
     await task.save();
 
-    res.status(200).json({ message: "Task status updated successfully", task });
+    res.status(200).json({ message: "Task updated successfully", task });
   } catch (error) {
-    console.error("Update Status Error:", error);
-    res.status(500).json({ message: "Internal server error" });
+    const errorMessage = error.errors ? error.errors[0].message : error.message;
+    console.error("Update Task Error:", errorMessage);
+    res.status(400).json({ message: errorMessage });
   }
 };
 

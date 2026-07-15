@@ -22,7 +22,6 @@ const Fund = sequelize.define("Fund", {
     type: DataTypes.STRING,
     allowNull: true,
     validate: {
-      // Custom validation setup for avoiding empty crashes
       isUrlSafe(value) {
         if (value && value !== "" && value !== "---") {
           const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
@@ -33,15 +32,7 @@ const Fund = sequelize.define("Fund", {
       }
     }
   },
-  geographics: {
-    type: DataTypes.JSON,
-    defaultValue: []
-  },
   industry: {
-    type: DataTypes.JSON,
-    defaultValue: []
-  },
-  stage: {
     type: DataTypes.JSON,
     defaultValue: []
   },

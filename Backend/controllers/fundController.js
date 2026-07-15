@@ -22,7 +22,6 @@ exports.getAllFunds = async (req, res) => {
       whereClause.type = type;
     }
 
-    // Handled category tracking on server side gracefully
     if (category === 'AI based funds') {
       whereClause.industry = { [Op.overlap]: ['AI', 'Artificial Intelligence'] };
     }
