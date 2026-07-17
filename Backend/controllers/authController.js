@@ -29,21 +29,6 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await User.findOne({ where: { email } });
-
-    if (!user) {
-      return res.status(444).json({ error: "This email does not exist in our records." });
-    }
-
-    res.json({ message: "Password reset link has been dispatched to your inbox." });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({

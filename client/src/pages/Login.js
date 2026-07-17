@@ -12,8 +12,7 @@ export default function Login() {
       popup: "rounded-2xl border border-slate-100 shadow-2xl p-6 font-sans",
       title: "text-lg font-bold text-slate-900",
       htmlContainer: "text-xs text-slate-500 mt-1",
-      confirmButton: "px-5 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200",
-      input: "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-blue-500 outline-none mt-3"
+      confirmButton: "px-5 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
     },
     buttonsStyling: false
   });
@@ -54,45 +53,6 @@ export default function Login() {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    
-    const { value: email } = await customSwal.fire({
-      title: "Reset Password",
-      text: "Enter your registered email address to receive a reset link.",
-      input: "email",
-      inputPlaceholder: "operator@crm.com",
-      showCancelButton: true,
-      confirmButtonText: "Send Link",
-      cancelButtonText: "Cancel",
-      customClass: {
-        popup: "rounded-2xl border border-slate-100 shadow-2xl p-6 font-sans",
-        title: "text-lg font-bold text-slate-900",
-        htmlContainer: "text-xs text-slate-500 mt-1",
-        confirmButton: "px-5 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 mr-2",
-        cancelButton: "px-5 py-2 rounded-lg text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all duration-200",
-        input: "mx-auto my-3 px-4 py-2 w-5/6 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none text-slate-900"
-      }
-    });
-
-    if (email) {
-      try {
-        await axios.post("http://localhost:5000/api/auth/forgot-password", { email });
-        customSwal.fire({
-          title: "Link Sent",
-          text: "Password reset link has been dispatched to your inbox.",
-          icon: "success"
-        });
-      } catch (err) {
-        customSwal.fire({
-          title: "Request Failed",
-          text: err.response?.data?.error || "Could not process link dispatch.",
-          icon: "error"
-        });
-      }
     }
   };
 
@@ -138,13 +98,6 @@ export default function Login() {
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Password</label>
-              <button 
-                type="button" 
-                onClick={handleForgotPassword} 
-                className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors focus:outline-none"
-              >
-                Forgot?
-              </button>
             </div>
             <input 
               type="password" 
