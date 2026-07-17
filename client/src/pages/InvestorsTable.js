@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { HiPlus, HiSearch, HiFilter, HiX } from "react-icons/hi";
+import { HiPlus, HiSearch, HiX, HiOfficeBuilding } from "react-icons/hi";
 
 export default function InvestorsTable() {
   const [investors, setInvestors] = useState([]);
@@ -8,7 +8,7 @@ export default function InvestorsTable() {
   const [pipelines, setPipelines] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [fundSearchTerm, setFundSearchTerm] = useState(""); // Fund search ke liye new state
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -116,10 +116,14 @@ export default function InvestorsTable() {
     const email = (inv.email || '').toLowerCase();
     const search = searchTerm.toLowerCase();
 
-    const matchesSearch = fullName.includes(search) || email.includes(search);
-    const matchesStatus = statusFilter === "All" || inv.status === statusFilter;
+    // Fund Name match logic (supports nested models or standard key casing)
+    const fundName = (inv.Fund?.name || inv.fund?.name || "").toLowerCase();
+    const fundSearch = fundSearchTerm.toLowerCase();
 
-    return matchesSearch && matchesStatus;
+    const matchesSearch = fullName.includes(search) || email.includes(search);
+    const matchesFund = fundName.includes(fundSearch);
+
+    return matchesSearch && matchesFund;
   });
 
   return (
@@ -141,7 +145,8 @@ export default function InvestorsTable() {
       <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden backdrop-blur-xl">
         
         <div className="flex flex-wrap justify-between items-center p-4 gap-4 border-b border-slate-800/80 bg-[#11192e]/40">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+            {/* Standard Name/Email Search */}
             <div className="relative">
               <HiSearch className="absolute left-3 top-3 text-slate-500 text-sm" />
               <input
@@ -149,22 +154,20 @@ export default function InvestorsTable() {
                 placeholder="Search name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none transition-all w-64"
+                className="pl-9 pr-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none transition-all w-60"
               />
             </div>
             
-            <div className="flex items-center gap-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl px-3 py-2 text-xs">
-              <HiFilter className="text-slate-500" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="outline-none bg-transparent font-semibold text-slate-300 cursor-pointer"
-              >
-                <option value="All" className="bg-[#0f172a]">All Statuses</option>
-                <option value="New" className="bg-[#0f172a]">New</option>
-                <option value="Contacted" className="bg-[#0f172a]">Contacted</option>
-                <option value="Follow-Up" className="bg-[#0f172a]">Follow-Up</option>
-              </select>
+            {/* New Fund Search Input */}
+            <div className="relative">
+              <HiOfficeBuilding className="absolute left-3 top-3 text-slate-500 text-sm" />
+              <input
+                type="text"
+                placeholder="Search by Fund..."
+                value={fundSearchTerm}
+                onChange={(e) => setFundSearchTerm(e.target.value)}
+                className="pl-9 pr-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none transition-all w-60"
+              />
             </div>
           </div>
         </div>
