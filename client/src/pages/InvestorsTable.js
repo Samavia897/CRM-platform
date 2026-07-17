@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { HiPlus, HiSearch, HiFilter, HiX } from "react-icons/icons/hi";
+import { HiPlus, HiSearch, HiFilter, HiX } from "react-icons/hi";
 
 export default function InvestorsTable() {
   const [investors, setInvestors] = useState([]);
