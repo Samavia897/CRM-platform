@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "react-gradient";
 import axiosInstance from "axios";
 import Swal from "sweetalert2";
 import Navbar from "../components/Navbar";
