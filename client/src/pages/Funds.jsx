@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "react-axios";
+import axios from "axios";
 import Swal from 'sweetalert2';
 import { HiPlus, HiX, HiLocationMarker, HiDownload, HiPencilAlt, HiTrash, HiSearch, HiOfficeBuilding } from "react-icons/hi";
 
