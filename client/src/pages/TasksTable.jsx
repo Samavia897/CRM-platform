@@ -160,46 +160,83 @@ export default function TasksTable() {
   });
 
   return (
-    <div className="bg-gray-50 min-h-screen p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Tasks</h1>
-        <button onClick={() => setShowModal(true)} className="bg-[#00388D] text-white px-4 py-1.5 rounded text-xs font-bold flex items-center gap-1.5 shadow-md">
-          <HiPlus /> Add Task
+    <div className="bg-[#F8FAFC] min-h-screen p-6 font-sans">
+      {/* Header Section */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Tasks</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Manage and track pipeline milestones and tasks</p>
+        </div>
+        <button 
+          onClick={() => setShowModal(true)} 
+          className="bg-[#00388D] hover:bg-[#002C71] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors duration-150"
+        >
+          <HiPlus className="text-base" /> Add Task
         </button>
       </div>
 
-      <div className="flex border-b border-gray-200 mb-4 bg-white rounded-t shadow-sm relative z-10">
+      {/* Tabs Navigation */}
+      <div className="flex border-b border-slate-200 mb-6 bg-white rounded-xl shadow-sm px-4 relative z-10">
         {["Overdue Tasks", "Due Tasks", "Upcoming Tasks", "Complete Tasks"].map((tab) => (
-          <button key={tab} onClick={() => setActiveTab(tab)} className={`px-6 py-3 text-[12px] font-semibold transition-all ${activeTab === tab ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50/10" : "text-gray-500"}`}>
+          <button 
+            key={tab} 
+            onClick={() => setActiveTab(tab)} 
+            className={`px-4 py-3.5 text-sm font-medium transition-all relative ${
+              activeTab === tab 
+                ? "text-[#00388D] font-semibold border-b-2 border-[#00388D]" 
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
             {tab}
           </button>
         ))}
       </div>
 
-      <div className="bg-white border border-gray-200 rounded shadow-sm relative overflow-visible">
-        <div className="p-3 flex justify-between items-center border-b border-gray-100 bg-white relative">
-          <div className="relative w-64">
-            <HiSearch className="absolute left-3 top-2.5 text-gray-400" />
-            <input type="text" placeholder="Search tasks..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 pr-4 py-1.5 w-full border border-gray-200 rounded text-[13px] outline-none" />
+      {/* Table Main Wrapper */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm relative overflow-visible">
+        {/* Table Toolbar */}
+        <div className="p-4 flex justify-between items-center border-b border-slate-100 bg-white rounded-t-xl relative">
+          <div className="relative w-72">
+            <HiSearch className="absolute left-3 top-3 text-slate-400 text-base" />
+            <input 
+              type="text" 
+              placeholder="Search tasks..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              className="pl-10 pr-4 py-2 w-full border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:border-[#00388D] focus:ring-1 focus:ring-[#00388D] outline-none transition-all" 
+            />
           </div>
 
           <div className="relative">
-            <button onClick={() => setShowFilterDropdown(!showFilterDropdown)} className={`flex items-center gap-2 px-3 py-1.5 border rounded text-[12px] font-medium transition-all ${appliedStart || appliedEnd ? "border-blue-600 text-blue-600 bg-blue-50" : "border-gray-300 text-gray-600"}`}>
-              <HiFilter /> Filter {(appliedStart || appliedEnd) && "•"}
+            <button 
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)} 
+              className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-all ${
+                appliedStart || appliedEnd 
+                  ? "border-[#00388D] text-[#00388D] bg-blue-50/50" 
+                  : "border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              <HiFilter /> Filter {(appliedStart || appliedEnd) && <span className="w-1.5 h-1.5 rounded-full bg-[#00388D]"></span>}
             </button>
 
             {showFilterDropdown && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-300 shadow-2xl rounded-xl z-[999] p-4 border-t-4 border-t-[#00388D]">
-                <div className="flex justify-between items-center mb-3 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+              <div className="absolute right-0 mt-2 w-72 bg-white border border-slate-200 shadow-xl rounded-xl z-[999] p-4">
+                <div className="flex justify-between items-center mb-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                   <span>Date Range</span>
-                  <button onClick={() => setShowFilterDropdown(false)}><HiX /></button>
+                  <button onClick={() => setShowFilterDropdown(false)} className="text-slate-400 hover:text-slate-600"><HiX /></button>
                 </div>
-                <div className="space-y-4">
-                  <input type="date" value={tempStart} onChange={(e) => setTempStart(e.target.value)} className="w-full p-2 border rounded text-xs" />
-                  <input type="date" value={tempEnd} onChange={(e) => setTempEnd(e.target.value)} className="w-full p-2 border rounded text-xs" />
-                  <div className="flex gap-2">
-                    <button onClick={() => { setTempStart(""); setTempEnd(""); setAppliedStart(""); setAppliedEnd(""); setShowFilterDropdown(false) }} className="flex-1 py-2 text-[11px] font-bold text-red-500 bg-red-50 rounded">Clear</button>
-                    <button onClick={() => { setAppliedStart(tempStart); setAppliedEnd(tempEnd); setShowFilterDropdown(false) }} className="flex-1 py-2 bg-[#00388D] text-white text-[11px] font-bold rounded">Apply Filter</button>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[11px] font-medium text-slate-500 block mb-1">Start Date</label>
+                    <input type="date" value={tempStart} onChange={(e) => setTempStart(e.target.value)} className="w-full p-2 border border-slate-200 rounded-lg text-sm focus:border-[#00388D] outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-medium text-slate-500 block mb-1">End Date</label>
+                    <input type="date" value={tempEnd} onChange={(e) => setTempEnd(e.target.value)} className="w-full p-2 border border-slate-200 rounded-lg text-sm focus:border-[#00388D] outline-none" />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <button onClick={() => { setTempStart(""); setTempEnd(""); setAppliedStart(""); setAppliedEnd(""); setShowFilterDropdown(false) }} className="flex-1 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Clear</button>
+                    <button onClick={() => { setAppliedStart(tempStart); setAppliedEnd(tempEnd); setShowFilterDropdown(false) }} className="flex-1 py-2 bg-[#00388D] hover:bg-[#002C71] text-white text-xs font-medium rounded-lg transition-colors">Apply</button>
                   </div>
                 </div>
               </div>
@@ -207,87 +244,128 @@ export default function TasksTable() {
           </div>
         </div>
 
+        {/* Data Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-gray-200 text-[11px] font-bold text-slate-500 uppercase">
-                <th className="p-4">Task Title</th>
+              <tr className="bg-slate-50/75 border-b border-slate-200 text-xs font-semibold text-slate-500 tracking-wider">
+                <th className="p-4 pl-6">Task Title</th>
                 <th className="p-4">Due Date</th>
                 <th className="p-4">Investor</th>
                 <th className="p-4 text-center">Priority</th>
-                <th className="p-4 text-center w-52">Actions</th>
+                <th className="p-4 text-right pr-6 w-44">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredTasks.map((task) => {
-                const isCompleted = task.status === "Completed";
-                return (
-                  <tr key={task.id} className={`${isCompleted ? 'bg-green-50/40' : 'hover:bg-slate-50/50'}`}>
-                    <td className="p-4">
-                      <div className={`text-[13px] font-semibold ${isCompleted ? 'line-through text-slate-400' : 'text-slate-700'}`}>{task.title}</div>
-                      {task.description && <div className="text-[11px] text-gray-400 font-normal max-w-xs truncate">{task.description}</div>}
-                    </td>
-                    <td className="p-4 text-[13px] text-slate-600 italic">
-                      <div className="flex items-center gap-1.5"><HiCalendar className="text-slate-400" /> {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No Date"}</div>
-                    </td>
-                    <td className="p-4 text-[13px] text-blue-600 font-medium">{task.investor || "N/A"}</td>
-                    <td className="p-4 text-center">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${task.priority === "High" ? "bg-red-100 text-red-700" :
-                          task.priority === "Medium" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
-                        }`}>{task.priority}</span>
-                    </td>
+            <tbody className="divide-y divide-slate-100 text-sm">
+              {filteredTasks.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-slate-400 text-sm">No tasks found matching current view.</td>
+                </tr>
+              ) : (
+                filteredTasks.map((task) => {
+                  const isCompleted = task.status === "Completed";
+                  return (
+                    <tr key={task.id} className={`hover:bg-slate-50/60 transition-colors ${isCompleted ? 'bg-slate-50/40' : ''}`}>
+                      <td className="p-4 pl-6">
+                        <div className={`font-medium ${isCompleted ? 'line-through text-slate-400' : 'text-slate-800'}`}>{task.title}</div>
+                        {task.description && <div className="text-xs text-slate-400 mt-0.5 max-w-xs truncate">{task.description}</div>}
+                      </td>
+                      <td className="p-4 text-slate-600">
+                        <div className="flex items-center gap-2">
+                          <HiCalendar className="text-slate-400 text-base" /> 
+                          <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'}) : "No Date"}</span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="font-medium text-[#00388D] bg-blue-50/60 px-2.5 py-1 rounded-md text-xs">{task.investor || "N/A"}</span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium inline-block w-24 text-center ${
+                          task.priority === "High" ? "bg-rose-50 text-rose-700 border border-rose-100" :
+                          task.priority === "Medium" ? "bg-amber-50 text-amber-700 border border-amber-100" : 
+                          "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                        }`}>{task.priority} Priority</span>
+                      </td>
 
-                    <td className="p-4 flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => toggleComplete(task)}
-                        className={`p-1.5 rounded transition-all border ${isCompleted ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-300 hover:text-green-600 hover:border-green-600'}`}
-                      >
-                        <HiCheck className="text-sm" />
-                      </button>
+                      <td className="p-4 pr-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => toggleComplete(task)}
+                            title={isCompleted ? "Mark Pending" : "Mark Complete"}
+                            className={`p-2 rounded-lg transition-all border ${
+                              isCompleted 
+                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' 
+                                : 'bg-white text-slate-400 border-slate-200 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50/30'
+                            }`}
+                          >
+                            <HiCheck className="text-base" />
+                          </button>
 
-                      <button
-                        onClick={() => { setEditingTask(task); setShowEditModal(true); }}
-                        className="p-1.5 rounded border border-gray-300 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-600 transition-all"
-                      >
-                        <HiPencil className="text-sm" />
-                      </button>
+                          <button
+                            onClick={() => { setEditingTask(task); setShowEditModal(true); }}
+                            title="Edit Task"
+                            className="p-2 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-[#00388D] hover:border-blue-200 hover:bg-blue-50/30 transition-all"
+                          >
+                            <HiPencil className="text-base" />
+                          </button>
 
-                      <button
-                        onClick={() => handleDeleteTask(task.id)}
-                        className="p-1.5 rounded border border-gray-300 bg-white text-gray-500 hover:text-red-600 hover:border-red-600 transition-all"
-                      >
-                        <HiTrash className="text-sm" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                          <button
+                            onClick={() => handleDeleteTask(task.id)}
+                            title="Delete Task"
+                            className="p-2 rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50/30 transition-all"
+                          >
+                            <HiTrash className="text-base" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
+      {/* Add Task Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[1000]">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h2 className="text-lg font-black text-slate-800 uppercase mb-6">New Task</h2>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[1000] p-4">
+          <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-xl border border-slate-100 transform transition-all">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-slate-900">Create New Task</h2>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600"><HiX className="text-xl" /></button>
+            </div>
+            
             <form onSubmit={handleAddTask} className="space-y-4">
-              <input required type="text" value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm" placeholder="Task Title" />
-
-              <textarea value={newTask.description} onChange={(e) => setNewTask({ ...newTask, description: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm" placeholder="Description (Optional)" rows={2} />
-
-              <div className="grid grid-cols-2 gap-4">
-                <input required type="date" value={newTask.dueDate} onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm" />
-
-                <select value={newTask.priority} onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm bg-white">
-                  <option value="Low">Low Priority</option>
-                  <option value="Medium">Medium Priority</option>
-                  <option value="High">High Priority</option>
-                </select>
+              <div>
+                <label className="text-xs font-semibold text-slate-600 block mb-1">Task Title *</label>
+                <input required type="text" value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:border-[#00388D] focus:ring-1 focus:ring-[#00388D] outline-none" placeholder="e.g., Follow up on Capital Call" />
               </div>
 
               <div>
-                <select required value={newTask.investorId} onChange={(e) => setNewTask({ ...newTask, investorId: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm bg-white">
+                <label className="text-xs font-semibold text-slate-600 block mb-1">Description</label>
+                <textarea value={newTask.description} onChange={(e) => setNewTask({ ...newTask, description: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:border-[#00388D] focus:ring-1 focus:ring-[#00388D] outline-none" placeholder="Provide extra context here..." rows={2} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Due Date *</label>
+                  <input required type="date" value={newTask.dueDate} onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:border-[#00388D] focus:ring-1 focus:ring-[#00388D] outline-none" />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Priority</label>
+                  <select value={newTask.priority} onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:border-[#00388D] focus:ring-1 focus:ring-[#00388D] outline-none">
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600 block mb-1">Assigned Investor *</label>
+                <select required value={newTask.investorId} onChange={(e) => setNewTask({ ...newTask, investorId: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:border-[#00388D] focus:ring-1 focus:ring-[#00388D] outline-none">
                   <option value="">Select Investor</option>
                   {investors.map(inv => (
                     <option key={inv.id} value={inv.id}>{inv.firstName} {inv.lastName}</option>
@@ -295,34 +373,53 @@ export default function TasksTable() {
                 </select>
               </div>
 
-              <button type="submit" className="w-full py-3 bg-[#00388D] text-white font-black rounded-xl">SAVE TASK</button>
-              <button type="button" onClick={() => setShowModal(false)} className="w-full text-slate-400 text-xs font-bold">CANCEL</button>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 bg-[#00388D] hover:bg-[#002C71] text-white text-sm font-medium rounded-lg shadow-sm transition-colors">Save Task</button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
       {showEditModal && editingTask && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[1000]">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h2 className="text-lg font-black text-slate-800 uppercase mb-6">Edit Task</h2>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[1000] p-4">
+          <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-xl border border-slate-100 transform transition-all">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-slate-900">Edit Task Details</h2>
+              <button onClick={() => { setShowEditModal(false); setEditingTask(null); }} className="text-slate-400 hover:text-slate-600"><HiX className="text-xl" /></button>
+            </div>
+            
             <form onSubmit={handleEditTask} className="space-y-4">
-              <input required type="text" value={editingTask.title} onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm" />
-
-              <textarea value={editingTask.description || ""} onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm" rows={2} />
-
-              <div className="grid grid-cols-2 gap-4">
-                <input required type="date" value={editingTask.dueDate ? editingTask.dueDate.substring(0, 10) : ""} onChange={(e) => setEditingTask({ ...editingTask, dueDate: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm" />
-
-                <select value={editingTask.priority} onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm bg-white">
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
+              <div>
+                <label className="text-xs font-semibold text-slate-600 block mb-1">Task Title *</label>
+                <input required type="text" value={editingTask.title} onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:border-[#00388D] outline-none" />
               </div>
 
               <div>
-                <select required value={editingTask.investorId || ""} onChange={(e) => setEditingTask({ ...editingTask, investorId: e.target.value })} className="w-full p-2.5 border rounded-lg text-sm bg-white">
+                <label className="text-xs font-semibold text-slate-600 block mb-1">Description</label>
+                <textarea value={editingTask.description || ""} onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:border-[#00388D] outline-none" rows={2} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Due Date *</label>
+                  <input required type="date" value={editingTask.dueDate ? editingTask.dueDate.substring(0, 10) : ""} onChange={(e) => setEditingTask({ ...editingTask, dueDate: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:border-[#00388D] outline-none" />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Priority</label>
+                  <select value={editingTask.priority} onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:border-[#00388D] outline-none">
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600 block mb-1">Assigned Investor *</label>
+                <select required value={editingTask.investorId || ""} onChange={(e) => setEditingTask({ ...editingTask, investorId: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:border-[#00388D] outline-none">
                   <option value="">Select Investor</option>
                   {investors.map(inv => (
                     <option key={inv.id} value={inv.id}>{inv.firstName} {inv.lastName}</option>
@@ -330,8 +427,10 @@ export default function TasksTable() {
                 </select>
               </div>
 
-              <button type="submit" className="w-full py-3 bg-[#00388D] text-white font-black rounded-xl uppercase">Update Changes</button>
-              <button type="button" onClick={() => { setShowEditModal(false); setEditingTask(null); }} className="w-full text-slate-400 text-xs font-bold uppercase">Cancel</button>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => { setShowEditModal(false); setEditingTask(null); }} className="flex-1 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 bg-[#00388D] hover:bg-[#002C71] text-white text-sm font-medium rounded-lg shadow-sm transition-colors">Update Changes</button>
+              </div>
             </form>
           </div>
         </div>
