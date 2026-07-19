@@ -3,6 +3,7 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const { Op } = require("sequelize");
 const { Readable } = require('stream');
+const { fundImportQueue } = require('../config/importQueue');
 
 exports.getAllFunds = async (req, res) => {
   try {
@@ -115,8 +116,6 @@ exports.deleteFund = async (req, res) => {
   }
 };
 
-// controllers/fundController.js ke andar pooray importFunds function ko is se replace karein:
-
 exports.importFunds = async (req, res) => {
   try {
     if (!req.file) {
@@ -133,14 +132,12 @@ exports.importFunds = async (req, res) => {
         let rawUrl = data.website || data.Website || '';
 
         if (fundName) {
-          // 1. Website link ko format karna taake Postgres validate kar sakay
           if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
             rawUrl = `https://${rawUrl.trim()}`;
           } else if (rawUrl) {
             rawUrl = rawUrl.trim();
           }
 
-          // 2. Industry Array ko process karna
           const industryArray = data.industry || data.Industry
             ? (data.industry || data.Industry).split(',').map(s => s.trim()).filter(Boolean)
             : [];
@@ -150,27 +147,35 @@ exports.importFunds = async (req, res) => {
             type: data.type || data.Type || 'Venture',
             location: data.location || data.Location || '',
             website: rawUrl || null,
-            // PostgreSQL JSON field ke liye safely stringify karein
-            industry: JSON.stringify(industryArray),
+            industry: industryArray, 
             companyId: req.user.companyId
           });
         }
       })
       .on('end', async () => {
         try {
-          if (results.length > 0) {
-            // Bulk insert execute karein
-            await Fund.bulkCreate(results);
+          if (results.length === 0) {
+            return res.status(400).json({ message: 'CSV execution complete but 0 matching records resolved.' });
           }
-          return res.status(200).json({ message: 'Funds imported successfully', count: results.length });
-        } catch (dbError) {
-          // Agar database validation fail ho to backend log mein poora error print ho
-          console.error('=== DATABASE IMPORT ERROR ===', dbError);
-          return res.status(500).json({ 
-            message: 'Database save failed', 
-            error: dbError.message,
-            details: dbError.errors ? dbError.errors.map(e => e.message) : dbError
+
+
+          await fundImportQueue.add(`bulk_import_${req.user.companyId}_${Date.now()}`, {
+            rows: results,
+            companyId: req.user.companyId
+          }, {
+            removeOnComplete: true, 
+            attempts: 3,            
+            backoff: 5000           
           });
+
+          return res.status(202).json({ 
+            message: 'CSV uploaded and queued for background ingestion processing.', 
+            estimatedRecords: results.length 
+          });
+
+        } catch (queueError) {
+          console.error('=== BULLMQ ENQUEUE ERROR ===', queueError);
+          return res.status(500).json({ message: 'Failed to delegate process to message brokers', error: queueError.message });
         }
       });
 

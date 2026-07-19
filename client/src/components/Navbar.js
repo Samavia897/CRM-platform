@@ -14,7 +14,6 @@ export default function Navbar() {
     <nav className="w-full border-b border-gray-800 bg-neutral-950 px-6 py-4 text-white">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         
-        {/* Brand / Logo */}
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full bg-blue-500 animate-pulse" />
           <h1 className="text-xl font-bold tracking-wider uppercase text-neutral-100">
@@ -22,7 +21,6 @@ export default function Navbar() {
           </h1>
         </div>
 
-        {/* Right Actions */}
         <div className="flex items-center gap-6">
           {username && (
             <div className="flex items-center gap-2 rounded-full border border-gray-800 bg-neutral-900 px-3 py-1.5 shadow-inner">
