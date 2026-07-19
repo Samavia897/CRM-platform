@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { HiPlus, HiPencilAlt, HiTrash, HiViewGridAdd, HiClock, HiX } from "react-icons/hi";
+import { HiPlus, HiPencilAlt, HiTrash, HiViewGridAdd, HiClock, HiX, HiMail, HiBriefcase } from "react-icons/hi";
 import Swal from "sweetalert2";
 
 const getStageColor = (stageName) => {
   const name = stageName ? stageName.toLowerCase() : "";
-  if (name.includes("new") || name.includes("lead")) return "bg-emerald-50 text-emerald-600 border-emerald-100";
-  if (name.includes("contact") || name.includes("pitch")) return "bg-blue-50 text-blue-600 border-blue-100";
-  if (name.includes("deck") || name.includes("review")) return "bg-amber-50 text-amber-600 border-amber-100";
-  if (name.includes("meet") || name.includes("schedule")) return "bg-purple-50 text-purple-600 border-purple-100";
-  if (name.includes("follow") || name.includes("close")) return "bg-slate-100 text-slate-600 border-slate-200";
-  return "bg-indigo-50 text-indigo-600 border-indigo-100";
+  if (name.includes("new") || name.includes("lead")) return "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+  if (name.includes("contact") || name.includes("pitch")) return "bg-sky-50 text-sky-700 border-sky-200/60";
+  if (name.includes("deck") || name.includes("review")) return "bg-amber-50 text-amber-700 border-amber-200/60";
+  if (name.includes("meet") || name.includes("schedule")) return "bg-purple-50 text-purple-700 border-purple-200/60";
+  if (name.includes("follow") || name.includes("close")) return "bg-slate-100 text-slate-700 border-slate-200";
+  return "bg-indigo-50 text-indigo-700 border-indigo-200/60";
 };
 
 export default function Pipeline() {
@@ -177,7 +177,6 @@ export default function Pipeline() {
       return;
     }
 
-    // UUID hamesha string hoti hai, isliye direct values uthein
     const currentPipelineId = activePipelineId || formData.pipelineId || (pipelines[0] && pipelines[0].id);
     const currentStatus = formData.status || (dynamicStages && dynamicStages[0]) || "New";
 
@@ -188,8 +187,8 @@ export default function Pipeline() {
       jobTitle: formData.jobTitle ? formData.jobTitle.trim() : "",
       officePhone: formData.officePhone || "",
       mobilePhone: formData.mobilePhone || "",
-      fundId: String(formData.fundId),       // Strictly String for UUID
-      pipelineId: String(currentPipelineId), // Strictly String for UUID
+      fundId: String(formData.fundId),
+      pipelineId: String(currentPipelineId),
       status: currentStatus.trim()
     };
 
@@ -207,10 +206,12 @@ export default function Pipeline() {
       alert("Failed to add lead: " + (err.response?.data?.error || err.message));
     }
   };
+
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?", text: "This will remove investor and all linked tasks!", icon: "warning",
-      showCancelButton: true, confirmButtonColor: "#d33", confirmButtonText: "Yes, delete all!"
+      showCancelButton: true, confirmButtonColor: "#EF4444", confirmButtonText: "Yes, delete all!",
+      cancelButtonColor: "#6B7280"
     });
 
     if (result.isConfirmed) {
@@ -246,8 +247,6 @@ export default function Pipeline() {
 
     try {
       const newStage = destination.droppableId;
-
-      // 🌟 Fixed: Cast activePipelineId to String for UUID compatibility instead of parseInt
       const response = await axios.patch(
         `${BASE_URL}/api/investors/status/${draggableId}`,
         {
@@ -272,27 +271,28 @@ export default function Pipeline() {
   };
 
   return (
-    <div className="p-8 bg-[#F5F7FA] min-h-screen font-sans">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-10">
+    <div className="p-8 bg-[#F8FAFC] min-h-screen font-sans antialiased text-slate-800">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6 mb-10 border-b border-slate-100 pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-[#001f3f] tracking-tight">Dynamic Deal Pipelines</h1>
-          <p className="text-xs text-gray-500 mt-1">Manage multiple custom workspace board layouts</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dynamic Deal Pipelines</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage multiple custom workspace board layouts</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <select
-  value={activePipelineId}
-  onChange={(e) => setActivePipelineId(e.target.value)} 
-  className="p-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500"
->
-  {pipelines.map((p) => (
-    <option key={p.id} value={p.id}>💼 {p.name}</option>
-  ))}
-</select>
+            value={activePipelineId}
+            onChange={(e) => setActivePipelineId(e.target.value)} 
+            className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold shadow-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer"
+          >
+            {pipelines.map((p) => (
+              <option key={p.id} value={p.id}>💼 {p.name}</option>
+            ))}
+          </select>
 
           <button
             onClick={() => setShowBoardModal(true)}
-            className="p-2.5 bg-white border border-gray-200 hover:border-blue-500 text-blue-600 rounded-lg shadow-sm transition-colors"
+            className="p-2.5 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-500 rounded-xl shadow-sm transition-all bg-gradient-to-b hover:from-slate-5.0"
             title="Create Custom Layout Board"
           >
             <HiPlus size={18} />
@@ -303,48 +303,66 @@ export default function Pipeline() {
               setFormData(prev => ({ ...prev, status: dynamicStages[0] || "" }));
               setShowAddModal(true);
             }} 
-            className="flex items-center gap-2 bg-[#001f3f] text-white px-5 py-2.5 rounded-lg font-bold hover:bg-blue-950 transition-all shadow-md text-sm whitespace-nowrap"
+            className="flex items-center gap-2 bg-gradient-to-r from-slate-900 to-slate-800 text-white px-5 py-2.5 rounded-xl font-semibold hover:opacity-95 transition-all shadow-sm text-sm whitespace-nowrap"
           >
-            <HiViewGridAdd size={19} /> New Lead
+            <HiViewGridAdd size={18} className="opacity-90" /> New Lead
           </button>
         </div>
       </div>
 
+      {/* Kanban Board Container */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-6">
+        <div className="flex gap-5 overflow-x-auto pb-6 items-start scrollbar-thin scrollbar-thumb-slate-200">
           {dynamicStages.map((stage) => {
-            // 🌟 Fixed: Pure string lookup for dynamic stages filtering
             const filteredInvestors = investors.filter(
               inv => String(inv.pipelineId) === String(activePipelineId) && inv.status === stage
             );
 
             return (
-              <div key={stage} className="min-w-[310px] max-w-[310px] bg-white rounded-xl border border-gray-100 flex flex-col h-fit shadow-lg shadow-gray-100/50">
-                <div className="p-4 border-b border-gray-50 flex items-center gap-2.5">
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${getStageColor(stage)}`}>
+              <div key={stage} className="w-[320px] shrink-0 bg-slate-50/60 rounded-2xl border border-slate-200/60 flex flex-col max-h-[80vh]">
+                {/* Stage Header */}
+                <div className="p-4 flex items-center justify-between border-b border-slate-100 bg-white/40 backdrop-blur-sm rounded-t-2xl">
+                  <h3 className="font-semibold text-xs text-slate-700 tracking-wider uppercase truncate max-w-[200px]">{stage}</h3>
+                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${getStageColor(stage)}`}>
                     {filteredInvestors.length}
                   </span>
-                  <h3 className="font-bold text-[14px] text-gray-700 tracking-tight uppercase">{stage}</h3>
                 </div>
 
+                {/* Droppable Stage Area */}
                 <Droppable droppableId={stage}>
-                  {(provided) => (
-                    <div {...provided.droppableProps} ref={provided.innerRef} className="p-2 min-h-[500px]">
+                  {(provided, snapshot) => (
+                    <div 
+                      {...provided.droppableProps} 
+                      ref={provided.innerRef} 
+                      className={`p-3 overflow-y-auto flex-1 min-h-[450px] transition-colors rounded-b-2xl ${snapshot.isDraggingOver ? "bg-slate-100/70" : ""}`}
+                    >
                       {filteredInvestors.map((inv, index) => (
                         <Draggable key={inv.id} draggableId={inv.id} index={index}>
                           {(provided, snapshot) => (
                             <div
-                              ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}
-                              className={`bg-white p-4 rounded-lg border border-gray-200 mb-3 transition-all group ${snapshot.isDragging ? "shadow-2xl border-blue-400 scale-105 z-50" : "hover:border-gray-300 shadow-sm"}`}
+                              ref={provided.innerRef} 
+                              {...provided.draggableProps} 
+                              {...provided.dragHandleProps}
+                              className={`bg-white p-4 rounded-xl border border-slate-100 mb-3 transition-all group ${
+                                snapshot.isDragging 
+                                  ? "shadow-xl border-blue-500 ring-2 ring-blue-500/10 scale-[1.02] rotate-1" 
+                                  : "hover:shadow-md hover:border-slate-200"
+                              }`}
                             >
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h4 className="font-bold text-[#001f3f] text-[15px] leading-tight">{inv.firstName} {inv.lastName}</h4>
-                                  <p className="text-[12px] text-gray-400 font-medium mt-0.5">{inv.jobTitle || "Investor Lead"}</p>
-                                  <p className="text-[11px] text-gray-500 mt-1">{inv.Fund?.name || "Global Growth Fund"}</p>
+                              <div className="flex justify-between items-start gap-2">
+                                <div className="space-y-1">
+                                  <h4 className="font-semibold text-slate-900 text-sm leading-snug">{inv.firstName} {inv.lastName}</h4>
+                                  <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                                    <HiBriefcase className="text-slate-400 shrink-0" size={13} />
+                                    <span className="truncate max-w-[170px]">{inv.jobTitle || "Investor Lead"}</span>
+                                  </div>
+                                  <span className="inline-block text-[10px] font-medium px-2 py-0.5 bg-slate-100 text-slate-600 rounded mt-1 max-w-[220px] truncate">
+                                    {inv.Fund?.name || "Global Growth Fund"}
+                                  </span>
                                 </div>
 
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-md">
+                                {/* Action Buttons */}
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-50 p-1 rounded-lg border border-slate-100 shrink-0">
                                   <button onClick={() => {
                                     setSelectedInvestor(inv);
                                     setFormData({
@@ -353,25 +371,34 @@ export default function Pipeline() {
                                       jobTitle: inv.jobTitle || "", fundId: inv.fundId || inv.Fund?.id || "", status: inv.status
                                     });
                                     setShowEditModal(true);
-                                  }} className="p-1 text-gray-400 hover:text-amber-500"><HiPencilAlt size={16} /></button>
+                                  }} className="p-1 text-slate-400 hover:text-amber-600 hover:bg-white rounded transition-all" title="Edit Contact">
+                                    <HiPencilAlt size={15} />
+                                  </button>
 
                                   <button onClick={() => {
                                     setSelectedInvestor(inv);
                                     setTaskTitle("");
                                     setTaskDueDate("");
                                     setTaskDescription("");
+                                    setTaskPriority("Medium");
                                     setShowTaskModal(true);
-                                  }} className="p-1 text-gray-400 hover:text-emerald-500"><HiPlus size={16} /></button>
+                                  }} className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-white rounded transition-all" title="Add Task">
+                                    <HiPlus size={15} />
+                                  </button>
 
-                                  <button onClick={() => handleDelete(inv.id)} className="p-1 text-gray-400 hover:text-red-500"><HiTrash size={16} /></button>
+                                  <button onClick={() => handleDelete(inv.id)} className="p-1 text-slate-400 hover:text-red-600 hover:bg-white rounded transition-all" title="Delete">
+                                    <HiTrash size={15} />
+                                  </button>
                                 </div>
                               </div>
 
-                              <div className="mt-4 flex flex-col gap-2 border-t border-gray-50 pt-3">
-                                <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-                                  <HiClock size={12} /> {inv.email}
+                              {/* Card Footer Contacts */}
+                              {inv.email && (
+                                <div className="mt-3.5 pt-2.5 border-t border-slate-50 flex items-center gap-1.5 text-[11px] text-slate-400 font-medium truncate">
+                                  <HiMail className="text-slate-300 shrink-0" size={13} />
+                                  <span className="truncate">{inv.email}</span>
                                 </div>
-                              </div>
+                              )}
                             </div>
                           )}
                         </Draggable>
@@ -386,29 +413,33 @@ export default function Pipeline() {
         </div>
       </DragDropContext>
 
+      {/* ========================================================================= */}
+      {/* MODALS SECTION (Unified Premium Glassmorphism Look) */}
+      {/* ========================================================================= */}
+
       {/* Board Management Modal */}
       {showBoardModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[120] p-4">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-slate-800">Create Workflow Board</h2>
-              <button onClick={() => setShowBoardModal(false)}><HiX className="text-gray-400 text-xl" /></button>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[120] p-4 animate-fade-in">
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl w-full max-w-md transform transition-all">
+            <div className="flex justify-between items-center mb-5 border-b border-slate-50 pb-3">
+              <h2 className="text-lg font-bold text-slate-900">Create Workflow Board</h2>
+              <button onClick={() => setShowBoardModal(false)} className="p-1 hover:bg-slate-100 rounded-lg transition-colors"><HiX className="text-slate-400 text-lg" /></button>
             </div>
 
             <form onSubmit={handleCreateBoard} className="space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Pipeline Name</label>
-                <input required placeholder="e.g., Venture Capitalist Pipeline" value={newBoardName} onChange={(e) => setNewBoardName(e.target.value)} className="w-full mt-1 p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                <label className="text-xs font-semibold text-slate-600 ml-0.5">Pipeline Name</label>
+                <input required placeholder="e.g., Venture Capitalist Pipeline" value={newBoardName} onChange={(e) => setNewBoardName(e.target.value)} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Columns / Stages (Comma-Separated)</label>
-                <textarea required rows={3} placeholder="Prospect, Contacted, Initial Pitch, Terms Sheet, Closed" value={newBoardStages} onChange={(e) => setNewBoardStages(e.target.value)} className="w-full mt-1 p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
-                <p className="text-[11px] text-gray-400 mt-1 italic ml-1">Separate columns with commas. You can add as many as you like!</p>
+                <label className="text-xs font-semibold text-slate-600 ml-0.5">Columns / Stages (Comma-Separated)</label>
+                <textarea required rows={3} placeholder="Prospect, Contacted, Initial Pitch, Terms Sheet, Closed" value={newBoardStages} onChange={(e) => setNewBoardStages(e.target.value)} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none" />
+                <p className="text-[11px] text-slate-400 mt-1.5 italic ml-0.5">Separate columns with commas.</p>
               </div>
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className={`w-full py-4 text-white font-bold rounded-2xl shadow-xl transition-all uppercase text-xs tracking-widest mt-4 ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                className={`w-full py-2.5 text-white font-semibold rounded-xl transition-all text-sm mt-2 shadow-sm ${isSubmitting ? 'bg-slate-300 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800'}`}
               >
                 {isSubmitting ? "Generating..." : "Generate Custom Board"}
               </button>
@@ -419,18 +450,18 @@ export default function Pipeline() {
 
       {/* Add Lead Entry Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[110] p-4">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-slate-800">New Lead Entry</h2>
-              <button onClick={() => setShowAddModal(false)}><HiX className="text-gray-400 text-xl" /></button>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[110] p-4 animate-fade-in">
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto transform transition-all">
+            <div className="flex justify-between items-center mb-5 border-b border-slate-50 pb-3">
+              <h2 className="text-lg font-bold text-slate-900">New Lead Entry</h2>
+              <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-slate-100 rounded-lg transition-colors"><HiX className="text-slate-400 text-lg" /></button>
             </div>
 
             <form onSubmit={handleAddNew} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Select Fund *</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Select Fund *</label>
                 <select
-                  className="w-full p-2.5 border border-slate-200 bg-slate-50 rounded-xl text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 bg-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
                   required
                   value={formData.fundId}
                   onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
@@ -447,26 +478,45 @@ export default function Pipeline() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-                <input required placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-
-              <input placeholder="Job Title" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-              <input required type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-
-              <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Office Phone" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-                <input placeholder="Mobile Phone" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">First Name</label>
+                  <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Last Name</label>
+                  <input required placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Status Column</label>
-                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full mt-1 p-3 border border-slate-200 rounded-xl outline-none bg-slate-50 text-sm font-semibold">
+                <label className="text-xs font-semibold text-slate-600">Job Title</label>
+                <input placeholder="Job Title" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Email Address</label>
+                <input required type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Office Phone</label>
+                  <input placeholder="Office Phone" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Mobile Phone</label>
+                  <input placeholder="Mobile Phone" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Status Column</label>
+                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm font-medium cursor-pointer focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                   {dynamicStages.map(st => <option key={st} value={st}>{st}</option>)}
                 </select>
               </div>
 
-              <button type="submit" className="w-full py-4 bg-[#001f3f] text-white font-bold rounded-2xl shadow-xl hover:bg-blue-950 transition-all uppercase text-xs tracking-widest mt-4">
+              <button type="submit" className="w-full py-2.5 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-all text-sm shadow-sm mt-2">
                 Add New Lead
               </button>
             </form>
@@ -476,18 +526,18 @@ export default function Pipeline() {
 
       {/* Edit Entry Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[110] p-4">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-slate-800">Edit Entry</h2>
-              <button onClick={() => setShowEditModal(false)}><HiX className="text-gray-400 text-xl" /></button>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[110] p-4 animate-fade-in">
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto transform transition-all">
+            <div className="flex justify-between items-center mb-5 border-b border-slate-50 pb-3">
+              <h2 className="text-lg font-bold text-slate-900">Edit Entry</h2>
+              <button onClick={() => setShowEditModal(false)} className="p-1 hover:bg-slate-100 rounded-lg transition-colors"><HiX className="text-slate-400 text-lg" /></button>
             </div>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Select Fund</label>
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Select Fund</label>
                 <select 
-                  className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-sm font-semibold" 
+                  className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm font-medium cursor-pointer focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" 
                   value={formData.fundId} 
                   onChange={(e) => setFormData({ ...formData, fundId: e.target.value })} 
                   required
@@ -500,26 +550,45 @@ export default function Pipeline() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-                <input required placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-
-              <input placeholder="Job Title" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-              <input required type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-
-              <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Office Phone" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-                <input placeholder="Mobile Phone" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full p-3 border border-slate-200 bg-slate-50 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">First Name</label>
+                  <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Last Name</label>
+                  <input required placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Status Column</label>
-                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full mt-1 p-3 border border-slate-200 rounded-xl outline-none bg-slate-50 text-sm font-semibold">
+                <label className="text-xs font-semibold text-slate-600">Job Title</label>
+                <input placeholder="Job Title" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Email Address</label>
+                <input required type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Office Phone</label>
+                  <input placeholder="Office Phone" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Mobile Phone</label>
+                  <input placeholder="Mobile Phone" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Status Column</label>
+                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full mt-1.5 p-2.5 border border-slate-200 rounded-xl outline-none bg-white text-sm font-medium cursor-pointer focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
                   {dynamicStages.map(st => <option key={st} value={st}>{st}</option>)}
                 </select>
               </div>
 
-              <button type="submit" className="w-full py-4 bg-amber-500 text-white font-bold rounded-2xl shadow-xl hover:bg-amber-600 transition-all uppercase text-xs tracking-widest mt-4">
+              <button type="submit" className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl shadow-sm transition-all text-sm mt-2">
                 Save Changes
               </button>
             </form>
@@ -529,36 +598,36 @@ export default function Pipeline() {
 
       {/* Task Creation Modal */}
       {showTaskModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[110]">
-          <div className="bg-white p-6 rounded-xl w-96 shadow-2xl">
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="font-bold text-[#001f3f] text-sm uppercase tracking-wide">Add Task for {selectedInvestor?.firstName}</h3>
-              <button onClick={() => setShowTaskModal(false)} className="text-gray-400 hover:text-gray-600"><HiX size={18} /></button>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center z-[110] p-4 animate-fade-in">
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-xl w-full max-w-sm transform transition-all">
+            <div className="flex justify-between items-center mb-5 border-b border-slate-50 pb-3">
+              <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wide">Task for {selectedInvestor?.firstName}</h3>
+              <button onClick={() => setShowTaskModal(false)} className="p-1 hover:bg-slate-100 rounded-lg transition-colors"><HiX size={18} className="text-slate-400" /></button>
             </div>
             <form onSubmit={handleAddTask} className="flex flex-col gap-4">
               <div>
-                <label className="block text-[11px] font-black text-gray-400 uppercase mb-1">Task Title</label>
-                <input autoFocus className="w-full p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500" placeholder="What needs to be done?" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} required />
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Task Title</label>
+                <input autoFocus className="w-full p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="What needs to be done?" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} required />
               </div>
               <div>
-                <label className="block text-[11px] font-black text-gray-400 uppercase mb-1">Description (Optional)</label>
-                <textarea className="w-full p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="Enter specific task details here..." value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} rows={3} />
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Description (Optional)</label>
+                <textarea className="w-full p-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none" placeholder="Enter specific task details..." value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} rows={3} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-black text-gray-400 uppercase mb-1">Due Date</label>
-                  <input type="date" className="w-full p-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500" value={taskDueDate} onChange={(e) => setTaskDueDate(e.target.value)} required />
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Due Date</label>
+                  <input type="date" className="w-full p-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer" value={taskDueDate} onChange={(e) => setTaskDueDate(e.target.value)} required />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-black text-gray-400 uppercase mb-1">Priority</label>
-                  <select className="w-full p-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500" value={taskPriority} onChange={(e) => setTaskPriority(e.target.value)}>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Priority</label>
+                  <select className="w-full p-2 border border-slate-200 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer font-medium" value={taskPriority} onChange={(e) => setTaskPriority(e.target.value)}>
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
                     <option value="High">High</option>
                   </select>
                 </div>
               </div>
-              <button type="submit" className="w-full bg-[#001f3f] hover:bg-blue-950 text-white py-2.5 rounded-lg font-bold text-sm transition-colors shadow-md mt-2">Create Task</button>
+              <button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm mt-2">Create Task</button>
             </form>
           </div>
         </div>
