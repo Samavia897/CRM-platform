@@ -204,45 +204,66 @@ exports.getFailedJobReport = async (req, res) => {
       return res.status(404).json({ error: "No error logs found for this job asset." });
     }
 
-    // 1. Data ko safely array format mein convert karna
-    let records = logEntry.failedRecords;
-    if (typeof records === 'string') {
-      try { records = JSON.parse(records); } catch (e) {}
+    // 1. Data extraction handling cleanly
+    let rawRecords = logEntry.failedRecords;
+    let records = [];
+
+    if (rawRecords) {
+      if (typeof rawRecords === 'string') {
+        try {
+          records = JSON.parse(rawRecords);
+        } catch (e) {
+          records = [];
+        }
+      } else if (Array.isArray(rawRecords)) {
+        records = rawRecords;
+      } else if (typeof rawRecords === 'object') {
+        // Agar single object wrapped hai
+        records = Array.isArray(rawRecords.rows) ? rawRecords.rows : [rawRecords];
+      }
     }
 
-    if (!records || !Array.isArray(records) || records.length === 0) {
+    // Fallback if formatting structure is blank
+    if (!Array.isArray(records) || records.length === 0) {
       return res.status(400).json({ error: "No physical records attached to failure." });
     }
 
-    // 2. Safe flat keys extract karna (agar model instances hon toh dataValues nikalna)
-    const plainRecords = records.map(r => {
-      if (r && typeof r.get === 'function') return r.get({ plain: true });
-      if (r && r.dataValues) return r.dataValues;
-      return r;
-    });
-
-    // CSV Headers
+    // 2. Direct clean strings generation
     const headers = ["name", "type", "location", "website", "industry", "import_error_reason"];
-    
-    // 3. Rows structure processing without relying on generic Object.keys()
-    const csvRows = plainRecords.map(row => {
-      return headers.map(key => {
+    const csvRows = [];
+
+    // Push standard string headers
+    csvRows.push(headers.join(","));
+
+    // Loop data rows safely
+    for (const item of records) {
+      if (!item) continue;
+      
+      // Extract model instance raw data layers safely
+      const row = item.dataValues || item;
+
+      const rowValues = headers.map(key => {
         let val = row[key];
         
-        // Agar industry ya koi field object/array hai toh usay plain string banayein
-        if (typeof val === 'object' && val !== null) {
+        if (val === undefined || val === null) {
+          return '""';
+        }
+        
+        if (typeof val === 'object') {
           val = JSON.stringify(val);
         }
         
-        const cleanVal = val !== undefined && val !== null ? String(val) : '';
-        // Escape quotes for CSV compliance
-        return `"${cleanVal.replace(/"/g, '""')}"`;
-      }).join(",");
-    });
-    
-    const csvContent = [headers.join(","), ...csvRows].join("\n");
+        // Escape quotes to prevent streaming corruption
+        const stringVal = String(val).replace(/"/g, '""');
+        return `"${stringVal}"`;
+      });
 
-    // File descriptors setting for stream
+      csvRows.push(rowValues.join(","));
+    }
+    
+    const csvContent = csvRows.join("\n");
+
+    // Clear buffer headers
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename=failed_import_report_${jobId}.csv`);
     
