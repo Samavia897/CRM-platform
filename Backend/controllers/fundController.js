@@ -5,6 +5,7 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const { Op } = require("sequelize");
 const { Readable } = require('stream');
+const { sequelize } = require("../models");
 
 exports.getAllFunds = async (req, res) => {
   try {
@@ -191,13 +192,21 @@ exports.getFailedJobReport = async (req, res) => {
   try {
     const { jobId } = req.params;
     const targetJobId = String(jobId).trim();
+    const companyId = req.user.companyId;
 
-    const logEntry = await FailedJobLog.findOne({
-      where: { 
-        jobId: targetJobId, 
-        companyId: req.user.companyId 
+    // 🌟 PROFESSIONAL RAW SQL FIX: Cast column dynamically to text to safely match UUIDs or Integers
+    const [logEntries] = await sequelize.query(
+      `SELECT * FROM "FailedJobLogs" 
+       WHERE CAST("jobId" AS TEXT) = :targetJobId 
+       AND "companyId" = :companyId 
+       LIMIT 1`,
+      {
+        replacements: { targetJobId, companyId },
+        type: sequelize.QueryTypes.SELECT
       }
-    });
+    );
+
+    const logEntry = Array.isArray(logEntries) ? logEntries[0] : logEntries;
 
     if (!logEntry) {
       return res.status(404).json({ error: "No validation errors found for this import batch." });
@@ -209,10 +218,9 @@ exports.getFailedJobReport = async (req, res) => {
     }
 
     if (!records || !Array.isArray(records)) {
-      records = records.rows || [records];
+      records = records.rows || records.records || [records];
     }
 
-    // Original CSV structure columns + row_number + error_reason
     const headers = ["row_number", "name", "type", "location", "website", "industry", "import_error_reason"];
     const csvRows = [headers.join(",")];
 
