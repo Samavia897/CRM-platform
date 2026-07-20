@@ -196,34 +196,44 @@ exports.getFailedJobReport = async (req, res) => {
   try {
     const { jobId } = req.params;
     
+    // String aur Integer validation dono variations check karne ke liye safe dynamic find
     const logEntry = await FailedJobLog.findOne({
-      where: { jobId, companyId: req.user.companyId }
+      where: { 
+        jobId: String(jobId).trim(), 
+        companyId: req.user.companyId 
+      }
     });
 
     if (!logEntry) {
-      return res.status(404).json({ error: "No error logs found for this job asset." });
+      // 🌟 Professional clear error instead of generic 500 crash
+      return res.status(404).json({ 
+        error: "Report resource not found", 
+        details: `Could not locate a failed job log entry matching Job ID: ${jobId}` 
+      });
     }
-
-    // 🔍 KHALI IS LINE KO DEKHNA HAI RENDER LOGS MEIN
-    console.log("=== RAW DATABASE FAILED RECORDS ===", logEntry.failedRecords);
 
     let records = logEntry.failedRecords;
     if (typeof records === 'string') {
       try { records = JSON.parse(records); } catch (e) {}
     }
 
-    // Agar records array nahi hai, toh check karein ye kis format mein hai
-    if (!records || (!Array.isArray(records) && typeof records !== 'object')) {
-      return res.status(400).json({ error: "Data is not in a readable format" });
+    if (!records || !Array.isArray(records)) {
+      // JSON payload fallback checking
+      if (records && typeof records === 'object') {
+        records = records.rows || records.records || [records];
+      } else {
+        records = [];
+      }
     }
 
-    // Ensure it's an array loop
-    const finalArray = Array.isArray(records) ? records : (records.rows || [records]);
+    if (records.length === 0) {
+      return res.status(400).json({ error: "No records structure attached inside the found log database entry." });
+    }
 
     const headers = ["name", "type", "location", "website", "industry", "import_error_reason"];
     const csvRows = [headers.join(",")];
 
-    for (const item of finalArray) {
+    for (const item of records) {
       if (!item) continue;
       const row = item.dataValues || item;
       
@@ -244,6 +254,6 @@ exports.getFailedJobReport = async (req, res) => {
 
   } catch (error) {
     console.error("REAL BACKEND CRASH REASON:", error);
-    return res.status(500).json({ error: "Server crashed during CSV generation", details: error.message });
+    return res.status(500).json({ error: "Server crashed during CSV generation processing layer", details: error.message });
   }
 };
