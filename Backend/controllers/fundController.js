@@ -191,10 +191,18 @@ exports.getFailedJobReport = async (req, res) => {
   try {
     const { jobId } = req.params;
     
-    // 🌟 Fix: FailedJobLog is now correctly defined at the top
+    // Professional Step: Agar jobId integer column hai toh ensure karein conversion clean ho
+    // Agar UUIDs aa rahe hain toh parsing fallback automatic handle honi chahiye
+    const cleanJobId = String(jobId).trim();
+    
+    // Strict integer validation check taaki PostgreSQL data syntax crash na kare
+    const isInteger = /^\d+$/.test(cleanJobId);
+
     const logEntry = await FailedJobLog.findOne({
       where: { 
-        jobId: String(jobId).trim(), 
+        // Agar database integer expect karta hai aur cleanJobId dynamic string hai, 
+        // toh hum clean routing use karenge taaki query typecast fail na ho
+        jobId: isInteger ? parseInt(cleanJobId, 10) : cleanJobId, 
         companyId: req.user.companyId 
       }
     });
@@ -202,7 +210,7 @@ exports.getFailedJobReport = async (req, res) => {
     if (!logEntry) {
       return res.status(404).json({ 
         error: "Report resource not found", 
-        details: `Could not locate a failed job log entry matching Job ID: ${jobId}` 
+        details: `No failed logs match the requested Job ID: ${jobId}` 
       });
     }
 
@@ -220,7 +228,7 @@ exports.getFailedJobReport = async (req, res) => {
     }
 
     if (records.length === 0) {
-      return res.status(400).json({ error: "No records structure found inside database entry." });
+      return res.status(400).json({ error: "No failed record objects found within this log." });
     }
 
     const headers = ["name", "type", "location", "website", "industry", "import_error_reason"];
@@ -246,7 +254,11 @@ exports.getFailedJobReport = async (req, res) => {
     return res.status(200).send(csvRows.join("\n"));
 
   } catch (error) {
-    console.error("REAL BACKEND CRASH REASON:", error);
-    return res.status(500).json({ error: "Server crashed during CSV generation processing layer", details: error.message });
+    console.error("DYNAMIC DATABASE QUERY CRASH RECOVERY:", error);
+    // Safe response structure back to UI
+    return res.status(500).json({ 
+      error: "Database integrity parsing mismatch", 
+      details: error.message 
+    });
   }
 };
