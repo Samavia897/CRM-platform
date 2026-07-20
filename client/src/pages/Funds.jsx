@@ -197,11 +197,11 @@ const handleFileChange = async (e) => {
 const pollImportStatus = (jobId, e, attempts = 0) => {
   const currentToken = localStorage.getItem("token");
   
-  // Maximum 10 baar check karega (20 seconds max timeout)
-  if (attempts > 10) {
+  // Max 15 attempts (30 seconds total) to give the worker time to finish processing
+  if (attempts > 15) {
     Swal.fire({
       title: 'Import Status',
-      text: 'CSV is processing in background. Refresh page in a moment.',
+      text: 'CSV processing taking longer than expected. Please check your funds table or refresh the page in a few moments.',
       icon: 'info',
       confirmButtonColor: '#3b82f6'
     });
@@ -212,38 +212,47 @@ const pollImportStatus = (jobId, e, attempts = 0) => {
 
   setTimeout(async () => {
     try {
-      // Aapke report download wale endpoint ko touch karke dekh rahe hain data bana ya nahi
+      // Hit the endpoint to see if a failed job log entry exists
       const checkRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
         headers: { "Authorization": `Bearer ${currentToken}` }
       });
 
-      // Agar entry mil gayi aur code 200 aya, matlab failed logs generate ho chuke hain!
+      // If we get a 200 OK response, the report is ready! Show the download option.
       showPartialFailureModal(jobId);
       e.target.value = "";
       fetchFunds();
 
     } catch (err) {
-      // Agar 404 error aata hai, iska matlab ya toh saare rows perfect thy ya abhi worker chal raha hai
-      if (err.response && err.response.status === 404) {
-        // Hum confirm nahi keh sakte ke success hai ya delayed, isliye dobara check karte hain jab tak 10 attempts na hon
-        if (attempts === 9) {
-          // Final attempt par bhi 404 ka matlab hai koi error log nahi bana -> Sab rows insert ho gayin!
-          Swal.fire('Success', 'Funds imported successfully! Non-valid rows were omitted or clean.', 'success');
+      const statusCode = err.response?.status;
+      
+      // 404 means the worker hasn't created a failure log yet (either still running or 100% clean success)
+      if (statusCode === 404) {
+        if (attempts === 14) {
+          // On the final check, if it's still 404, it means no bad rows were ever found!
+          Swal.fire('Success', 'Funds imported successfully! No validation errors detected.', 'success');
           e.target.value = "";
           fetchFunds();
         } else {
+          // Keep polling
           pollImportStatus(jobId, e, attempts + 1);
         }
-      } else {
-        // Koi aur server error aya toh close loop
-        Swal.fire('Import Finished', 'Process execution completed.', 'info');
+      } 
+      // 500 means the endpoint hit a database/parsing issue but the log DOES exist! 
+      else if (statusCode === 500) {
+        console.error("Log entry exists but backend CSV parsing failed:", err.response?.data);
+        
+        // Don't hide the button! Show the modal anyway so they can attempt the download action.
+        showPartialFailureModal(jobId);
         e.target.value = "";
         fetchFunds();
+      } 
+      // Fallback for any other unexpected networking disconnects
+      else {
+        pollImportStatus(jobId, e, attempts + 1);
       }
     }
-  }, 2000); // Har 2 second ke baad call hoga
+  }, 2000); // Check every 2 seconds
 };
-
 // Download Modal UI Logic
 const showPartialFailureModal = (jobId) => {
   Swal.fire({
