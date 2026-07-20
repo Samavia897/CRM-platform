@@ -1,10 +1,9 @@
-const { Fund, Investor } = require("../models/index");
+const { Fund, Investor, FailedJobLog } = require("../models");
 const fs = require('fs');
 const csv = require('csv-parser');
 const { Op } = require("sequelize");
 const { Readable } = require('stream');
 const { fundImportQueue } = require('../config/importQueue');
-const { FailedJobLog } = require("../models");
 
 exports.getAllFunds = async (req, res) => {
   try {
@@ -42,7 +41,6 @@ exports.getAllFunds = async (req, res) => {
 
 exports.createFund = async (req, res) => {
   try {
-    // 🌟 Support both 'name' (frontend default) and 'fundName' to avoid any crash
     const { name, fundName, type, location, website, industry, stage } = req.body;
     const finalName = name || fundName;
 
@@ -54,7 +52,6 @@ exports.createFund = async (req, res) => {
       return res.status(400).json({ error: "Fund name is required" });
     }
 
-    // URL safe format logic
     let formattedWebsite = website ? website.trim() : null;
     if (formattedWebsite && !formattedWebsite.startsWith("http://") && !formattedWebsite.startsWith("https://")) {
       formattedWebsite = `https://${formattedWebsite}`;
@@ -64,7 +61,7 @@ exports.createFund = async (req, res) => {
       name: finalName.trim(),
       type: type || "Venture",
       location: location || "",
-      website: formattedWebsite || null, // validation clear handles
+      website: formattedWebsite || null,
       industry: industry || [],
       stage: stage || [],
       companyId: req.user.companyId
@@ -85,7 +82,6 @@ exports.updateFund = async (req, res) => {
 
     if (!fund) return res.status(404).json({ error: "Fund not found" });
 
-    // Handle URL formatting on updates too
     if (req.body.website) {
       let ws = req.body.website.trim();
       if (ws && !ws.startsWith("http://") && !ws.startsWith("https://")) {
@@ -159,7 +155,6 @@ exports.importFunds = async (req, res) => {
             return res.status(400).json({ message: 'CSV execution complete but 0 matching records resolved.' });
           }
 
-          // Queue mein job add kar rahe hain aur job instance le rahe hain
           const job = await fundImportQueue.add(
             `bulk_import_${req.user.companyId}_${Date.now()}`, 
             {
@@ -173,7 +168,6 @@ exports.importFunds = async (req, res) => {
             }
           );
 
-          // 🌟 UPDATED: Ab jobId frontend ko lazmi milegi track karne ke liye
           return res.status(202).json({ 
             message: 'CSV uploaded and queued for background ingestion processing.', 
             jobId: job.id, 
@@ -196,7 +190,7 @@ exports.getFailedJobReport = async (req, res) => {
   try {
     const { jobId } = req.params;
     
-    // String aur Integer validation dono variations check karne ke liye safe dynamic find
+    // 🌟 Fix: FailedJobLog is now correctly defined at the top
     const logEntry = await FailedJobLog.findOne({
       where: { 
         jobId: String(jobId).trim(), 
@@ -205,7 +199,6 @@ exports.getFailedJobReport = async (req, res) => {
     });
 
     if (!logEntry) {
-      // 🌟 Professional clear error instead of generic 500 crash
       return res.status(404).json({ 
         error: "Report resource not found", 
         details: `Could not locate a failed job log entry matching Job ID: ${jobId}` 
@@ -218,7 +211,6 @@ exports.getFailedJobReport = async (req, res) => {
     }
 
     if (!records || !Array.isArray(records)) {
-      // JSON payload fallback checking
       if (records && typeof records === 'object') {
         records = records.rows || records.records || [records];
       } else {
@@ -227,7 +219,7 @@ exports.getFailedJobReport = async (req, res) => {
     }
 
     if (records.length === 0) {
-      return res.status(400).json({ error: "No records structure attached inside the found log database entry." });
+      return res.status(400).json({ error: "No records structure found inside database entry." });
     }
 
     const headers = ["name", "type", "location", "website", "industry", "import_error_reason"];
