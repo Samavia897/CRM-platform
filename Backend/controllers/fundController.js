@@ -159,18 +159,24 @@ exports.importFunds = async (req, res) => {
             return res.status(400).json({ message: 'CSV execution complete but 0 matching records resolved.' });
           }
 
+          // Queue mein job add kar rahe hain aur job instance le rahe hain
+          const job = await fundImportQueue.add(
+            `bulk_import_${req.user.companyId}_${Date.now()}`, 
+            {
+              rows: results,
+              companyId: req.user.companyId
+            }, 
+            {
+              removeOnComplete: true, 
+              attempts: 3,            
+              backoff: 5000           
+            }
+          );
 
-          await fundImportQueue.add(`bulk_import_${req.user.companyId}_${Date.now()}`, {
-            rows: results,
-            companyId: req.user.companyId
-          }, {
-            removeOnComplete: true, 
-            attempts: 3,            
-            backoff: 5000           
-          });
-
+          // 🌟 UPDATED: Ab jobId frontend ko lazmi milegi track karne ke liye
           return res.status(202).json({ 
             message: 'CSV uploaded and queued for background ingestion processing.', 
+            jobId: job.id, 
             estimatedRecords: results.length 
           });
 

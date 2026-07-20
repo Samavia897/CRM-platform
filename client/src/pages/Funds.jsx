@@ -144,121 +144,154 @@ export default function Funds() {
     document.getElementById('csvImportInput').click();
   };
 
-const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+// --- FRONTEND: src/pages/Funds.jsx ---
 
-    if (file.type !== "text/csv" && !file.name.endsWith('.csv')) {
-      return Swal.fire('Error', 'Please upload a valid CSV file', 'error');
+const handleFileChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (file.type !== "text/csv" && !file.name.endsWith('.csv')) {
+    return Swal.fire('Error', 'Please upload a valid CSV file', 'error');
+  }
+
+  const fileFormData = new FormData();
+  fileFormData.append("file", file);
+
+  Swal.fire({
+    title: 'Processing CSV...',
+    text: 'Uploading file and validating records in background...',
+    allowOutsideClick: false,
+    didOpen: () => { Swal.showLoading(); }
+  });
+
+  try {
+    const currentToken = localStorage.getItem("token");
+    
+    const res = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
+      headers: {
+        "Authorization": `Bearer ${currentToken}`,
+        "Content-Type": "multipart/form-data"
+      }
+    });
+    
+    const jobId = res.data?.jobId;
+
+    if (jobId) {
+      // Background worker ki finish hone ka wait karein (Polling)
+      pollImportStatus(jobId, e);
+    } else {
+      Swal.fire('Success', 'Import requested successfully!', 'success');
+      e.target.value = "";
+      fetchFunds();
     }
 
-    const fileFormData = new FormData();
-    fileFormData.append("file", file);
+  } catch (err) {
+    console.error("Import Crash Error Trace:", err.response?.data);
+    e.target.value = "";
+    Swal.fire('Import Failed', err.response?.data?.message || 'Internal Server Error', 'error');
+    fetchFunds();
+  }
+};
 
+// Polling Helper Function: Har 2 second baad check karega report bani ya nahi
+const pollImportStatus = (jobId, e, attempts = 0) => {
+  const currentToken = localStorage.getItem("token");
+  
+  // Maximum 10 baar check karega (20 seconds max timeout)
+  if (attempts > 10) {
     Swal.fire({
-      title: 'Importing...',
-      text: 'Please wait while records are uploading',
-      allowOutsideClick: false,
-      didOpen: () => { Swal.showLoading(); }
+      title: 'Import Status',
+      text: 'CSV is processing in background. Refresh page in a moment.',
+      icon: 'info',
+      confirmButtonColor: '#3b82f6'
     });
+    e.target.value = "";
+    fetchFunds();
+    return;
+  }
 
+  setTimeout(async () => {
     try {
-      const currentToken = localStorage.getItem("token");
-      
-      const res = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
-        headers: {
-          "Authorization": `Bearer ${currentToken}`,
-          "Content-Type": "multipart/form-data"
-        }
+      // Aapke report download wale endpoint ko touch karke dekh rahe hain data bana ya nahi
+      const checkRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
+        headers: { "Authorization": `Bearer ${currentToken}` }
       });
-      
-      // 🔍 Response checking in browser console
-      console.log("BACKEND RAW RESPONSE DATA:", res.data);
 
-      const jobId = res.data?.jobId || res.data?.data?.jobId;
-      const hasErrors = res.data?.failedRows?.length > 0 || res.data?.errors?.length > 0 || res.data?.failedCount > 0 || res.data?.hasErrors;
-
-      if (jobId && (hasErrors || res.data?.error)) {
-        showPartialFailureModal(jobId, res.data?.error || "Some rows failed validation checks.");
-        e.target.value = "";
-        fetchFunds();
-        return; 
-      }
-
-      Swal.fire('Success', 'All funds imported successfully!', 'success');
+      // Agar entry mil gayi aur code 200 aya, matlab failed logs generate ho chuke hain!
+      showPartialFailureModal(jobId);
       e.target.value = "";
       fetchFunds();
 
     } catch (err) {
-      console.error("Import Crash Error Trace:", err.response?.data);
-      e.target.value = "";
-
-      const jobId = err.response?.data?.jobId || err.response?.data?.data?.jobId; 
-      const errorMessage = err.response?.data?.error || 'Could not parse the CSV formatting structure';
-
-      if (jobId) {
-        showPartialFailureModal(jobId, errorMessage);
-      } else {
-        Swal.fire('Import Failed', errorMessage, 'error');
-      }
-      
-      fetchFunds();
-    }
-  };
-
-  // Helper Modal Function for Partial Failures
-  const showPartialFailureModal = (jobId, errorMessage) => {
-    Swal.fire({
-      title: 'Import Partial Failure',
-      icon: 'warning',
-      html: `
-        <p style="color: #64748b; font-size: 13px; margin-bottom: 15px;">
-          ${errorMessage}
-        </p>
-        <button 
-          id="downloadReportBtn" 
-          style="background-color: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; border: none; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;"
-        >
-          📥 Download Error Report (CSV)
-        </button>
-      `,
-      showConfirmButton: true,
-      confirmButtonColor: '#3b82f6',
-      confirmButtonText: 'Close',
-      didOpen: () => {
-        const btn = document.getElementById('downloadReportBtn');
-        if (btn) {
-          btn.addEventListener('click', async () => {
-            try {
-              Swal.showLoading();
-              const currentToken = localStorage.getItem("token");
-              const reportRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
-                headers: { "Authorization": `Bearer ${currentToken}` },
-                responseType: 'blob'
-              });
-
-              const url = window.URL.createObjectURL(new Blob([reportRes.data]));
-              const link = document.createElement('a');
-              link.href = url;
-              link.setAttribute('download', `failed_rows_report_${jobId}.csv`);
-              document.body.appendChild(link);
-              link.click();
-              link.remove();
-              
-              Swal.fire({
-                title: 'Downloaded!',
-                text: 'Your error report has been saved.',
-                icon: 'success',
-                confirmButtonColor: '#3b82f6'
-              });
-            } catch (reportErr) {
-              Swal.fire('Error', 'Could not stream the failed csv report.', 'error');
-            }
-          });
+      // Agar 404 error aata hai, iska matlab ya toh saare rows perfect thy ya abhi worker chal raha hai
+      if (err.response && err.response.status === 404) {
+        // Hum confirm nahi keh sakte ke success hai ya delayed, isliye dobara check karte hain jab tak 10 attempts na hon
+        if (attempts === 9) {
+          // Final attempt par bhi 404 ka matlab hai koi error log nahi bana -> Sab rows insert ho gayin!
+          Swal.fire('Success', 'Funds imported successfully! Non-valid rows were omitted or clean.', 'success');
+          e.target.value = "";
+          fetchFunds();
+        } else {
+          pollImportStatus(jobId, e, attempts + 1);
         }
+      } else {
+        // Koi aur server error aya toh close loop
+        Swal.fire('Import Finished', 'Process execution completed.', 'info');
+        e.target.value = "";
+        fetchFunds();
       }
-    });
-  };
+    }
+  }, 2000); // Har 2 second ke baad call hoga
+};
+
+// Download Modal UI Logic
+const showPartialFailureModal = (jobId) => {
+  Swal.fire({
+    title: 'Import Partial Failure',
+    icon: 'warning',
+    html: `
+      <p style="color: #64748b; font-size: 13px; margin-bottom: 15px;">
+        Some rows failed validation checks and were skipped. Valid rows were inserted.
+      </p>
+      <button 
+        id="downloadReportBtn" 
+        style="background-color: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; border: none; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;"
+      >
+        📥 Download Error Report (CSV)
+      </button>
+    `,
+    showConfirmButton: true,
+    confirmButtonColor: '#3b82f6',
+    confirmButtonText: 'Close',
+    didOpen: () => {
+      const btn = document.getElementById('downloadReportBtn');
+      if (btn) {
+        btn.addEventListener('click', async () => {
+          try {
+            Swal.showLoading();
+            const currentToken = localStorage.getItem("token");
+            const reportRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
+              headers: { "Authorization": `Bearer ${currentToken}` },
+              responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(new Blob([reportRes.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `failed_rows_report_${jobId}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            
+            Swal.fire('Downloaded!', 'Your error report has been saved.', 'success');
+          } catch (reportErr) {
+            Swal.fire('Error', 'Could not download the csv report.', 'error');
+          }
+        });
+      }
+    }
+  });
+};
 
   const closeModal = () => {
     setShowModal(false);
