@@ -205,16 +205,35 @@ exports.getFailedJobReport = async (req, res) => {
       return res.status(404).json({ error: "No error logs found for this job asset." });
     }
 
-    const records = logEntry.failedRecords;
-    if (!records || records.length === 0) {
+    // 🌟 SAFE EXTRACTION: Database se raw data plain array ki tarah nikalna
+    let records = logEntry.failedRecords;
+    if (typeof records === 'string') {
+      try {
+        records = JSON.parse(records);
+      } catch (e) {
+        console.error("Failed to parse failedRecords JSON string");
+      }
+    }
+
+    if (!records || !Array.isArray(records) || records.length === 0) {
       return res.status(400).json({ error: "No physical records attached to failure." });
     }
 
-    // Dynamic CSV conversion on the fly
-    const headers = Object.keys(records[0]).join(",");
-    const csvRows = records.map(row => 
-      Object.values(row).map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")
+    // Sequelize model instances ko plain object mein convert karna agar zaroorat ho
+    const plainRecords = records.map(r => (typeof r.get === 'function' ? r.get({ plain: true }) : r));
+
+    // 🌟 SAFE HEADERS GENERATION: Pehli row ke saare keys nikalna
+    const firstRecord = plainRecords[0];
+    const headers = Object.keys(firstRecord).join(",");
+    
+    // Rows parsing with proper escape characters
+    const csvRows = plainRecords.map(row => 
+      Object.keys(firstRecord).map(key => {
+        const val = row[key] !== undefined && row[key] !== null ? row[key] : '';
+        return `"${String(val).replace(/"/g, '""')}"`;
+      }).join(",")
     );
+    
     const csvContent = [headers, ...csvRows].join("\n");
 
     // Setting file descriptors and buffers for instant client download streaming
@@ -224,7 +243,7 @@ exports.getFailedJobReport = async (req, res) => {
     return res.status(200).send(csvContent);
 
   } catch (error) {
-    console.error("Report generation failed:", error.message);
-    return res.status(500).json({ error: "Failed to compile background job report." });
+    console.error("Report generation failed:", error);
+    return res.status(500).json({ error: "Failed to compile background job report.", details: error.message });
   }
 };
