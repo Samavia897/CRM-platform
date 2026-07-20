@@ -1,4 +1,4 @@
-const importQueueModule = require('../config/importQueue');
+const { fundImportQueue } = require('../config/importQueue')
 const { Fund, Investor } = require("../models"); 
 const FailedJobLog = require("../models/failedJobLogModel");
 const fs = require('fs');

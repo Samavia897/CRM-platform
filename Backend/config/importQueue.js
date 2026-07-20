@@ -1,14 +1,25 @@
+const { Queue, Worker } = require("bullmq");
+const IORedis = require("ioredis");
 const { Fund, FailedJobLog } = require("../models");
 
-// BullMQ Queue Processor
+// 1. Redis Connection Setup (Render Environment Variable auto-fallback)
+const redisConnection = new IORedis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null
+});
+
+// 2. Initialize the BullMQ Queue instance
+const fundImportQueue = new Queue("fundImportQueue", {
+  connection: redisConnection
+});
+
+// 3. Your In-Memory Validation Processor Function
 const processFundImport = async (job) => {
   const { rows, companyId } = job.data;
   
   const validRows = [];
   const failedRowsList = [];
 
-  // 1. DUPICATE CHECK IN BULK (O(1) Memory Set Optimization)
-  // Saare incoming names nikalen aur ek hi single DB query chalayein
+  // O(1) Bulk duplicate memory set check
   const incomingNames = rows.map(r => r.name?.trim()).filter(Boolean);
   const existingFunds = await Fund.findAll({
     where: { 
@@ -19,21 +30,18 @@ const processFundImport = async (job) => {
   });
   const existingNamesSet = new Set(existingFunds.map(f => f.name.toLowerCase()));
 
-  // 2. IN-MEMORY VALIDATION (Pure CPU work - Super Fast)
+  // In-memory loop validation (Super fast CPU work)
   rows.forEach((row, index) => {
     const rowNum = index + 1;
     const errors = [];
 
-    // Validation A: Required Fields
     if (!row.name) errors.push("Fund Name is required.");
     if (!row.type) errors.push("Fund Type is required.");
 
-    // Validation B: Duplicate Check
     if (row.name && existingNamesSet.has(row.name.toLowerCase())) {
       errors.push(`Fund name "${row.name}" already exists in system.`);
     }
 
-    // Validation C: Industry Array check (Safe string handling)
     if (row.industry && typeof row.industry === 'string') {
       try {
         row.industry = JSON.parse(row.industry);
@@ -42,7 +50,6 @@ const processFundImport = async (job) => {
       }
     }
 
-    // Output Separation
     if (errors.length > 0) {
       failedRowsList.push({
         ...row,
@@ -61,26 +68,43 @@ const processFundImport = async (job) => {
     }
   });
 
-  // 3. BULK INSERT VALID ROWS (Only 1 Single DB Call - Maximum Speed)
+  // Bulk Insert Valid Rows (1 Call Only)
   if (validRows.length > 0) {
     await Fund.bulkCreate(validRows, { validating: false });
   }
 
-  // 4. SAVE FAILED LOGS USING STRUCTURAL STRATEGY
-  // Agar koi row fail hui hai, toh hum uska object text format mein direct save karenge
+  // Save Failed Logs safely
   if (failedRowsList.length > 0) {
     await FailedJobLog.create({
-      jobId: String(job.id).trim(), // Match with router params string conversion safely
+      jobId: String(job.id).trim(),
       companyId: companyId,
-      failedRecords: failedRowsList // Sequelize will handle stringification automatically if JSON type
+      failedRecords: failedRowsList
     });
   }
 
-  // Summary object for polling tracking
   return {
     total: rows.length,
     imported: validRows.length,
     failed: failedRowsList.length,
     jobId: job.id
   };
+};
+
+// 4. Initialize Worker to listen and process incoming queue tasks
+const fundImportWorker = new Worker("fundImportQueue", processFundImport, {
+  connection: redisConnection
+});
+
+fundImportWorker.on("completed", (job) => {
+  console.log(`Job ${job.id} validation processing successfully completed.`);
+});
+
+fundImportWorker.on("failed", (job, err) => {
+  console.error(`Job ${job?.id} worker execution failed:`, err);
+});
+
+// 5. Professional Export Structure
+module.exports = {
+  fundImportQueue,
+  fundImportWorker
 };
