@@ -204,51 +204,70 @@ exports.getFailedJobReport = async (req, res) => {
       return res.status(404).json({ error: "No error logs found for this job asset." });
     }
 
-    // Har qism ke format se data nikalne ki koshish karein
-    let records = logEntry.failedRecords;
-    
-    if (typeof records === 'string') {
-      try { records = JSON.parse(records); } catch(e) {}
-    }
-    if (records && typeof records === 'object' && !Array.isArray(records)) {
-      records = records.rows || records.records || [records];
+    // 1. Safely extract records from Sequelize instance data layer
+    let rawRecords = logEntry.failedRecords;
+    let records = [];
+
+    if (rawRecords) {
+      if (typeof rawRecords === 'string') {
+        try {
+          records = JSON.parse(rawRecords);
+        } catch (e) {
+          console.error("String JSON parsing error:", e);
+        }
+      } else if (Array.isArray(rawRecords)) {
+        records = rawRecords;
+      } else if (typeof rawRecords === 'object') {
+        records = rawRecords.rows || rawRecords.records || [rawRecords];
+      }
     }
 
-    // AGAR DATA PHIR BHI KHALI HAI YA PARSE NAHI HUA
-    if (!records || !Array.isArray(records) || records.length === 0) {
-      // Crash karne ke bajaye generic clean file return karein
-      const fallbackContent = "name,type,location,website,industry,import_error_reason\n\"Unknown Failed Row\",\"Venture\",\"\",\"\",\"\",\"\${logEntry.errorMessage || 'Validation failure'}\"";
-      res.setHeader("Content-Type", "text/csv");
-      res.setHeader("Content-Disposition", `attachment; filename=failed_import_report_\${jobId}.csv`);
-      return res.status(200).send(fallbackContent);
+    if (!Array.isArray(records) || records.length === 0) {
+      return res.status(400).json({ error: "No records structure found inside this log entry." });
     }
 
+    // 2. Exact Headers mapping matching the frontend import requirements
     const headers = ["name", "type", "location", "website", "industry", "import_error_reason"];
-    const csvRows = [headers.join(",")];
+    const csvRows = [];
 
-    for (let item of records) {
+    // Header Row adding
+    csvRows.push(headers.join(","));
+
+    // 3. Dynamic row serialization loop
+    for (const item of records) {
       if (!item) continue;
-      const row = item.dataValues || item;
-      
-      const rowValues = headers.map(key => {
-        let val = row[key];
-        if (val === undefined || val === null) return '""';
-        if (typeof val === 'object') val = JSON.stringify(val);
-        return `"\${String(val).replace(/"/g, '""')}"`;
+
+      // Extract raw keys even if wrapped inside Sequelize dataValues
+      const cleanRow = item.dataValues || item;
+
+      const lineValues = headers.map(key => {
+        let value = cleanRow[key];
+
+        // Professional formatting for nested arrays (e.g., industry split fields)
+        if (Array.isArray(value)) {
+          value = value.join("; "); // Array elements ko semicolons se separate karein
+        } else if (value && typeof value === 'object') {
+          value = JSON.stringify(value);
+        }
+
+        const safeString = value !== undefined && value !== null ? String(value) : '';
+        // Standard CSV quotes escaping protocol
+        return `"${safeString.replace(/"/g, '""')}"`;
       });
-      csvRows.push(rowValues.join(","));
+
+      csvRows.push(lineValues.join(","));
     }
-    
+
+    const csvContent = csvRows.join("\n");
+
+    // Professional stream descriptors setting
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename=failed_import_report_\${jobId}.csv`);
-    return res.status(200).send(csvRows.join("\n"));
+    res.setHeader("Content-Disposition", `attachment; filename=failed_rows_report_${jobId}.csv`);
+    
+    return res.status(200).send(csvContent);
 
   } catch (error) {
-    // KUCH BHI CRASH HO, USER KO FILE DE DO!
-    console.error("REPORT GENERATION CAPTURE:", error);
-    const extremeFallback = "error\n\"Failed to parse structure but records were skipped. Check your CSV fields syntax.\"";
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename=failed_import_report_error.csv`);
-    return res.status(200).send(extremeFallback);
+    console.error("CRITICAL EXPORT CONTROLLER CRASH:", error);
+    return res.status(500).json({ error: "Internal Server Error compiling dynamic csv stream report." });
   }
 };
