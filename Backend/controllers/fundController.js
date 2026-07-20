@@ -5,7 +5,6 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const { Op } = require("sequelize");
 const { Readable } = require('stream');
-const { fundImportQueue } = require('../config/importQueue');
 
 exports.getAllFunds = async (req, res) => {
   try {
