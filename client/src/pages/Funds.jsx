@@ -165,21 +165,28 @@ const handleFileChange = async (e) => {
     try {
       const currentToken = localStorage.getItem("token");
       
-      await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
+      const res = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
         headers: {
           "Authorization": `Bearer ${currentToken}`,
           "Content-Type": "multipart/form-data"
         }
       });
       
-      Swal.fire('Success', 'Funds imported successfully!', 'success');
+      // Kuch backends 200 OK par bhi partial failures errors array ya jobId ke sath bhejte hain
+      if (res.data?.hasErrors || res.data?.jobId) {
+        throw { response: res }; // Trigger catch block manually for partial failure
+      }
+
+      Swal.fire('Success', 'All funds imported successfully!', 'success');
       e.target.value = "";
       fetchFunds();
     } catch (err) {
       console.error("Import Crash Error Trace:", err.response?.data);
       e.target.value = "";
 
-      const jobId = err.response?.data?.jobId; 
+      // Check both response body patterns
+      const jobId = err.response?.data?.jobId || err.data?.jobId; 
+      const errorMessage = err.response?.data?.error || err.data?.error || 'Some rows failed validation checks.';
 
       if (jobId) {
         Swal.fire({
@@ -187,11 +194,11 @@ const handleFileChange = async (e) => {
           icon: 'warning',
           html: `
             <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">
-              ${err.response?.data?.error || 'Some rows failed validation checks.'}
+              ${errorMessage}
             </p>
             <button 
               id="downloadReportBtn" 
-              style="background-color: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; border: none; margin-top: 10px;"
+              style="background-color: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; border: none; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;"
             >
               📥 Download Error Report (CSV)
             </button>
@@ -200,29 +207,35 @@ const handleFileChange = async (e) => {
           confirmButtonColor: '#3b82f6',
           confirmButtonText: 'Close',
           didOpen: () => {
-            document.getElementById('downloadReportBtn').addEventListener('click', async () => {
-              try {
-                const currentToken = localStorage.getItem("token");
-                const reportRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
-                  headers: { "Authorization": `Bearer ${currentToken}` },
-                  responseType: 'blob'
-                });
+            const btn = document.getElementById('downloadReportBtn');
+            if (btn) {
+              btn.addEventListener('click', async () => {
+                try {
+                  Swal.showLoading();
+                  const currentToken = localStorage.getItem("token");
+                  const reportRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
+                    headers: { "Authorization": `Bearer ${currentToken}` },
+                    responseType: 'blob'
+                  });
 
-                const url = window.URL.createObjectURL(new Blob([reportRes.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', `failed_rows_report_${jobId}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-              } catch (reportErr) {
-                Swal.fire('Error', 'Could not stream the failed csv report.', 'error');
-              }
-            });
+                  const url = window.URL.createObjectURL(new Blob([reportRes.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `failed_rows_report_${jobId}.csv`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  Swal.hideLoading();
+                  Swal.fire('Downloaded!', 'Your error report has been downloaded.', 'success');
+                } catch (reportErr) {
+                  Swal.fire('Error', 'Could not stream the failed csv report.', 'error');
+                }
+              });
+            }
           }
         });
       } else {
-        Swal.fire('Import Failed', err.response?.data?.error || 'Could not parse the CSV formatting structure', 'error');
+        Swal.fire('Import Failed', errorMessage, 'error');
       }
       
       fetchFunds();
