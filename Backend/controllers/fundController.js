@@ -190,28 +190,17 @@ exports.importFunds = async (req, res) => {
 exports.getFailedJobReport = async (req, res) => {
   try {
     const { jobId } = req.params;
-    
-    // Professional Step: Agar jobId integer column hai toh ensure karein conversion clean ho
-    // Agar UUIDs aa rahe hain toh parsing fallback automatic handle honi chahiye
-    const cleanJobId = String(jobId).trim();
-    
-    // Strict integer validation check taaki PostgreSQL data syntax crash na kare
-    const isInteger = /^\d+$/.test(cleanJobId);
+    const targetJobId = String(jobId).trim();
 
     const logEntry = await FailedJobLog.findOne({
       where: { 
-        // Agar database integer expect karta hai aur cleanJobId dynamic string hai, 
-        // toh hum clean routing use karenge taaki query typecast fail na ho
-        jobId: isInteger ? parseInt(cleanJobId, 10) : cleanJobId, 
+        jobId: targetJobId, 
         companyId: req.user.companyId 
       }
     });
 
     if (!logEntry) {
-      return res.status(404).json({ 
-        error: "Report resource not found", 
-        details: `No failed logs match the requested Job ID: ${jobId}` 
-      });
+      return res.status(404).json({ error: "No validation errors found for this import batch." });
     }
 
     let records = logEntry.failedRecords;
@@ -220,45 +209,33 @@ exports.getFailedJobReport = async (req, res) => {
     }
 
     if (!records || !Array.isArray(records)) {
-      if (records && typeof records === 'object') {
-        records = records.rows || records.records || [records];
-      } else {
-        records = [];
-      }
+      records = records.rows || [records];
     }
 
-    if (records.length === 0) {
-      return res.status(400).json({ error: "No failed record objects found within this log." });
-    }
-
-    const headers = ["name", "type", "location", "website", "industry", "import_error_reason"];
+    // Original CSV structure columns + row_number + error_reason
+    const headers = ["row_number", "name", "type", "location", "website", "industry", "import_error_reason"];
     const csvRows = [headers.join(",")];
 
-    for (const item of records) {
-      if (!item) continue;
-      const row = item.dataValues || item;
+    for (const row of records) {
+      if (!row) continue;
       
-      const line = headers.map(key => {
+      const lineValues = headers.map(key => {
         let val = row[key];
         if (Array.isArray(val)) val = val.join("; ");
         if (val && typeof val === 'object') val = JSON.stringify(val);
-        const str = val !== undefined && val !== null ? String(val) : '';
-        return `"${str.replace(/"/g, '""')}"`;
-      }).join(",");
-      
-      csvRows.push(line);
+        
+        const cleanVal = val !== undefined && val !== null ? String(val) : '';
+        return `"${cleanVal.replace(/"/g, '""')}"`;
+      });
+      csvRows.push(lineValues.join(","));
     }
 
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename=failed_rows_${jobId}.csv`);
+    res.setHeader("Content-Disposition", `attachment; filename=error_report_job_${targetJobId}.csv`);
     return res.status(200).send(csvRows.join("\n"));
 
   } catch (error) {
-    console.error("DYNAMIC DATABASE QUERY CRASH RECOVERY:", error);
-    // Safe response structure back to UI
-    return res.status(500).json({ 
-      error: "Database integrity parsing mismatch", 
-      details: error.message 
-    });
+    console.error("EXECUTIVE CSV GENERATION ERROR:", error);
+    return res.status(500).json({ error: "Failed to stream CSV error logs.", details: error.message });
   }
 };

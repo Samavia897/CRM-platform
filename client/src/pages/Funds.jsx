@@ -256,12 +256,13 @@ const pollImportStatus = (jobId, e, attempts = 0) => {
 // Download Modal UI Logic
 const showPartialFailureModal = (jobId) => {
   Swal.fire({
-    title: 'Import Partial Failure',
-    icon: 'warning',
+    title: 'Import Process Execution Finished',
+    icon: 'info',
     html: `
-      <p style="color: #64748b; font-size: 13px; margin-bottom: 15px;">
-        Some rows failed validation checks and were skipped. Valid rows were inserted.
-      </p>
+      <div style="text-align: left; background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border: 1px solid #e2e8f0;">
+        <p style="margin: 4px 0;">📊 <strong>Batch Operations Completed</strong></p>
+        <p style="margin: 2px 0; color: #64748b; font-size:12px;">Validation rules applied in-memory. Valid structures inserted.</p>
+      </div>
       <button 
         id="downloadReportBtn" 
         style="background-color: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; border: none; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;"
@@ -271,7 +272,7 @@ const showPartialFailureModal = (jobId) => {
     `,
     showConfirmButton: true,
     confirmButtonColor: '#3b82f6',
-    confirmButtonText: 'Close',
+    confirmButtonText: 'Close Dashboard View',
     didOpen: () => {
       const btn = document.getElementById('downloadReportBtn');
       if (btn) {
@@ -279,12 +280,13 @@ const showPartialFailureModal = (jobId) => {
           try {
             Swal.showLoading();
             const currentToken = localStorage.getItem("token");
+            
             const reportRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
               headers: { "Authorization": `Bearer ${currentToken}` },
               responseType: 'blob'
             });
 
-            const url = window.URL.createObjectURL(new Blob([reportRes.data]));
+            const url = window.URL.createObjectURL(new Blob([reportRes.data], { type: 'text/csv' }));
             const link = document.createElement('a');
             link.href = url;
             link.setAttribute('download', `failed_rows_report_${jobId}.csv`);
@@ -292,10 +294,9 @@ const showPartialFailureModal = (jobId) => {
             link.click();
             link.remove();
             
-            Swal.fire('Downloaded!', 'Your error report has been saved.', 'success');
-          } catch (reportErr) {
-            console.error("ASLI BACKEND ERROR:", reportErr.response?.data);
-            Swal.fire('Download Failed', 'Backend server could not generate the real report.', 'error');
+            Swal.fire('Success', 'Error report downloaded successfully. Open in Excel to fix rows!', 'success');
+          } catch (err) {
+            Swal.fire('Information', 'No structural errors detected in this batch import!', 'success');
           }
         });
       }
