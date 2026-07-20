@@ -145,124 +145,120 @@ export default function Funds() {
   };
 
 const handleFileChange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  if (file.type !== "text/csv" && !file.name.endsWith('.csv')) {
-    return Swal.fire('Error', 'Please upload a valid CSV file', 'error');
-  }
+    if (file.type !== "text/csv" && !file.name.endsWith('.csv')) {
+      return Swal.fire('Error', 'Please upload a valid CSV file', 'error');
+    }
 
-  const fileFormData = new FormData();
-  fileFormData.append("file", file);
+    const fileFormData = new FormData();
+    fileFormData.append("file", file);
 
-  Swal.fire({
-    title: 'Importing...',
-    text: 'Please wait while records are uploading',
-    allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
-  });
-
-  try {
-    try {
-    const currentToken = localStorage.getItem("token");
-    
-    const res = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
-      headers: {
-        "Authorization": `Bearer ${currentToken}`,
-        "Content-Type": "multipart/form-data"
-      }
+    Swal.fire({
+      title: 'Importing...',
+      text: 'Please wait while records are uploading',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
     });
-    
-    // 🔍 KHALI IS LINE KO DEKHO BROWSER CONSOLE MEIN:
-    console.log("BACKEND RAW RESPONSE DATA:", res.data);
 
-    // Backend Response ke mutabiq keys nikalna:
-    const jobId = res.data?.jobId || res.data?.data?.jobId;
-    // Agar backend 'success: true' bhej raha hai par saath mein failed rows bhi hain
-    const hasErrors = res.data?.failedRows?.length > 0 || res.data?.errors?.length > 0 || res.data?.failedCount > 0;
+    try {
+      const currentToken = localStorage.getItem("token");
+      
+      const res = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
+        headers: {
+          "Authorization": `Bearer ${currentToken}`,
+          "Content-Type": "multipart/form-data"
+        }
+      });
+      
+      // 🔍 Response checking in browser console
+      console.log("BACKEND RAW RESPONSE DATA:", res.data);
 
-    if (jobId && (hasErrors || res.data?.error)) {
-      showPartialFailureModal(jobId, res.data?.error || "Some rows failed validation checks.");
+      const jobId = res.data?.jobId || res.data?.data?.jobId;
+      const hasErrors = res.data?.failedRows?.length > 0 || res.data?.errors?.length > 0 || res.data?.failedCount > 0 || res.data?.hasErrors;
+
+      if (jobId && (hasErrors || res.data?.error)) {
+        showPartialFailureModal(jobId, res.data?.error || "Some rows failed validation checks.");
+        e.target.value = "";
+        fetchFunds();
+        return; 
+      }
+
+      Swal.fire('Success', 'All funds imported successfully!', 'success');
       e.target.value = "";
       fetchFunds();
-      return; 
-    }
 
-    Swal.fire('Success', 'All funds imported successfully!', 'success');
-    e.target.value = "";
-    fetchFunds();
+    } catch (err) {
+      console.error("Import Crash Error Trace:", err.response?.data);
+      e.target.value = "";
 
-  } catch (err) {
-    console.error("Import Crash Error Trace:", err.response?.data);
-    e.target.value = "";
+      const jobId = err.response?.data?.jobId || err.response?.data?.data?.jobId; 
+      const errorMessage = err.response?.data?.error || 'Could not parse the CSV formatting structure';
 
-    const jobId = err.response?.data?.jobId; 
-    const errorMessage = err.response?.data?.error || 'Could not parse the CSV formatting structure';
-
-    if (jobId) {
-      showPartialFailureModal(jobId, errorMessage);
-    } else {
-      Swal.fire('Import Failed', errorMessage, 'error');
-    }
-    
-    fetchFunds();
-  }
-};
-
-// Ek clean helper function modal display karne ke liye
-const showPartialFailureModal = (jobId, errorMessage) => {
-  Swal.fire({
-    title: 'Import Partial Failure',
-    icon: 'warning',
-    html: `
-      <p style="color: #64748b; font-size: 13px; margin-bottom: 15px;">
-        ${errorMessage}
-      </p>
-      <button 
-        id="downloadReportBtn" 
-        style="background-color: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; border: none; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;"
-      >
-        📥 Download Error Report (CSV)
-      </button>
-    `,
-    showConfirmButton: true,
-    confirmButtonColor: '#3b82f6',
-    confirmButtonText: 'Close',
-    didOpen: () => {
-      const btn = document.getElementById('downloadReportBtn');
-      if (btn) {
-        btn.addEventListener('click', async () => {
-          try {
-            Swal.showLoading();
-            const currentToken = localStorage.getItem("token");
-            const reportRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
-              headers: { "Authorization": `Bearer ${currentToken}` },
-              responseType: 'blob'
-            });
-
-            const url = window.URL.createObjectURL(new Blob([reportRes.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `failed_rows_report_${jobId}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            
-            // Popups ko state reset karne dein
-            Swal.fire({
-              title: 'Downloaded!',
-              text: 'Your error report has been saved.',
-              icon: 'success',
-              confirmButtonColor: '#3b82f6'
-            });
-          } catch (reportErr) {
-            Swal.fire('Error', 'Could not stream the failed csv report.', 'error');
-          }
-        });
+      if (jobId) {
+        showPartialFailureModal(jobId, errorMessage);
+      } else {
+        Swal.fire('Import Failed', errorMessage, 'error');
       }
+      
+      fetchFunds();
     }
-  });
-};
+  };
+
+  // Helper Modal Function for Partial Failures
+  const showPartialFailureModal = (jobId, errorMessage) => {
+    Swal.fire({
+      title: 'Import Partial Failure',
+      icon: 'warning',
+      html: `
+        <p style="color: #64748b; font-size: 13px; margin-bottom: 15px;">
+          ${errorMessage}
+        </p>
+        <button 
+          id="downloadReportBtn" 
+          style="background-color: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; border: none; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;"
+        >
+          📥 Download Error Report (CSV)
+        </button>
+      `,
+      showConfirmButton: true,
+      confirmButtonColor: '#3b82f6',
+      confirmButtonText: 'Close',
+      didOpen: () => {
+        const btn = document.getElementById('downloadReportBtn');
+        if (btn) {
+          btn.addEventListener('click', async () => {
+            try {
+              Swal.showLoading();
+              const currentToken = localStorage.getItem("token");
+              const reportRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
+                headers: { "Authorization": `Bearer ${currentToken}` },
+                responseType: 'blob'
+              });
+
+              const url = window.URL.createObjectURL(new Blob([reportRes.data]));
+              const link = document.createElement('a');
+              link.href = url;
+              link.setAttribute('download', `failed_rows_report_${jobId}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+              
+              Swal.fire({
+                title: 'Downloaded!',
+                text: 'Your error report has been saved.',
+                icon: 'success',
+                confirmButtonColor: '#3b82f6'
+              });
+            } catch (reportErr) {
+              Swal.fire('Error', 'Could not stream the failed csv report.', 'error');
+            }
+          });
+        }
+      }
+    });
+  };
 
   const closeModal = () => {
     setShowModal(false);
