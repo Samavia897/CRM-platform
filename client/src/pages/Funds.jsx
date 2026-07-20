@@ -163,6 +163,7 @@ const handleFileChange = async (e) => {
   });
 
   try {
+    try {
     const currentToken = localStorage.getItem("token");
     
     const res = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
@@ -172,18 +173,21 @@ const handleFileChange = async (e) => {
       }
     });
     
-    // --- YAHAN CHECK KAREIN AGAR BACKEND NE 200 OK MEIN JOBID YA ERRORS BHEJE HAIN ---
-    const jobId = res.data?.jobId;
-    const hasErrors = res.data?.hasErrors || (res.data?.failedCount > 0) || res.data?.failedRows?.length > 0;
+    // 🔍 KHALI IS LINE KO DEKHO BROWSER CONSOLE MEIN:
+    console.log("BACKEND RAW RESPONSE DATA:", res.data);
+
+    // Backend Response ke mutabiq keys nikalna:
+    const jobId = res.data?.jobId || res.data?.data?.jobId;
+    // Agar backend 'success: true' bhej raha hai par saath mein failed rows bhi hain
+    const hasErrors = res.data?.failedRows?.length > 0 || res.data?.errors?.length > 0 || res.data?.failedCount > 0;
 
     if (jobId && (hasErrors || res.data?.error)) {
       showPartialFailureModal(jobId, res.data?.error || "Some rows failed validation checks.");
       e.target.value = "";
       fetchFunds();
-      return; // Success alert ko bypass karein
+      return; 
     }
 
-    // Agar sab kuch 100% perfect upload hua
     Swal.fire('Success', 'All funds imported successfully!', 'success');
     e.target.value = "";
     fetchFunds();
