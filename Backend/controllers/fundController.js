@@ -4,6 +4,7 @@ const csv = require('csv-parser');
 const { Op } = require("sequelize");
 const { Readable } = require('stream');
 const { fundImportQueue } = require('../config/importQueue');
+const { FailedJobLog } = require("../models");
 
 exports.getAllFunds = async (req, res) => {
   try {
@@ -182,5 +183,42 @@ exports.importFunds = async (req, res) => {
   } catch (error) {
     console.error('=== SYSTEM IMPORT ERROR ===', error);
     return res.status(500).json({ message: 'Internal server error during import', error: error.message });
+  }
+};
+
+exports.getFailedJobReport = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    
+    // Scoping to req.user.companyId for enterprise data security
+    const logEntry = await FailedJobLog.findOne({
+      where: { jobId, companyId: req.user.companyId }
+    });
+
+    if (!logEntry) {
+      return res.status(404).json({ error: "No error logs found for this job asset." });
+    }
+
+    const records = logEntry.failedRecords;
+    if (!records || records.length === 0) {
+      return res.status(400).json({ error: "No physical records attached to failure." });
+    }
+
+    // Dynamic CSV conversion on the fly
+    const headers = Object.keys(records[0]).join(",");
+    const csvRows = records.map(row => 
+      Object.values(row).map(val => `"${String(val).replace(/"/g, '""')}"`).join(",")
+    );
+    const csvContent = [headers, ...csvRows].join("\n");
+
+    // Setting file descriptors and buffers for instant client download streaming
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename=failed_import_report_${jobId}.csv`);
+    
+    return res.status(200).send(csvContent);
+
+  } catch (error) {
+    console.error("Report generation failed:", error.message);
+    return res.status(500).json({ error: "Failed to compile background job report." });
   }
 };

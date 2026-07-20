@@ -10,6 +10,7 @@ const upload = multer({ storage: storage });
 
 router.get("/", protect, fundController.getAllFunds);
 router.post("/", protect, fundController.createFund);
+router.get("/failed-report/:jobId", protect, fundController.getFailedJobReport)
 
 // Route stays exactly the same, but parses files in memory now
 router.post('/import', protect, upload.single('file'), fundController.importFunds);
