@@ -144,7 +144,7 @@ export default function Funds() {
     document.getElementById('csvImportInput').click();
   };
 
-  const handleFileChange = async (e) => {
+const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -228,6 +228,14 @@ export default function Funds() {
       fetchFunds();
     }
   };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setIsEditing(false);
+    setCurrentFundId(null);
+    setFundData({ name: "", type: "Venture", location: "", website: "", industry: "" });
+  };
+
   return (
     <div className="p-2 relative z-10 font-sans">
       
