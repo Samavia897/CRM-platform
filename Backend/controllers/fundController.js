@@ -1,4 +1,5 @@
-const { Fund, Investor, FailedJobLog } = require("../models");
+const { Fund, Investor } = require("../models"); 
+const FailedJobLog = require("../models/failedJobLog");
 const fs = require('fs');
 const csv = require('csv-parser');
 const { Op } = require("sequelize");
