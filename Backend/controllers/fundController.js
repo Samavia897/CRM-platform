@@ -204,70 +204,46 @@ exports.getFailedJobReport = async (req, res) => {
       return res.status(404).json({ error: "No error logs found for this job asset." });
     }
 
-    // 1. Safely extract records from Sequelize instance data layer
-    let rawRecords = logEntry.failedRecords;
-    let records = [];
+    // 🔍 KHALI IS LINE KO DEKHNA HAI RENDER LOGS MEIN
+    console.log("=== RAW DATABASE FAILED RECORDS ===", logEntry.failedRecords);
 
-    if (rawRecords) {
-      if (typeof rawRecords === 'string') {
-        try {
-          records = JSON.parse(rawRecords);
-        } catch (e) {
-          console.error("String JSON parsing error:", e);
-        }
-      } else if (Array.isArray(rawRecords)) {
-        records = rawRecords;
-      } else if (typeof rawRecords === 'object') {
-        records = rawRecords.rows || rawRecords.records || [rawRecords];
-      }
+    let records = logEntry.failedRecords;
+    if (typeof records === 'string') {
+      try { records = JSON.parse(records); } catch (e) {}
     }
 
-    if (!Array.isArray(records) || records.length === 0) {
-      return res.status(400).json({ error: "No records structure found inside this log entry." });
+    // Agar records array nahi hai, toh check karein ye kis format mein hai
+    if (!records || (!Array.isArray(records) && typeof records !== 'object')) {
+      return res.status(400).json({ error: "Data is not in a readable format" });
     }
 
-    // 2. Exact Headers mapping matching the frontend import requirements
+    // Ensure it's an array loop
+    const finalArray = Array.isArray(records) ? records : (records.rows || [records]);
+
     const headers = ["name", "type", "location", "website", "industry", "import_error_reason"];
-    const csvRows = [];
+    const csvRows = [headers.join(",")];
 
-    // Header Row adding
-    csvRows.push(headers.join(","));
-
-    // 3. Dynamic row serialization loop
-    for (const item of records) {
+    for (const item of finalArray) {
       if (!item) continue;
-
-      // Extract raw keys even if wrapped inside Sequelize dataValues
-      const cleanRow = item.dataValues || item;
-
-      const lineValues = headers.map(key => {
-        let value = cleanRow[key];
-
-        // Professional formatting for nested arrays (e.g., industry split fields)
-        if (Array.isArray(value)) {
-          value = value.join("; "); // Array elements ko semicolons se separate karein
-        } else if (value && typeof value === 'object') {
-          value = JSON.stringify(value);
-        }
-
-        const safeString = value !== undefined && value !== null ? String(value) : '';
-        // Standard CSV quotes escaping protocol
-        return `"${safeString.replace(/"/g, '""')}"`;
-      });
-
-      csvRows.push(lineValues.join(","));
+      const row = item.dataValues || item;
+      
+      const line = headers.map(key => {
+        let val = row[key];
+        if (Array.isArray(val)) val = val.join("; ");
+        if (val && typeof val === 'object') val = JSON.stringify(val);
+        const str = val !== undefined && val !== null ? String(val) : '';
+        return `"${str.replace(/"/g, '""')}"`;
+      }).join(",");
+      
+      csvRows.push(line);
     }
 
-    const csvContent = csvRows.join("\n");
-
-    // Professional stream descriptors setting
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename=failed_rows_report_${jobId}.csv`);
-    
-    return res.status(200).send(csvContent);
+    res.setHeader("Content-Disposition", `attachment; filename=failed_rows_${jobId}.csv`);
+    return res.status(200).send(csvRows.join("\n"));
 
   } catch (error) {
-    console.error("CRITICAL EXPORT CONTROLLER CRASH:", error);
-    return res.status(500).json({ error: "Internal Server Error compiling dynamic csv stream report." });
+    console.error("REAL BACKEND CRASH REASON:", error);
+    return res.status(500).json({ error: "Server crashed during CSV generation", details: error.message });
   }
 };
