@@ -196,7 +196,6 @@ exports.getFailedJobReport = async (req, res) => {
   try {
     const { jobId } = req.params;
     
-    // Scoping to req.user.companyId for enterprise data security
     const logEntry = await FailedJobLog.findOne({
       where: { jobId, companyId: req.user.companyId }
     });
@@ -205,45 +204,52 @@ exports.getFailedJobReport = async (req, res) => {
       return res.status(404).json({ error: "No error logs found for this job asset." });
     }
 
-    // 🌟 SAFE EXTRACTION: Database se raw data plain array ki tarah nikalna
+    // 1. Data ko safely array format mein convert karna
     let records = logEntry.failedRecords;
     if (typeof records === 'string') {
-      try {
-        records = JSON.parse(records);
-      } catch (e) {
-        console.error("Failed to parse failedRecords JSON string");
-      }
+      try { records = JSON.parse(records); } catch (e) {}
     }
 
     if (!records || !Array.isArray(records) || records.length === 0) {
       return res.status(400).json({ error: "No physical records attached to failure." });
     }
 
-    // Sequelize model instances ko plain object mein convert karna agar zaroorat ho
-    const plainRecords = records.map(r => (typeof r.get === 'function' ? r.get({ plain: true }) : r));
+    // 2. Safe flat keys extract karna (agar model instances hon toh dataValues nikalna)
+    const plainRecords = records.map(r => {
+      if (r && typeof r.get === 'function') return r.get({ plain: true });
+      if (r && r.dataValues) return r.dataValues;
+      return r;
+    });
 
-    // 🌟 SAFE HEADERS GENERATION: Pehli row ke saare keys nikalna
-    const firstRecord = plainRecords[0];
-    const headers = Object.keys(firstRecord).join(",");
+    // CSV Headers
+    const headers = ["name", "type", "location", "website", "industry", "import_error_reason"];
     
-    // Rows parsing with proper escape characters
-    const csvRows = plainRecords.map(row => 
-      Object.keys(firstRecord).map(key => {
-        const val = row[key] !== undefined && row[key] !== null ? row[key] : '';
-        return `"${String(val).replace(/"/g, '""')}"`;
-      }).join(",")
-    );
+    // 3. Rows structure processing without relying on generic Object.keys()
+    const csvRows = plainRecords.map(row => {
+      return headers.map(key => {
+        let val = row[key];
+        
+        // Agar industry ya koi field object/array hai toh usay plain string banayein
+        if (typeof val === 'object' && val !== null) {
+          val = JSON.stringify(val);
+        }
+        
+        const cleanVal = val !== undefined && val !== null ? String(val) : '';
+        // Escape quotes for CSV compliance
+        return `"${cleanVal.replace(/"/g, '""')}"`;
+      }).join(",");
+    });
     
-    const csvContent = [headers, ...csvRows].join("\n");
+    const csvContent = [headers.join(","), ...csvRows].join("\n");
 
-    // Setting file descriptors and buffers for instant client download streaming
+    // File descriptors setting for stream
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename=failed_import_report_${jobId}.csv`);
     
     return res.status(200).send(csvContent);
 
   } catch (error) {
-    console.error("Report generation failed:", error);
+    console.error("CRITICAL REPORT GENERATION ERROR:", error);
     return res.status(500).json({ error: "Failed to compile background job report.", details: error.message });
   }
 };
