@@ -165,9 +165,7 @@ export default function Funds() {
     try {
       const currentToken = localStorage.getItem("token");
       
-      // Assume backend returns: { jobId: "some-uuid", hasErrors: true } 
-      // ya phir simple success send karta hai
-      const response = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
+      await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
         headers: {
           "Authorization": `Bearer ${currentToken}`,
           "Content-Type": "multipart/form-data"
@@ -181,16 +179,14 @@ export default function Funds() {
       console.error("Import Crash Error Trace:", err.response?.data);
       e.target.value = "";
 
-      // 📥 BACKEND SE DYNAMIC JOB ID NIKALNA
       const jobId = err.response?.data?.jobId; 
 
       if (jobId) {
-        // Agar backend error ke sath jobId bhej raha hai, toh download button dikhao
         Swal.fire({
           title: 'Import Partial Failure',
           icon: 'warning',
           html: `
-            <p className="text-sm text-slate-300 mb-4">
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">
               ${err.response?.data?.error || 'Some rows failed validation checks.'}
             </p>
             <button 
@@ -204,16 +200,14 @@ export default function Funds() {
           confirmButtonColor: '#3b82f6',
           confirmButtonText: 'Close',
           didOpen: () => {
-            // Button click handling inside SweetAlert modal
             document.getElementById('downloadReportBtn').addEventListener('click', async () => {
               try {
                 const currentToken = localStorage.getItem("token");
                 const reportRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
                   headers: { "Authorization": `Bearer ${currentToken}` },
-                  responseType: 'blob' // Binary format catch karne ke liye
+                  responseType: 'blob'
                 });
 
-                // Browser automatic download setup
                 const url = window.URL.createObjectURL(new Blob([reportRes.data]));
                 const link = document.createElement('a');
                 link.href = url;
@@ -228,7 +222,6 @@ export default function Funds() {
           }
         });
       } else {
-        // Agar normal error ho bina kisi jobId ke, toh standard error popup dikhao
         Swal.fire('Import Failed', err.response?.data?.error || 'Could not parse the CSV formatting structure', 'error');
       }
       
