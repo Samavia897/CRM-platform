@@ -5,7 +5,7 @@ const Fund = require("./fundModel");
 const Investor = require("./investorModel");
 const Task = require("./taskModel");
 const Pipeline = require("./pipelineModel");
-const FailedJobLog = require("./failedJobLog"); // 👈 YEH IMPORT MISSING THA!
+const FailedJobLog = require("./failedJobLogModel"); // 👈 YEH IMPORT MISSING THA!
 
 Company.hasMany(Fund, { foreignKey: "companyId", onDelete: 'CASCADE', hooks: true });
 Fund.belongsTo(Company, { foreignKey: "companyId" });
