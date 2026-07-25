@@ -194,22 +194,15 @@ exports.getFailedJobReport = async (req, res) => {
     const targetJobId = String(jobId).trim();
     const companyId = req.user.companyId;
 
-    // 🌟 PROFESSIONAL RAW SQL FIX: Cast column dynamically to text to safely match UUIDs or Integers
-    const [logEntries] = await sequelize.query(
-      `SELECT * FROM "FailedJobLogs" 
-       WHERE CAST("jobId" AS TEXT) = :targetJobId 
-       AND "companyId" = :companyId 
-       LIMIT 1`,
-      {
-        replacements: { targetJobId, companyId },
-        type: sequelize.QueryTypes.SELECT
-      }
-    );
+    // Fetch all logs for company and match safely in-memory
+    const allLogs = await FailedJobLog.findAll({
+      where: { companyId: companyId }
+    });
 
-    const logEntry = Array.isArray(logEntries) ? logEntries[0] : logEntries;
+    const logEntry = allLogs.find(log => String(log.jobId).trim() === targetJobId);
 
     if (!logEntry) {
-      return res.status(404).json({ error: "No validation errors found for this import batch." });
+      return res.status(404).json({ error: "No error logs found for this batch." });
     }
 
     let records = logEntry.failedRecords;
@@ -221,29 +214,21 @@ exports.getFailedJobReport = async (req, res) => {
       records = records.rows || records.records || [records];
     }
 
-    const headers = ["row_number", "name", "type", "location", "website", "industry", "import_error_reason"];
-    const csvRows = [headers.join(",")];
+    // Direct Clean JSON Array with row number & exact failure reasons
+    const errorDetails = records.map((item, idx) => ({
+      row: item.row_number || idx + 1,
+      name: item.name || 'Unnamed Fund',
+      reason: item.import_error_reason || 'Validation error during process.'
+    }));
 
-    for (const row of records) {
-      if (!row) continue;
-      
-      const lineValues = headers.map(key => {
-        let val = row[key];
-        if (Array.isArray(val)) val = val.join("; ");
-        if (val && typeof val === 'object') val = JSON.stringify(val);
-        
-        const cleanVal = val !== undefined && val !== null ? String(val) : '';
-        return `"${cleanVal.replace(/"/g, '""')}"`;
-      });
-      csvRows.push(lineValues.join(","));
-    }
-
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename=error_report_job_${targetJobId}.csv`);
-    return res.status(200).send(csvRows.join("\n"));
+    return res.status(200).json({
+      success: true,
+      totalFailed: errorDetails.length,
+      errors: errorDetails
+    });
 
   } catch (error) {
-    console.error("EXECUTIVE CSV GENERATION ERROR:", error);
-    return res.status(500).json({ error: "Failed to stream CSV error logs.", details: error.message });
+    console.error("GET FAILED LOGS ERROR:", error);
+    return res.status(500).json({ error: "Could not retrieve failure report details", details: error.message });
   }
 };

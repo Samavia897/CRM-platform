@@ -253,55 +253,55 @@ const pollImportStatus = (jobId, e, attempts = 0) => {
     }
   }, 2000); // Check every 2 seconds
 };
-// Download Modal UI Logic
-const showPartialFailureModal = (jobId) => {
-  Swal.fire({
-    title: 'Import Process Execution Finished',
-    icon: 'info',
-    html: `
-      <div style="text-align: left; background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border: 1px solid #e2e8f0;">
-        <p style="margin: 4px 0;">📊 <strong>Batch Operations Completed</strong></p>
-        <p style="margin: 2px 0; color: #64748b; font-size:12px;">Validation rules applied in-memory. Valid structures inserted.</p>
-      </div>
-      <button 
-        id="downloadReportBtn" 
-        style="background-color: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; border: none; margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;"
-      >
-        📥 Download Error Report (CSV)
-      </button>
-    `,
-    showConfirmButton: true,
-    confirmButtonColor: '#3b82f6',
-    confirmButtonText: 'Close Dashboard View',
-    didOpen: () => {
-      const btn = document.getElementById('downloadReportBtn');
-      if (btn) {
-        btn.addEventListener('click', async () => {
-          try {
-            Swal.showLoading();
-            const currentToken = localStorage.getItem("token");
-            
-            const reportRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
-              headers: { "Authorization": `Bearer ${currentToken}` },
-              responseType: 'blob'
-            });
+const showPartialFailureModal = async (jobId) => {
+  try {
+    Swal.fire({
+      title: 'Fetching Error Details...',
+      didOpen: () => { Swal.showLoading(); }
+    });
 
-            const url = window.URL.createObjectURL(new Blob([reportRes.data], { type: 'text/csv' }));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `failed_rows_report_${jobId}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            
-            Swal.fire('Success', 'Error report downloaded successfully. Open in Excel to fix rows!', 'success');
-          } catch (err) {
-            Swal.fire('Information', 'No structural errors detected in this batch import!', 'success');
-          }
-        });
-      }
+    const currentToken = localStorage.getItem("token");
+    const response = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
+      headers: { "Authorization": `Bearer ${currentToken}` }
+    });
+
+    const { errors, totalFailed } = response.data;
+
+    if (!errors || errors.length === 0) {
+      Swal.fire('Success', 'All rows were processed and imported successfully!', 'success');
+      return;
     }
-  });
+
+    // Build clean HTML table/list of failure reasons
+    const errorsHtml = errors.map(err => `
+      <div style="text-align: left; padding: 8px 12px; margin-bottom: 8px; background: #fff1f2; border-left: 4px solid #f43f5e; border-radius: 4px; font-size: 13px;">
+        <strong style="color: #9f1239;">Row ${err.row} (${err.name}):</strong> 
+        <span style="color: #475569;">${err.reason}</span>
+      </div>
+    `).join('');
+
+    Swal.fire({
+      title: `Import Completed with ${totalFailed} Failed Rows`,
+      icon: 'warning',
+      html: `
+        <p style="font-size: 13px; color: #64748b; text-align: left; margin-bottom: 12px;">
+          Review the validation issues detected during in-memory processing:
+        </p>
+        <div style="max-height: 260px; overflow-y: auto; padding-right: 4px;">
+          ${errorsHtml}
+        </div>
+      `,
+      confirmButtonText: 'Got It',
+      confirmButtonColor: '#3b82f6',
+      customClass: {
+        popup: 'swal-wide-modal'
+      }
+    });
+
+  } catch (err) {
+    console.error("FAILED TO FETCH REASONS:", err);
+    Swal.fire('Notice', 'Batch import completed. No structural errors recorded.', 'info');
+  }
 };
 
   const closeModal = () => {
