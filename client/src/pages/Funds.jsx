@@ -298,9 +298,14 @@ const showPartialFailureModal = async (jobId) => {
       }
     });
 
-  } catch (err) {
+ } catch (err) {
     console.error("FAILED TO FETCH REASONS:", err);
-    Swal.fire('Notice', 'Batch import completed. No structural errors recorded.', 'info');
+    // Agar 404 hai toh matlab koi error nahi tha, warna asli error dikhayein
+    if (err.response && err.response.status === 404) {
+      Swal.fire('Success', 'Batch import completed with no structural errors!', 'success');
+    } else {
+      Swal.fire('Error', 'Failed to retrieve error logs from server.', 'error');
+    }
   }
 };
 

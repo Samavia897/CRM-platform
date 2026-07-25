@@ -5,23 +5,19 @@ const Fund = require("./fundModel");
 const Investor = require("./investorModel");
 const Task = require("./taskModel");
 const Pipeline = require("./pipelineModel");
-
+const FailedJobLog = require("./failedJobLog"); // 👈 YEH IMPORT MISSING THA!
 
 Company.hasMany(Fund, { foreignKey: "companyId", onDelete: 'CASCADE', hooks: true });
 Fund.belongsTo(Company, { foreignKey: "companyId" });
 
-
 Fund.hasMany(Investor, { foreignKey: "fundId", onDelete: 'CASCADE', hooks: true });
 Investor.belongsTo(Fund, { foreignKey: "fundId" });
 
-
 Investor.hasMany(Task, { foreignKey: "investorId", onDelete: 'CASCADE', hooks: true });
-Task.belongsTo(Investor, { foreignKey: "investorId" }); // ⚡ Removed 'as: "InvestorInstance"' to prevent look-up crash
-
+Task.belongsTo(Investor, { foreignKey: "investorId" });
 
 Pipeline.hasMany(Investor, { foreignKey: "pipelineId", onDelete: 'CASCADE', hooks: true });
 Investor.belongsTo(Pipeline, { foreignKey: "pipelineId" });
-
 
 Company.hasMany(Investor, { foreignKey: "companyId" });
 Investor.belongsTo(Company, { foreignKey: "companyId" });
@@ -33,5 +29,6 @@ module.exports = {
   Fund,
   Investor,
   Task,
-  Pipeline
+  Pipeline,
+  FailedJobLog
 };
