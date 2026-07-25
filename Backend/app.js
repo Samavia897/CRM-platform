@@ -28,16 +28,15 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/pipelines", pipelineRoutes);
 
 console.log("Attempting to sync database...");
-sequelize.sync({ alter: true })
+sequelize.sync()
   .then(() => {
-    console.log("Database & tables synced!");
-
+    console.log("Database connected & synced successfully!");
     app.listen(PORT, () => {
-      console.log(`🚀 Server is successfully running on port ${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   })
-  .catch(err => {
-    console.error("❌ Failed to sync database:", err);
+  .catch((err) => {
+    console.error("Failed to sync database:", err);
   });
 
 
