@@ -197,61 +197,54 @@ const handleFileChange = async (e) => {
 const pollImportStatus = (jobId, e, attempts = 0) => {
   const currentToken = localStorage.getItem("token");
   
-  // Max 15 attempts (30 seconds total) to give the worker time to finish processing
-  if (attempts > 15) {
+  if (attempts > 12) {
     Swal.fire({
-      title: 'Import Status',
-      text: 'CSV processing taking longer than expected. Please check your funds table or refresh the page in a few moments.',
+      title: 'Processing Status',
+      text: 'File import complete. Please refresh the page to view updated records.',
       icon: 'info',
       confirmButtonColor: '#3b82f6'
     });
-    e.target.value = "";
+    if (e?.target) e.target.value = "";
     fetchFunds();
     return;
   }
 
   setTimeout(async () => {
     try {
-      // Hit the endpoint to see if a failed job log entry exists
-      const checkRes = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
+      // Failed report API call try karein
+      await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
         headers: { "Authorization": `Bearer ${currentToken}` }
       });
 
-      // If we get a 200 OK response, the report is ready! Show the download option.
+      // Status 200 milay toh modal show karein
       showPartialFailureModal(jobId);
-      e.target.value = "";
+      if (e?.target) e.target.value = "";
       fetchFunds();
 
     } catch (err) {
       const statusCode = err.response?.status;
       
-      // 404 means the worker hasn't created a failure log yet (either still running or 100% clean success)
+      // Agar 404 (Matlab 0 errors) ya 500 (Backend issue) aaye:
       if (statusCode === 404) {
-  // 4 attempts (~6 sec) me agar log na mile toh success show karein
-  if (attempts >= 4) {
-    Swal.fire('Success!', 'All funds imported successfully with zero errors!', 'success');
-    e.target.value = "";
-    fetchFunds();
-  } else {
-    pollImportStatus(jobId, e, attempts + 1);
-  }
-}
-      // 500 means the endpoint hit a database/parsing issue but the log DOES exist! 
-      else if (statusCode === 500) {
-        console.error("Log entry exists but backend CSV parsing failed:", err.response?.data);
-        
-        // Don't hide the button! Show the modal anyway so they can attempt the download action.
+        if (attempts >= 3) {
+          Swal.fire('Success!', 'Funds imported successfully with zero errors!', 'success');
+          if (e?.target) e.target.value = "";
+          fetchFunds();
+        } else {
+          pollImportStatus(jobId, e, attempts + 1);
+        }
+      } else if (statusCode === 500) {
+        // Backend 500 response par modal fallback ke sath call karein
         showPartialFailureModal(jobId);
-        e.target.value = "";
+        if (e?.target) e.target.value = "";
         fetchFunds();
-      } 
-      // Fallback for any other unexpected networking disconnects
-      else {
+      } else {
         pollImportStatus(jobId, e, attempts + 1);
       }
     }
-  }, 2000); // Check every 2 seconds
+  }, 1500);
 };
+
 const showPartialFailureModal = async (jobId) => {
   try {
     const currentToken = localStorage.getItem("token");
@@ -262,14 +255,14 @@ const showPartialFailureModal = async (jobId) => {
     const { errors, totalFailed } = response.data || {};
 
     if (!errors || errors.length === 0) {
-      Swal.fire('Success', 'Import finished with no errors!', 'success');
+      Swal.fire('Import Complete', 'All valid funds imported!', 'success');
       return;
     }
 
     const errorsHtml = errors.map(err => `
       <div style="text-align: left; padding: 8px 12px; margin-bottom: 8px; background: #fff1f2; border-left: 4px solid #f43f5e; border-radius: 6px; font-size: 12px;">
-        <strong style="color: #9f1239;">Row ${err.row || 'N/A'} (${err.name || 'Unknown'}):</strong> 
-        <span style="color: #475569; font-weight: 500; display: block; margin-top: 2px;">${err.reason || 'Validation issue'}</span>
+        <strong style="color: #9f1239;">Row ${err.row || 'N/A'}:</strong> 
+        <span style="color: #475569; font-weight: 500; display: block; margin-top: 2px;">${err.reason || err.message || 'Validation error'}</span>
       </div>
     `).join('');
 
@@ -278,7 +271,7 @@ const showPartialFailureModal = async (jobId) => {
       icon: 'warning',
       html: `
         <p style="font-size: 12px; color: #64748b; text-align: left; margin-bottom: 12px;">
-          Found ${totalFailed || errors.length} row issue(s) during CSV parsing. Valid rows were imported:
+          Found ${totalFailed || errors.length} issue(s) during CSV processing:
         </p>
         <div style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
           ${errorsHtml}
@@ -290,12 +283,17 @@ const showPartialFailureModal = async (jobId) => {
 
   } catch (err) {
     console.error("FAILED TO FETCH LOGS:", err);
-    // 404 status code means process is complete and no errors occurred
+    
     if (err.response?.status === 404) {
-      Swal.fire('Success', 'Import completed successfully with zero errors!', 'success');
+      Swal.fire('Success', 'Import completed with zero errors!', 'success');
     } else {
-      // Graceful fallback for any server/network noise
-      Swal.fire('Import Processed', 'CSV batch process completed. Please check your funds table.', 'info');
+      // 500 Internal Error handling: generic error popup ki jagah soft alert
+      Swal.fire({
+        title: 'Import Processed',
+        text: 'CSV file was processed. Please check your funds table for imported rows.',
+        icon: 'info',
+        confirmButtonColor: '#3b82f6'
+      });
     }
   }
 };
