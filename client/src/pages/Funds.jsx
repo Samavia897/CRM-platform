@@ -227,16 +227,15 @@ const pollImportStatus = (jobId, e, attempts = 0) => {
       
       // 404 means the worker hasn't created a failure log yet (either still running or 100% clean success)
       if (statusCode === 404) {
-        if (attempts === 14) {
-          // On the final check, if it's still 404, it means no bad rows were ever found!
-          Swal.fire('Success', 'Funds imported successfully! No validation errors detected.', 'success');
-          e.target.value = "";
-          fetchFunds();
-        } else {
-          // Keep polling
-          pollImportStatus(jobId, e, attempts + 1);
-        }
-      } 
+  // 4 attempts (~6 sec) me agar log na mile toh success show karein
+  if (attempts >= 4) {
+    Swal.fire('Success!', 'All funds imported successfully with zero errors!', 'success');
+    e.target.value = "";
+    fetchFunds();
+  } else {
+    pollImportStatus(jobId, e, attempts + 1);
+  }
+}
       // 500 means the endpoint hit a database/parsing issue but the log DOES exist! 
       else if (statusCode === 500) {
         console.error("Log entry exists but backend CSV parsing failed:", err.response?.data);
@@ -291,8 +290,10 @@ const showPartialFailureModal = async (jobId) => {
           ${errorsHtml}
         </div>
       `,
-      confirmButtonText: 'Got It',
-      confirmButtonColor: '#3b82f6',
+      title: 'Validation Errors Detected!',
+icon: 'error',
+confirmButtonText: 'Understood',
+confirmButtonColor: '#ef4444',
       customClass: {
         popup: 'swal-wide-modal'
       }
@@ -331,7 +332,7 @@ const showPartialFailureModal = async (jobId) => {
             type="file"
             id="csvImportInput"
             className="hidden"
-            accept=".csv"
+            accept=".csv, text/csv, application/vnd.ms-excel, application/csv, text/x-csv"
             onChange={handleFileChange}
           />
 
