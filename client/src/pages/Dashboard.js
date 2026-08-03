@@ -18,6 +18,13 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const navigate = useNavigate();
 
+  const [counts, setCounts] = useState({
+    investors: 0,
+    funds: 0,
+    pipelines: 0,
+    tasks: 0
+  });
+
   const [memberData, setMemberData] = useState({
     username: "", email: "", password: "", role: "user"
   });
@@ -33,8 +40,37 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    setRole(localStorage.getItem("role"));
-    if (!localStorage.getItem("token")) navigate("/login");
+    const currentRole = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
+
+    setRole(currentRole);
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const fetchCounts = async () => {
+      const authHeader = { headers: { Authorization: `Bearer ${token}` } };
+      try {
+        const [investorsRes, fundsRes, pipelinesRes, tasksRes] = await Promise.allSettled([
+          axiosInstance.get("http://localhost:5000/api/investors", authHeader),
+          axiosInstance.get("http://localhost:5000/api/funds", authHeader),
+          axiosInstance.get("http://localhost:5000/api/pipelines", authHeader),
+          axiosInstance.get("http://localhost:5000/api/tasks", authHeader)
+        ]);
+
+        setCounts({
+          investors: investorsRes.status === "fulfilled" ? (Array.isArray(investorsRes.value.data) ? investorsRes.value.data.length : investorsRes.value.data.count || 0) : 0,
+          funds: fundsRes.status === "fulfilled" ? (Array.isArray(fundsRes.value.data) ? fundsRes.value.data.length : fundsRes.value.data.count || 0) : 0,
+          pipelines: pipelinesRes.status === "fulfilled" ? (Array.isArray(pipelinesRes.value.data) ? pipelinesRes.value.data.length : pipelinesRes.value.data.count || 0) : 0,
+          tasks: tasksRes.status === "fulfilled" ? (Array.isArray(tasksRes.value.data) ? tasksRes.value.data.length : tasksRes.value.data.count || 0) : 0
+        });
+      } catch (err) {
+        console.error("Failed to fetch dynamic counts", err);
+      }
+    };
+
+    fetchCounts();
   }, [navigate]);
 
   const addMember = async () => {
@@ -80,10 +116,10 @@ export default function Dashboard() {
   ];
 
   const stats = [
-    { title: "Total Investors", count: "128", icon: HiUsers, color: "from-blue-500 to-indigo-600", shadow: "shadow-blue-500/20" },
-    { title: "Total Funds", count: "34", icon: HiOfficeBuilding, color: "from-emerald-500 to-teal-600", shadow: "shadow-emerald-500/20" },
-    { title: "Active Pipelines", count: "17", icon: HiTrendingUp, color: "from-violet-500 to-purple-600", shadow: "shadow-violet-500/20" },
-    { title: "Pending Tasks", count: "42", icon: HiClipboardList, color: "from-amber-500 to-orange-600", shadow: "shadow-amber-500/20" },
+    { title: "Total Investors", count: counts.investors, icon: HiUsers, color: "from-blue-500 to-indigo-600", shadow: "shadow-blue-500/20" },
+    { title: "Total Funds", count: counts.funds, icon: HiOfficeBuilding, color: "from-emerald-500 to-teal-600", shadow: "shadow-emerald-500/20" },
+    { title: "Active Pipelines", count: counts.pipelines, icon: HiTrendingUp, color: "from-violet-500 to-purple-600", shadow: "shadow-violet-500/20" },
+    { title: "Pending Tasks", count: counts.tasks, icon: HiClipboardList, color: "from-amber-500 to-orange-600", shadow: "shadow-amber-500/20" },
   ];
 
   return (
@@ -131,7 +167,7 @@ export default function Dashboard() {
 
           {activeTab === "Dashboard" && (
             <div className="max-w-6xl mx-auto space-y-8 relative z-10">
-
+              
               <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-extrabold text-white tracking-tight">Admin Overview Environment</h1>
@@ -166,7 +202,7 @@ export default function Dashboard() {
 
               {role === "admin" ? (
                 <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl backdrop-blur-xl shadow-xl overflow-hidden">
-
+                  
                   <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2.5 text-blue-500">
                       <HiPlusCircle className="text-2xl" />
@@ -180,7 +216,6 @@ export default function Dashboard() {
                   <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       
-                      {/* Field 1: Username */}
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Username</label>
                         <input
