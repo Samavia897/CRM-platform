@@ -10,7 +10,7 @@ import TasksTable from "./TasksTable";
 
 import {
   HiUsers, HiChartBar, HiClipboardList, HiViewGrid,
-  HiPlusCircle, HiUserCircle, HiOfficeBuilding
+  HiPlusCircle, HiUserCircle, HiOfficeBuilding, HiTrendingUp, HiShieldCheck
 } from "react-icons/hi";
 
 export default function Dashboard() {
@@ -79,10 +79,17 @@ export default function Dashboard() {
     { name: "Tasks", icon: HiClipboardList },
   ];
 
+  const stats = [
+    { title: "Total Investors", count: "128", icon: HiUsers, color: "from-blue-500 to-indigo-600", shadow: "shadow-blue-500/20" },
+    { title: "Total Funds", count: "34", icon: HiOfficeBuilding, color: "from-emerald-500 to-teal-600", shadow: "shadow-emerald-500/20" },
+    { title: "Active Pipelines", count: "17", icon: HiTrendingUp, color: "from-violet-500 to-purple-600", shadow: "shadow-violet-500/20" },
+    { title: "Pending Tasks", count: "42", icon: HiClipboardList, color: "from-amber-500 to-orange-600", shadow: "shadow-amber-500/20" },
+  ];
+
   return (
     <div className="flex h-screen bg-[#0b1329] text-slate-100 overflow-hidden font-sans">
 
-      <div className="w-64 bg-[#11192e] text-white flex flex-col p-5 border-r border-slate-800/60 shadow-2xl h-full">
+      <div className="w-64 bg-[#11192e] text-white flex flex-col p-5 border-r border-slate-800/60 shadow-2xl h-full z-20">
         <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer" onClick={() => setActiveTab("Dashboard")}>
           <div className="bg-gradient-to-tr from-blue-500 to-indigo-600 p-2 rounded-xl shadow-lg shadow-blue-500/20">
             <HiViewGrid className="text-xl text-white" />
@@ -123,51 +130,120 @@ export default function Dashboard() {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293d_1px,transparent_1px),linear-gradient(to_bottom,#1f293d_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none"></div>
 
           {activeTab === "Dashboard" && (
-            <div className="max-w-xl mx-auto mt-6 relative z-10">
-              <header className="mb-8 text-center">
-                <h1 className="text-2xl font-extrabold text-white tracking-tight">Admin Environment</h1>
-                <p className="text-xs text-slate-400 mt-1.5">Configure company pipeline access control matrices.</p>
+            <div className="max-w-6xl mx-auto space-y-8 relative z-10">
+
+              <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-extrabold text-white tracking-tight">Admin Overview Environment</h1>
+                  <p className="text-xs text-slate-400 mt-1">Configure company pipeline metrics and workspace access permissions.</p>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg w-fit">
+                  <HiShieldCheck className="text-emerald-400 text-base" />
+                  <span className="text-xs text-slate-300 font-medium capitalize">Role: {role}</span>
+                </div>
               </header>
 
-              {role === "admin" ? (
-                <div className="bg-[#131c35]/80 border border-slate-800/80 p-8 rounded-2xl backdrop-blur-xl shadow-xl">
-                  <div className="flex items-center gap-2 mb-6 text-blue-500 border-b pb-4 border-slate-800">
-                    <HiPlusCircle className="text-2xl" />
-                    <h3 className="text-md font-bold text-white">Add New Member</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {stats.map((stat, idx) => (
+                  <div
+                    key={idx}
+                    className="group relative bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-slate-700 hover:shadow-2xl hover:bg-[#162242]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{stat.title}</p>
+                        <h3 className="text-3xl font-extrabold text-white mt-2 group-hover:scale-105 transition-transform duration-200 origin-left">
+                          {stat.count}
+                        </h3>
+                      </div>
+                      <div className={`p-3.5 rounded-xl bg-gradient-to-tr ${stat.color} shadow-lg ${stat.shadow} group-hover:scale-110 transition-transform duration-300`}>
+                        <stat.icon className="text-2xl text-white" />
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Username</label>
-                      <input className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-sm focus:border-blue-500 outline-none transition-all" placeholder="operator_user" value={memberData.username} onChange={(e) => setMemberData({ ...memberData, username: e.target.value })} />
+                ))}
+              </div>
+
+              {role === "admin" ? (
+                <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl backdrop-blur-xl shadow-xl overflow-hidden">
+
+                  <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 text-blue-500">
+                      <HiPlusCircle className="text-2xl" />
+                      <h3 className="text-md font-bold text-white">Add Organization Member</h3>
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-400 bg-slate-800/60 px-3 py-1 rounded-full border border-slate-700/50">
+                      Admin Privilege
+                    </span>
+                  </div>
+
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      
+                      {/* Field 1: Username */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Username</label>
+                        <input
+                          className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 focus:border-blue-500 rounded-xl text-white placeholder-slate-600 text-sm outline-none transition-all duration-200"
+                          placeholder="operator_user"
+                          value={memberData.username}
+                          onChange={(e) => setMemberData({ ...memberData, username: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+                        <input
+                          className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 focus:border-blue-500 rounded-xl text-white placeholder-slate-600 text-sm outline-none transition-all duration-200"
+                          placeholder="name@company.com"
+                          value={memberData.email}
+                          onChange={(e) => setMemberData({ ...memberData, email: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Password</label>
+                        <input
+                          type="password"
+                          className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 focus:border-blue-500 rounded-xl text-white placeholder-slate-600 text-sm outline-none transition-all duration-200"
+                          placeholder="••••••••"
+                          value={memberData.password}
+                          onChange={(e) => setMemberData({ ...memberData, password: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Role Authority</label>
+                        <select
+                          className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 focus:border-blue-500 rounded-xl text-white text-sm outline-none transition-all duration-200"
+                          value={memberData.role}
+                          onChange={(e) => setMemberData({ ...memberData, role: e.target.value })}
+                        >
+                          <option value="user" className="bg-[#0f172a]">User</option>
+                          <option value="manager" className="bg-[#0f172a]">Manager</option>
+                        </select>
+                      </div>
+
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
-                      <input className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-sm focus:border-blue-500 outline-none transition-all" placeholder="name@company.com" value={memberData.email} onChange={(e) => setMemberData({ ...memberData, email: e.target.value })} />
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        onClick={addMember}
+                        className="w-full md:w-auto px-8 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
+                      >
+                        <HiPlusCircle className="text-lg" />
+                        <span>Save Workspace Member</span>
+                      </button>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Password</label>
-                      <input className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-sm focus:border-blue-500 outline-none transition-all" type="password" placeholder="••••••••" value={memberData.password} onChange={(e) => setMemberData({ ...memberData, password: e.target.value })} />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Role Authority</label>
-                      <select className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white text-sm focus:border-blue-500 outline-none transition-all" value={memberData.role} onChange={(e) => setMemberData({ ...memberData, role: e.target.value })}>
-                        <option value="user" className="bg-[#0f172a]">User</option>
-                        <option value="manager" className="bg-[#0f172a]">Manager</option>
-                      </select>
-                    </div>
-
-                    <button onClick={addMember} className="w-full mt-2 bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-500 shadow-lg shadow-blue-600/10 transition-all">Save Member</button>
                   </div>
                 </div>
               ) : (
                 <div className="bg-[#1c1212]/40 p-8 rounded-2xl border border-red-950/50 text-center backdrop-blur-sm">
-                  <p className="text-red-400 text-sm font-medium">Limited Access View</p>
+                  <p className="text-red-400 text-sm font-medium">Limited Access View — Contact Admin to modify organization settings.</p>
                 </div>
               )}
+
             </div>
           )}
 
