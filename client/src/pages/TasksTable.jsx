@@ -123,7 +123,7 @@ export default function TasksTable() {
       text: "You won't be able to revert this task!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3b82f6", // Updated sweetalert color for dark mode
+      confirmButtonColor: "#3b82f6", 
       cancelButtonColor: "#ef4444",
       confirmButtonText: "Yes, delete it!"
     }).then(async (result) => {
@@ -161,7 +161,7 @@ export default function TasksTable() {
 
   return (
     <div className="bg-[#060b19] min-h-screen p-4 font-sans text-white">
-      {/* Header section matching dark theme */}
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Tasks</h1>
@@ -171,7 +171,6 @@ export default function TasksTable() {
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-6 border-b border-slate-800/60 pl-1 mb-6 relative z-10">
         {["Overdue Tasks", "Due Tasks", "Upcoming Tasks", "Complete Tasks"].map((tab) => (
           <button 
@@ -188,10 +187,8 @@ export default function TasksTable() {
         ))}
       </div>
 
-      {/* Main Container */}
       <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl shadow-xl backdrop-blur-xl relative overflow-visible">
-        
-        {/* Search & Filter Toolbar */}
+
         <div className="p-4 flex justify-between items-center border-b border-slate-800/80 bg-[#11192e]/40 relative">
           <div className="relative w-64">
             <HiSearch className="absolute left-3 top-3 text-slate-500" />
@@ -216,7 +213,6 @@ export default function TasksTable() {
               <HiFilter /> Filter {(appliedStart || appliedEnd) && "•"}
             </button>
 
-            {/* Dark Mode Filter Dropdown */}
             {showFilterDropdown && (
               <div className="absolute right-0 mt-2 w-72 bg-[#131c35] border border-slate-700 shadow-2xl rounded-xl z-[999] p-4 border-t-4 border-t-blue-500">
                 <div className="flex justify-between items-center mb-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">
@@ -236,7 +232,6 @@ export default function TasksTable() {
           </div>
         </div>
 
-        {/* Table List */}
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -303,7 +298,6 @@ export default function TasksTable() {
         </div>
       </div>
 
-      {/* ADD TASK MODAL (Dark Theme) */}
       {showModal && (
         <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex items-center justify-center z-[1000] p-4">
           <div className="bg-[#131c35] border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
@@ -339,7 +333,6 @@ export default function TasksTable() {
         </div>
       )}
 
-      {/* EDIT TASK MODAL (Dark Theme) */}
       {showEditModal && editingTask && (
         <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex items-center justify-center z-[1000] p-4">
           <div className="bg-[#131c35] border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">

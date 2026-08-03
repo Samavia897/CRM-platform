@@ -12,14 +12,12 @@ const protect = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 🌟 FIXED: Auto-extract handles wrapper structure securely 
     if (decoded.user) {
       req.user = decoded.user;
     } else {
       req.user = decoded;
     }
 
-    // Double check safeguard fallback to avoid crashing endpoints
     if (!req.user.companyId) {
       console.error("JWT Payload lacks companyId context:", req.user);
       return res.status(400).json({ error: "Invalid token context: Company profile missing." });

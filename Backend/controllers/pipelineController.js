@@ -48,7 +48,6 @@ exports.moveInvestor = async (req, res) => {
     const investor = await Investor.findByPk(investorId);
     if (!investor) return res.status(404).json({ error: "Investor not found" });
 
-    // 🌟 Standardizing safe assignment without breaking UUID formats
     if (pipelineId) {
       investor.pipelineId = String(pipelineId).trim(); 
     }

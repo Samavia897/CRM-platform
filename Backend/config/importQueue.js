@@ -2,17 +2,14 @@ const { Queue, Worker } = require("bullmq");
 const IORedis = require("ioredis");
 const { Fund, FailedJobLog } = require("../models");
 
-// 1. Redis Connection Setup (Render Environment Variable auto-fallback)
 const redisConnection = new IORedis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null
 });
 
-// 2. Initialize the BullMQ Queue instance
 const fundImportQueue = new Queue("fundImportQueue", {
   connection: redisConnection
 });
 
-// 3. Your In-Memory Validation & Processing Processor Function
 const processFundImport = async (job) => {
   const { rows, companyId } = job.data;
   
@@ -20,13 +17,12 @@ const processFundImport = async (job) => {
     throw new Error("No rows found in import payload.");
   }
 
-  // A. Header / Required Field Structure Validation Check
   const requiredColumns = ['name'];
   const fileHeaders = Object.keys(rows[0] || {}).map(h => h.toLowerCase().trim());
   const missingHeaders = requiredColumns.filter(col => !fileHeaders.includes(col));
 
   if (missingHeaders.length > 0) {
-    // Save file-level schema/header rejection block
+
     await FailedJobLog.create({
       jobId: String(job.id).trim(),
       companyId: companyId,
@@ -47,7 +43,6 @@ const processFundImport = async (job) => {
   const validRows = [];
   const failedRowsList = [];
 
-  // B. O(1) Bulk duplicate memory set check
   const incomingNames = rows.map(r => r.name?.trim()).filter(Boolean);
   const existingFunds = await Fund.findAll({
     where: { 
@@ -58,10 +53,8 @@ const processFundImport = async (job) => {
   });
   const existingNamesSet = new Set(existingFunds.map(f => f.name.toLowerCase()));
 
-  // Track duplicates within the same batch file upload to prevent multi-insert collision
   const batchSeenNames = new Set();
 
-  // C. In-memory loop validation (Super fast CPU work)
   rows.forEach((row, index) => {
     const rowNum = index + 1;
     const errors = [];
@@ -76,12 +69,10 @@ const processFundImport = async (job) => {
       errors.push("Fund Type is required.");
     }
 
-    // Check system duplicates
     if (trimmedName && existingNamesSet.has(trimmedName.toLowerCase())) {
       errors.push(`Fund name "${trimmedName}" already exists in system.`);
     }
 
-    // Check batch self-duplicates
     if (trimmedName) {
       const lowerName = trimmedName.toLowerCase();
       if (batchSeenNames.has(lowerName)) {
@@ -91,7 +82,6 @@ const processFundImport = async (job) => {
       }
     }
 
-    // Strict Industry Format Verification
     if (row.industry) {
       const indStr = String(row.industry).trim();
       if (indStr.includes('{') || indStr.includes('}') || indStr.toUpperCase().includes('BROKEN')) {
@@ -124,12 +114,10 @@ const processFundImport = async (job) => {
     }
   });
 
-  // D. Bulk Insert Valid Rows (1 Database Call Only)
   if (validRows.length > 0) {
     await Fund.bulkCreate(validRows, { validating: false });
   }
 
-  // E. Save Failed Logs safely for UI SweetAlert retrieval
   if (failedRowsList.length > 0) {
     await FailedJobLog.create({
       jobId: String(job.id).trim(),
@@ -146,7 +134,6 @@ const processFundImport = async (job) => {
   };
 };
 
-// 4. Initialize Worker to listen and process incoming queue tasks
 const fundImportWorker = new Worker("fundImportQueue", processFundImport, {
   connection: redisConnection
 });
@@ -159,7 +146,7 @@ fundImportWorker.on("failed", (job, err) => {
   console.error(`Job ${job?.id} worker execution failed:`, err);
 });
 
-// 5. Professional Export Structure
+
 module.exports = {
   fundImportQueue,
   fundImportWorker

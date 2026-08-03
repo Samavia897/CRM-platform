@@ -272,8 +272,7 @@ export default function Pipeline() {
 
   return (
     <div className="p-2 relative z-10 font-sans text-slate-300">
-      
-      {/* Dark Styled Header Synchronized Layout */}
+
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Dynamic Deal Pipelines</h1>
@@ -311,7 +310,6 @@ export default function Pipeline() {
         </div>
       </div>
 
-      {/* Kanban Drag Drop Board Area */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-slate-800">
           {dynamicStages.map((stage) => {
@@ -321,8 +319,7 @@ export default function Pipeline() {
 
             return (
               <div key={stage} className="min-w-[310px] max-w-[310px] bg-[#131c35]/70 border border-slate-800/80 rounded-2xl flex flex-col h-fit shadow-xl backdrop-blur-xl">
-                
-                {/* Column Title Block */}
+
                 <div className="p-4 border-b border-slate-800/60 flex items-center gap-2.5 bg-[#11192e]/40 rounded-t-2xl">
                   <span className={`text-[10px] font-bold px-2 py-0.5 border rounded-md uppercase tracking-wider ${getStageColor(stage)}`}>
                     {filteredInvestors.length}
@@ -330,7 +327,6 @@ export default function Pipeline() {
                   <h3 className="font-bold text-[12px] text-white tracking-wider uppercase truncate">{stage}</h3>
                 </div>
 
-                {/* Dropzone Container */}
                 <Droppable droppableId={stage}>
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} className="p-3 min-h-[500px] space-y-3">
@@ -354,7 +350,6 @@ export default function Pipeline() {
                                   </p>
                                 </div>
 
-                                {/* Actions popover inside cards */}
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-3 top-3 bg-[#131c35] border border-slate-800 p-1 rounded-lg shadow-xl">
                                   <button onClick={() => {
                                     setSelectedInvestor(inv);
@@ -396,7 +391,6 @@ export default function Pipeline() {
         </div>
       </DragDropContext>
 
-      {/* Board Management Modal */}
       {showBoardModal && (
         <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex justify-center items-center z-[120] p-4">
           <div className="bg-[#131c35] border border-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -430,7 +424,6 @@ export default function Pipeline() {
         </div>
       )}
 
-      {/* Add Lead Entry Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex justify-center items-center z-[110] p-4">
           <div className="bg-[#131c35] border border-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -487,7 +480,6 @@ export default function Pipeline() {
         </div>
       )}
 
-      {/* Edit Entry Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex justify-center items-center z-[110] p-4">
           <div className="bg-[#131c35] border border-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -540,7 +532,6 @@ export default function Pipeline() {
         </div>
       )}
 
-      {/* Task Creation Modal */}
       {showTaskModal && (
         <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex justify-center items-center z-[110]">
           <div className="bg-[#131c35] border border-slate-800 p-6 rounded-2xl w-96 shadow-2xl">

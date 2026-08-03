@@ -8,7 +8,7 @@ export default function InvestorsTable() {
   const [pipelines, setPipelines] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [fundSearchTerm, setFundSearchTerm] = useState(""); // Fund search ke liye new state
+  const [fundSearchTerm, setFundSearchTerm] = useState(""); 
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -116,7 +116,6 @@ export default function InvestorsTable() {
     const email = (inv.email || '').toLowerCase();
     const search = searchTerm.toLowerCase();
 
-    // Fund Name match logic (supports nested models or standard key casing)
     const fundName = (inv.Fund?.name || inv.fund?.name || "").toLowerCase();
     const fundSearch = fundSearchTerm.toLowerCase();
 
@@ -157,8 +156,7 @@ export default function InvestorsTable() {
                 className="pl-9 pr-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none transition-all w-60"
               />
             </div>
-            
-            {/* New Fund Search Input */}
+
             <div className="relative">
               <HiOfficeBuilding className="absolute left-3 top-3 text-slate-500 text-sm" />
               <input

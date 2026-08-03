@@ -144,7 +144,6 @@ export default function Funds() {
     document.getElementById('csvImportInput').click();
   };
 
-// --- FRONTEND: src/pages/Funds.jsx ---
 
 const handleFileChange = async (e) => {
   const file = e.target.files[0];
@@ -173,8 +172,7 @@ const handleFileChange = async (e) => {
         "Content-Type": "multipart/form-data"
       }
     });
-    
-    // Check if backend returned jobId string OR id
+
     const jobId = res.data?.jobId || res.data?.id || res.data?.importId;
 
     if (jobId) {
@@ -205,7 +203,6 @@ const pollImportStatus = (jobId, e, attempts = 0) => {
 
   setTimeout(async () => {
     try {
-      // Direct call to fetch failure report safely
       await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
         headers: { "Authorization": `Bearer ${currentToken}` }
       });
@@ -216,8 +213,7 @@ const pollImportStatus = (jobId, e, attempts = 0) => {
 
     } catch (err) {
       const statusCode = err.response?.status;
-      
-      // 404 = Log table clear/no errors found -> Success
+
       if (statusCode === 404) {
         if (attempts >= 2) {
           Swal.fire('Success!', 'All funds imported with zero validation errors!', 'success');
@@ -227,7 +223,7 @@ const pollImportStatus = (jobId, e, attempts = 0) => {
           pollImportStatus(jobId, e, attempts + 1);
         }
       } 
-      // 500 = UUID/Integer mismatch backend DB type cast issue
+
       else if (statusCode === 500) {
         Swal.fire('Import Completed', 'Import batch finished processing. Table updated.', 'success');
         if (e?.target) e.target.value = "";
@@ -282,7 +278,6 @@ const showPartialFailureModal = async (jobId) => {
     if (err.response?.status === 404) {
       Swal.fire('Success', 'Import completed with zero errors!', 'success');
     } else {
-      // 500 Internal Error handling: generic error popup ki jagah soft alert
       Swal.fire({
         title: 'Import Processed',
         text: 'CSV file was processed. Please check your funds table for imported rows.',
@@ -302,8 +297,7 @@ const showPartialFailureModal = async (jobId) => {
 
   return (
     <div className="p-2 relative z-10 font-sans">
-      
-      {/* Top Header Block matching Investors */}
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">Funds Matrix</h1>
@@ -335,7 +329,6 @@ const showPartialFailureModal = async (jobId) => {
         </div>
       </div>
 
-      {/* Tabs Layout synchronized with dynamic counts */}
       <div className="flex gap-6 border-b border-slate-800/60 pl-1 mb-6">
         {["All", "AI based funds", "GeoPref"].map(tab => (
           <div
@@ -357,10 +350,8 @@ const showPartialFailureModal = async (jobId) => {
         ))}
       </div>
 
-      {/* Main Container Core Box matching Investors */}
       <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden backdrop-blur-xl">
-        
-        {/* Search & Type Filter Control Bar */}
+
         <div className="flex flex-wrap justify-between items-center p-4 gap-4 border-b border-slate-800/80 bg-[#11192e]/40">
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div className="relative">
@@ -387,7 +378,6 @@ const showPartialFailureModal = async (jobId) => {
           </div>
         </div>
 
-        {/* Operational Grid Table layout */}
         <div className="overflow-x-auto">
           {loading ? (
             <div className="p-24 text-center text-slate-500 text-xs font-bold tracking-wide uppercase">Loading operational index...</div>
@@ -468,7 +458,6 @@ const showPartialFailureModal = async (jobId) => {
         </div>
       </div>
 
-      {/* Synchronized Form Modal Panel matching Investors design patterns */}
       {showModal && (
         <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
           <div className="bg-[#131c35] border border-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto scrollbar-thin">

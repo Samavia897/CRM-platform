@@ -194,7 +194,6 @@ exports.getFailedJobReport = async (req, res) => {
     const targetJobId = String(jobId).trim();
     const companyId = req.user.companyId;
 
-    // Fetch all logs for company and match safely in-memory
     const allLogs = await FailedJobLog.findAll({
       where: { companyId: companyId }
     });
@@ -214,7 +213,6 @@ exports.getFailedJobReport = async (req, res) => {
       records = records.rows || records.records || [records];
     }
 
-    // Direct Clean JSON Array with row number & exact failure reasons
     const errorDetails = records.map((item, idx) => ({
       row: item.row_number || idx + 1,
       name: item.name || 'Unnamed Fund',

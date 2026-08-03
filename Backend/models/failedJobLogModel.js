@@ -1,4 +1,3 @@
-// models/failedJobLogModel.js
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
@@ -26,7 +25,7 @@ const FailedJobLog = sequelize.define("FailedJobLog", {
     allowNull: true,
   },
   failedRecords: {
-    type: DataTypes.JSON, // Poori CSV rows ka row data yahan json mein save hoga
+    type: DataTypes.JSON, 
     allowNull: false,
   },
   status: {
