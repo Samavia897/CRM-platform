@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from 'sweetalert2';
-import { HiPlus, HiX, HiLocationMarker, HiDownload, HiPencilAlt, HiTrash, HiSearch, HiOfficeBuilding } from "react-icons/hi";
+import { 
+  HiPlus, 
+  HiX, 
+  HiLocationMarker, 
+  HiDownload, 
+  HiPencilAlt, 
+  HiTrash, 
+  HiSearch, 
+  HiOfficeBuilding,
+  HiBriefcase,
+  HiChartPie,
+  HiCube
+} from "react-icons/hi";
 
 export default function Funds() {
   const [funds, setFunds] = useState([]);
@@ -36,6 +48,12 @@ export default function Funds() {
   };
 
   useEffect(() => { fetchFunds(); }, []);
+
+  // Calculate Metrics dynamically for Dashboard Cards
+  const totalFundsCount = funds.length;
+  const ventureCount = funds.filter(f => f.type === "Venture").length;
+  const peCount = funds.filter(f => f.type === "Private Equity").length;
+  const hedgeCount = funds.filter(f => f.type === "Hedge Fund").length;
 
   const filteredFunds = funds.filter(fund => {
     const nameMatch = fund.name ? fund.name.toLowerCase() : "";
@@ -144,149 +162,146 @@ export default function Funds() {
     document.getElementById('csvImportInput').click();
   };
 
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-const handleFileChange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  if (!file.name.endsWith('.csv') && file.type !== "text/csv") {
-    return Swal.fire('Error', 'Please upload a valid CSV file', 'error');
-  }
-
-  const fileFormData = new FormData();
-  fileFormData.append("file", file);
-
-  Swal.fire({
-    title: 'Processing CSV File...',
-    text: 'Validating columns and importing records...',
-    allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
-  });
-
-  try {
-    const currentToken = localStorage.getItem("token");
-    
-    const res = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
-      headers: {
-        "Authorization": `Bearer ${currentToken}`,
-        "Content-Type": "multipart/form-data"
-      }
-    });
-
-    const jobId = res.data?.jobId || res.data?.id || res.data?.importId;
-
-    if (jobId) {
-      pollImportStatus(jobId, e);
-    } else {
-      Swal.fire('Success', 'Import completed successfully!', 'success');
-      e.target.value = "";
-      fetchFunds();
+    if (!file.name.endsWith('.csv') && file.type !== "text/csv") {
+      return Swal.fire('Error', 'Please upload a valid CSV file', 'error');
     }
 
-  } catch (err) {
-    console.error("Import Error:", err.response?.data);
-    e.target.value = "";
-    Swal.fire('Import Failed', err.response?.data?.message || 'Failed to submit file for processing.', 'error');
-    fetchFunds();
-  }
-};
+    const fileFormData = new FormData();
+    fileFormData.append("file", file);
 
-const pollImportStatus = (jobId, e, attempts = 0) => {
-  const currentToken = localStorage.getItem("token");
-  
-  if (attempts > 10) {
-    Swal.fire('Import Processed', 'CSV import complete. Syncing funds table...', 'info');
-    if (e?.target) e.target.value = "";
-    fetchFunds();
-    return;
-  }
+    Swal.fire({
+      title: 'Processing CSV File...',
+      text: 'Validating columns and importing records...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
 
-  setTimeout(async () => {
     try {
-      await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
-        headers: { "Authorization": `Bearer ${currentToken}` }
+      const currentToken = localStorage.getItem("token");
+      
+      const res = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
+        headers: {
+          "Authorization": `Bearer ${currentToken}`,
+          "Content-Type": "multipart/form-data"
+        }
       });
 
-      showPartialFailureModal(jobId);
-      if (e?.target) e.target.value = "";
-      fetchFunds();
+      const jobId = res.data?.jobId || res.data?.id || res.data?.importId;
+
+      if (jobId) {
+        pollImportStatus(jobId, e);
+      } else {
+        Swal.fire('Success', 'Import completed successfully!', 'success');
+        e.target.value = "";
+        fetchFunds();
+      }
 
     } catch (err) {
-      const statusCode = err.response?.status;
-
-      if (statusCode === 404) {
-        if (attempts >= 2) {
-          Swal.fire('Success!', 'All funds imported with zero validation errors!', 'success');
-          if (e?.target) e.target.value = "";
-          fetchFunds();
-        } else {
-          pollImportStatus(jobId, e, attempts + 1);
-        }
-      } 
-
-      else if (statusCode === 500) {
-        Swal.fire('Import Completed', 'Import batch finished processing. Table updated.', 'success');
-        if (e?.target) e.target.value = "";
-        fetchFunds();
-      } 
-      else {
-        pollImportStatus(jobId, e, attempts + 1);
-      }
+      console.error("Import Error:", err.response?.data);
+      e.target.value = "";
+      Swal.fire('Import Failed', err.response?.data?.message || 'Failed to submit file for processing.', 'error');
+      fetchFunds();
     }
-  }, 1200);
-};
+  };
 
-const showPartialFailureModal = async (jobId) => {
-  try {
+  const pollImportStatus = (jobId, e, attempts = 0) => {
     const currentToken = localStorage.getItem("token");
-    const response = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
-      headers: { "Authorization": `Bearer ${currentToken}` }
-    });
-
-    const { errors, totalFailed } = response.data || {};
-
-    if (!errors || errors.length === 0) {
-      Swal.fire('Import Complete', 'All valid funds imported!', 'success');
+    
+    if (attempts > 10) {
+      Swal.fire('Import Processed', 'CSV import complete. Syncing funds table...', 'info');
+      if (e?.target) e.target.value = "";
+      fetchFunds();
       return;
     }
 
-    const errorsHtml = errors.map(err => `
-      <div style="text-align: left; padding: 8px 12px; margin-bottom: 8px; background: #fff1f2; border-left: 4px solid #f43f5e; border-radius: 6px; font-size: 12px;">
-        <strong style="color: #9f1239;">Row ${err.row || 'N/A'}:</strong> 
-        <span style="color: #475569; font-weight: 500; display: block; margin-top: 2px;">${err.reason || err.message || 'Validation error'}</span>
-      </div>
-    `).join('');
+    setTimeout(async () => {
+      try {
+        await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
+          headers: { "Authorization": `Bearer ${currentToken}` }
+        });
 
-    Swal.fire({
-      title: 'Validation Errors Detected!',
-      icon: 'warning',
-      html: `
-        <p style="font-size: 12px; color: #64748b; text-align: left; margin-bottom: 12px;">
-          Found ${totalFailed || errors.length} issue(s) during CSV processing:
-        </p>
-        <div style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
-          ${errorsHtml}
+        showPartialFailureModal(jobId);
+        if (e?.target) e.target.value = "";
+        fetchFunds();
+
+      } catch (err) {
+        const statusCode = err.response?.status;
+
+        if (statusCode === 404) {
+          if (attempts >= 2) {
+            Swal.fire('Success!', 'All funds imported with zero validation errors!', 'success');
+            if (e?.target) e.target.value = "";
+            fetchFunds();
+          } else {
+            pollImportStatus(jobId, e, attempts + 1);
+          }
+        } 
+        else if (statusCode === 500) {
+          Swal.fire('Import Completed', 'Import batch finished processing. Table updated.', 'success');
+          if (e?.target) e.target.value = "";
+          fetchFunds();
+        } 
+        else {
+          pollImportStatus(jobId, e, attempts + 1);
+        }
+      }
+    }, 1200);
+  };
+
+  const showPartialFailureModal = async (jobId) => {
+    try {
+      const currentToken = localStorage.getItem("token");
+      const response = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
+        headers: { "Authorization": `Bearer ${currentToken}` }
+      });
+
+      const { errors, totalFailed } = response.data || {};
+
+      if (!errors || errors.length === 0) {
+        Swal.fire('Import Complete', 'All valid funds imported!', 'success');
+        return;
+      }
+
+      const errorsHtml = errors.map(err => `
+        <div style="text-align: left; padding: 8px 12px; margin-bottom: 8px; background: #fff1f2; border-left: 4px solid #f43f5e; border-radius: 6px; font-size: 12px;">
+          <strong style="color: #9f1239;">Row ${err.row || 'N/A'}:</strong> 
+          <span style="color: #475569; font-weight: 500; display: block; margin-top: 2px;">${err.reason || err.message || 'Validation error'}</span>
         </div>
-      `,
-      confirmButtonText: 'Understood',
-      confirmButtonColor: '#3b82f6'
-    });
+      `).join('');
 
-  } catch (err) {
-    console.error("FAILED TO FETCH LOGS:", err);
-    
-    if (err.response?.status === 404) {
-      Swal.fire('Success', 'Import completed with zero errors!', 'success');
-    } else {
       Swal.fire({
-        title: 'Import Processed',
-        text: 'CSV file was processed. Please check your funds table for imported rows.',
-        icon: 'info',
+        title: 'Validation Errors Detected!',
+        icon: 'warning',
+        html: `
+          <p style="font-size: 12px; color: #64748b; text-align: left; margin-bottom: 12px;">
+            Found ${totalFailed || errors.length} issue(s) during CSV processing:
+          </p>
+          <div style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
+            ${errorsHtml}
+          </div>
+        `,
+        confirmButtonText: 'Understood',
         confirmButtonColor: '#3b82f6'
       });
+
+    } catch (err) {
+      console.error("FAILED TO FETCH LOGS:", err);
+      if (err.response?.status === 404) {
+        Swal.fire('Success', 'Import completed with zero errors!', 'success');
+      } else {
+        Swal.fire({
+          title: 'Import Processed',
+          text: 'CSV file was processed. Please check your funds table for imported rows.',
+          icon: 'info',
+          confirmButtonColor: '#3b82f6'
+        });
+      }
     }
-  }
-};
+  };
 
   const closeModal = () => {
     setShowModal(false);
@@ -296,15 +311,16 @@ const showPartialFailureModal = async (jobId) => {
   };
 
   return (
-    <div className="p-2 relative z-10 font-sans">
+    <div className="p-4 sm:p-6 space-y-6 relative z-10 font-sans text-slate-200 min-h-screen">
 
-      <div className="flex justify-between items-center mb-6">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Funds Matrix</h1>
-          <p className="text-xs text-slate-400 mt-1">Manage fund classifications and data imports.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Funds Overview</h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">Manage fund classifications, industry focus, and data imports.</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-end sm:self-auto">
           <input
             type="file"
             id="csvImportInput"
@@ -315,53 +331,105 @@ const showPartialFailureModal = async (jobId) => {
 
           <button
             onClick={handleImportClick}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700/80 transition-all duration-200"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/80 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all shadow-md active:scale-95"
           >
-            <HiDownload className="text-slate-400" /> Import Funds
+            <HiDownload className="text-slate-400 text-sm" /> Import CSV
           </button>
 
           <button
             onClick={() => setShowModal(true)}
-            className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-blue-500 flex items-center gap-2 shadow-lg shadow-blue-600/10 transition-all duration-200 active:scale-95"
+            className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
           >
             <HiPlus className="text-sm" /> Add Fund
           </button>
         </div>
       </div>
 
-      <div className="flex gap-6 border-b border-slate-800/60 pl-1 mb-6">
-        {["All", "AI based funds", "GeoPref"].map(tab => (
-          <div
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-3.5 text-xs font-bold cursor-pointer transition-all border-b-2 -mb-[2px] ${
-              activeTab === tab 
-                ? "border-blue-500 text-white" 
-                : "border-transparent text-slate-500 hover:text-slate-300"
-            }`}
-          >
-            {tab} 
-            {tab === "All" && (
-              <span className="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded-md text-[10px] font-black ml-1.5 border border-slate-700">
-                {funds.length}
-              </span>
-            )}
+      {/* Dynamic Dashboard Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        {/* Card 1: Total Funds */}
+        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-slate-700 transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Active Funds</p>
+            <h3 className="text-2xl font-black text-white mt-1.5 tracking-tight">{totalFundsCount}</h3>
           </div>
-        ))}
+          <div className="p-3.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
+            <HiOfficeBuilding className="text-2xl" />
+          </div>
+        </div>
+
+        {/* Card 2: Venture Capital */}
+        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-slate-700 transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Venture Capital</p>
+            <h3 className="text-2xl font-black text-white mt-1.5 tracking-tight">{ventureCount}</h3>
+          </div>
+          <div className="p-3.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-xl group-hover:scale-110 transition-transform">
+            <HiBriefcase className="text-2xl" />
+          </div>
+        </div>
+
+        {/* Card 3: Private Equity */}
+        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-slate-700 transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Private Equity</p>
+            <h3 className="text-2xl font-black text-white mt-1.5 tracking-tight">{peCount}</h3>
+          </div>
+          <div className="p-3.5 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-xl group-hover:scale-110 transition-transform">
+            <HiChartPie className="text-2xl" />
+          </div>
+        </div>
+
+        {/* Card 4: Hedge Funds */}
+        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-slate-700 transition-all">
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Hedge Funds</p>
+            <h3 className="text-2xl font-black text-white mt-1.5 tracking-tight">{hedgeCount}</h3>
+          </div>
+          <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl group-hover:scale-110 transition-transform">
+            <HiCube className="text-2xl" />
+          </div>
+        </div>
+
       </div>
 
+      {/* Main Container */}
       <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden backdrop-blur-xl">
 
-        <div className="flex flex-wrap justify-between items-center p-4 gap-4 border-b border-slate-800/80 bg-[#11192e]/40">
+        {/* Filter Navigation Tabs */}
+        <div className="flex gap-6 border-b border-slate-800/80 px-6 pt-4 bg-[#11192e]/40">
+          {["All", "AI based funds", "GeoPref"].map(tab => (
+            <div
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-3.5 text-xs font-bold cursor-pointer transition-all border-b-2 -mb-[2px] ${
+                activeTab === tab 
+                  ? "border-blue-500 text-white" 
+                  : "border-transparent text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              {tab} 
+              {tab === "All" && (
+                <span className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md text-[10px] font-black ml-2 border border-slate-700">
+                  {funds.length}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Search & Filter Toolbar */}
+        <div className="flex flex-wrap justify-between items-center p-4 gap-4 border-b border-slate-800/80 bg-[#11192e]/20">
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <div className="relative">
+            <div className="relative w-full sm:w-64">
               <HiSearch className="absolute left-3 top-3 text-slate-500 text-sm" />
               <input
                 type="text"
-                placeholder="Search funds..."
+                placeholder="Search funds or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none transition-all w-60"
+                className="w-full pl-9 pr-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-xs focus:border-blue-500 outline-none transition-all"
               />
             </div>
             
@@ -378,9 +446,12 @@ const showPartialFailureModal = async (jobId) => {
           </div>
         </div>
 
+        {/* Data Table */}
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="p-24 text-center text-slate-500 text-xs font-bold tracking-wide uppercase">Loading operational index...</div>
+            <div className="p-24 text-center text-slate-500 text-xs font-bold tracking-wide uppercase">
+              Loading operational index...
+            </div>
           ) : (
             <table className="w-full text-left border-collapse">
               <thead>
@@ -398,15 +469,17 @@ const showPartialFailureModal = async (jobId) => {
                   filteredFunds.map((fund) => (
                     <tr key={fund.id} className="hover:bg-slate-800/30 transition-colors duration-150 group">
                       <td className="p-4 text-sm font-bold text-white pl-6">
-                        <div className="flex items-center gap-2">
-                          <HiOfficeBuilding className="text-slate-500 text-sm flex-shrink-0" />
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-1.5 bg-slate-800/80 border border-slate-700/80 rounded-lg text-slate-400">
+                            <HiOfficeBuilding size={14} />
+                          </div>
                           {fund.name}
                         </div>
                       </td>
-                      <td className="p-4 text-xs text-slate-400">{fund.type}</td>
+                      <td className="p-4 text-xs font-medium text-slate-400">{fund.type}</td>
                       <td className="p-4 text-xs text-slate-400">
-                        <div className="flex items-center gap-1">
-                          <HiLocationMarker size={13} className="text-slate-500" /> 
+                        <div className="flex items-center gap-1.5">
+                          <HiLocationMarker size={13} className="text-slate-500 flex-shrink-0" /> 
                           <span>{fund.location || "---"}</span>
                         </div>
                       </td>
@@ -416,7 +489,7 @@ const showPartialFailureModal = async (jobId) => {
                             href={fund.website.startsWith('http') ? fund.website : `https://${fund.website}`} 
                             target="_blank" 
                             rel="noreferrer"
-                            className="text-blue-400 hover:text-blue-300 transition-colors"
+                            className="text-blue-400 hover:text-blue-300 transition-colors underline-offset-2 hover:underline"
                           >
                             {fund.website}
                           </a>
@@ -439,8 +512,8 @@ const showPartialFailureModal = async (jobId) => {
                       </td>
                       <td className="p-4 text-right pr-6">
                         <div className="flex justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => handleEdit(fund)} className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all"><HiPencilAlt size={16} /></button>
-                          <button onClick={() => handleDelete(fund.id)} className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-all"><HiTrash size={16} /></button>
+                          <button onClick={() => handleEdit(fund)} className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all" title="Edit"><HiPencilAlt size={16} /></button>
+                          <button onClick={() => handleDelete(fund.id)} className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-all" title="Delete"><HiTrash size={16} /></button>
                         </div>
                       </td>
                     </tr>
@@ -458,13 +531,14 @@ const showPartialFailureModal = async (jobId) => {
         </div>
       </div>
 
+      {/* Modal Form */}
       {showModal && (
-        <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-[#131c35] border border-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto scrollbar-thin">
+        <div className="fixed inset-0 bg-[#060b19]/70 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+          <div className="bg-[#131c35] border border-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-5 border-b border-slate-800 pb-3">
               <div>
                 <h2 className="text-lg font-bold text-white">{isEditing ? "Edit Particulars" : "Register Fund"}</h2>
-                <p className="text-slate-500 text-[10px] mt-0.5">Fill out database records parameters.</p>
+                <p className="text-slate-400 text-[11px] mt-0.5">Fill out database records parameters.</p>
               </div>
               <button onClick={closeModal} className="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded-lg transition-all">
                 <HiX className="text-lg" />
@@ -526,7 +600,7 @@ const showPartialFailureModal = async (jobId) => {
 
               <button 
                 type="submit" 
-                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/10 hover:bg-blue-500 transition-all text-xs tracking-wider mt-2 uppercase"
+                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all text-xs tracking-wider mt-2 uppercase"
               >
                 {isEditing ? "Update Instance" : "Execute Entry"}
               </button>
