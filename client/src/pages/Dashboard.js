@@ -12,10 +12,11 @@ import TasksTable from "./TasksTable";
 import {
   HiUsers, HiChartBar, HiClipboardList, HiViewGrid,
   HiPlusCircle, HiUserCircle, HiOfficeBuilding, HiTrendingUp, 
-  HiShieldCheck, HiMail, HiLockClosed, HiSparkles, HiLightningBolt
+  HiShieldCheck, HiMail, HiLockClosed, HiSparkles, HiLightningBolt,
+  HiArrowSmUp
 } from "react-icons/hi";
 
-// Animated Counter Component for SaaS Dashboard numbers
+// 1. Smooth Spring Number Counter
 function AnimatedNumber({ value }) {
   const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
   const display = useTransform(spring, (current) => Math.round(current));
@@ -31,6 +32,9 @@ export default function Dashboard() {
   const [role, setRole] = useState("");
   const [activeTab, setActiveTab] = useState("Dashboard");
   const navigate = useNavigate();
+
+  // Mouse spotlight tracking state
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const [counts, setCounts] = useState({
     investors: 0,
@@ -52,6 +56,11 @@ export default function Dashboard() {
     },
     buttonsStyling: false
   });
+
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    setMousePos({ x: clientX, y: clientY });
+  };
 
   useEffect(() => {
     const currentRole = localStorage.getItem("role");
@@ -130,39 +139,52 @@ export default function Dashboard() {
   ];
 
   const stats = [
-    { title: "Total Investors", count: counts.investors, icon: HiUsers, color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20 shadow-emerald-500/5" },
-    { title: "Total Funds", count: counts.funds, icon: HiOfficeBuilding, color: "text-teal-400 bg-teal-500/10 border-teal-500/20 shadow-teal-500/5" },
-    { title: "Active Pipelines", count: counts.pipelines, icon: HiTrendingUp, color: "text-violet-400 bg-violet-500/10 border-violet-500/20 shadow-violet-500/5" },
-    { title: "Pending Tasks", count: counts.tasks, icon: HiClipboardList, color: "text-amber-400 bg-amber-500/10 border-amber-500/20 shadow-amber-500/5" },
+    { title: "Total Investors", count: counts.investors, growth: "+12.5%", icon: HiUsers, color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+    { title: "Total Funds", count: counts.funds, growth: "+8.2%", icon: HiOfficeBuilding, color: "text-teal-400 bg-teal-500/10 border-teal-500/20" },
+    { title: "Active Pipelines", count: counts.pipelines, growth: "+24.0%", icon: HiTrendingUp, color: "text-violet-400 bg-violet-500/10 border-violet-500/20" },
+    { title: "Pending Tasks", count: counts.tasks, growth: "-3.1%", icon: HiClipboardList, color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
   ];
 
-  // Container Stagger Animation Variant
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.12 } }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+    hidden: { opacity: 0, y: 25, scale: 0.98 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 260, damping: 20 } }
   };
 
   return (
-    <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div 
+      onMouseMove={handleMouseMove}
+      className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative selection:bg-emerald-500/30 selection:text-emerald-200"
+    >
+      {/* 2. DYNAMIC CURSOR SPOTLIGHT BG EFFECT */}
+      <div 
+        className="pointer-events-none fixed -inset-px z-30 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(16, 185, 129, 0.06), transparent 80%)`
+        }}
+      />
 
-      {/* Modern Background Ambient Glow Orbs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 blur-[120px] pointer-events-none rounded-full" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 blur-[120px] pointer-events-none rounded-full" />
+      {/* Ambient Blurred Orbs */}
+      <motion.div 
+        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/20 blur-[130px] pointer-events-none rounded-full" 
+      />
 
       {/* SIDEBAR */}
-      <aside className="w-64 bg-zinc-900/80 backdrop-blur-md text-zinc-100 flex flex-col p-5 border-r border-zinc-800/80 shadow-2xl h-full z-20">
+      <aside className="w-64 bg-zinc-900/80 backdrop-blur-xl text-zinc-100 flex flex-col p-5 border-r border-zinc-800/80 shadow-2xl h-full z-40">
         <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer group" onClick={() => setActiveTab("Dashboard")}>
-          <div className="bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 p-2.5 rounded-xl border border-emerald-500/30 group-hover:border-emerald-400 transition-all duration-300 shadow-lg shadow-emerald-500/10">
-            <HiLightningBolt className="text-xl text-emerald-400 group-hover:scale-110 transition-transform" />
-          </div>
+          <motion.div 
+            whileHover={{ rotate: 180 }}
+            transition={{ duration: 0.4 }}
+            className="bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 p-2.5 rounded-xl border border-emerald-500/30 group-hover:border-emerald-400 shadow-lg shadow-emerald-500/10"
+          >
+            <HiLightningBolt className="text-xl text-emerald-400" />
+          </motion.div>
           <div>
             <h2 className="text-lg font-black tracking-wider text-zinc-100 uppercase bg-gradient-to-r from-zinc-100 via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
               NEXUS <span className="text-emerald-400 font-light text-sm">// CRM</span>
@@ -178,13 +200,13 @@ export default function Dashboard() {
                 key={item.name}
                 onClick={() => setActiveTab(item.name)}
                 className={`relative flex items-center gap-3 p-3 rounded-xl transition-all duration-300 text-sm font-medium ${
-                  isActive ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/30"
+                  isActive ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/40"
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeTabIndicator"
-                    className="absolute inset-0 bg-zinc-800/80 border border-zinc-700/60 rounded-xl shadow-inner"
+                    className="absolute inset-0 bg-zinc-800/90 border border-zinc-700/60 rounded-xl shadow-inner"
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
@@ -197,7 +219,7 @@ export default function Dashboard() {
           })}
         </nav>
 
-        <div className="mt-auto p-3 bg-zinc-950/60 border border-zinc-800/80 rounded-xl flex items-center gap-3 backdrop-blur-sm">
+        <div className="mt-auto p-3 bg-zinc-950/70 border border-zinc-800/80 rounded-xl flex items-center gap-3 backdrop-blur-sm">
           <HiUserCircle className="text-3xl text-emerald-400" />
           <div className="overflow-hidden">
             <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-wider">Active Workspace</p>
@@ -206,11 +228,11 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* MAIN LAYOUT */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950/90 relative">
+      {/* MAIN CONTAINER */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950/90 relative z-20">
         <Navbar />
 
-        <main className="flex-1 overflow-y-auto p-8 relative z-10">
+        <main className="flex-1 overflow-y-auto p-8 relative">
           <AnimatePresence mode="wait">
             {activeTab === "Dashboard" && (
               <motion.div
@@ -218,7 +240,7 @@ export default function Dashboard() {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                exit={{ opacity: 0, y: -15, transition: { duration: 0.2 } }}
+                exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
                 className="max-w-6xl mx-auto space-y-8"
               >
                 {/* Header */}
@@ -226,46 +248,67 @@ export default function Dashboard() {
                   <div>
                     <h1 className="text-2xl font-bold text-zinc-100 tracking-tight flex items-center gap-2">
                       Admin Control Hub
-                      <HiSparkles className="text-emerald-400 text-xl animate-pulse" />
+                      <motion.span
+                        animate={{ rotate: [0, 15, -15, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                      >
+                        <HiSparkles className="text-emerald-400 text-xl" />
+                      </motion.span>
                     </h1>
                     <p className="text-xs text-zinc-400 mt-1">Real-time pipeline analytics & enterprise access control.</p>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/90 border border-zinc-800 rounded-lg w-fit shadow-md">
-                    <HiShieldCheck className="text-emerald-400 text-base" />
+                  <div className="flex items-center gap-2 px-3.5 py-1.5 bg-zinc-900/90 border border-zinc-800/90 rounded-xl w-fit shadow-md backdrop-blur-md">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <HiShieldCheck className="text-emerald-400 text-base ml-1" />
                     <span className="text-xs text-zinc-300 font-medium capitalize">Role: {role}</span>
                   </div>
                 </motion.header>
 
-                {/* Animated Stats Cards */}
+                {/* Animated Interactive Stats Cards */}
                 <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   {stats.map((stat, idx) => (
                     <motion.div
                       key={idx}
-                      whileHover={{ scale: 1.03, y: -4 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={{ scale: 1.04, y: -6 }}
+                      whileTap={{ scale: 0.97 }}
                       transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                      className="bg-zinc-900/60 backdrop-blur-md border border-zinc-800/90 p-5 rounded-2xl transition-all hover:border-emerald-500/40 hover:shadow-xl hover:shadow-emerald-500/5 group"
+                      className="relative overflow-hidden bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl transition-all duration-300 hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/10 group cursor-pointer"
                     >
+                      {/* Subtle hover shine line */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transform duration-1000" />
+
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{stat.title}</p>
-                          <h3 className="text-3xl font-extrabold text-zinc-100 mt-2">
+                          <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">
                             <AnimatedNumber value={stat.count} />
                           </h3>
                         </div>
-                        <div className={`p-3 rounded-xl border transition-transform group-hover:scale-110 ${stat.color}`}>
+                        <div className={`p-3 rounded-xl border transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg ${stat.color}`}>
                           <stat.icon className="text-2xl" />
                         </div>
+                      </div>
+
+                      {/* Animated Percentage Badge */}
+                      <div className="mt-4 flex items-center justify-between text-[11px] font-medium border-t border-zinc-800/60 pt-3">
+                        <span className="text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                          <HiArrowSmUp className="text-sm" />
+                          {stat.growth}
+                        </span>
+                        <span className="text-zinc-500 text-[10px]">vs last month</span>
                       </div>
                     </motion.div>
                   ))}
                 </motion.div>
 
-                {/* Add Member Form Section */}
+                {/* Member Input Form */}
                 {role === "admin" ? (
                   <motion.div 
                     variants={itemVariants}
-                    className="bg-zinc-900/60 backdrop-blur-md border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl"
+                    className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl relative"
                   >
                     <div className="p-6 border-b border-zinc-800/80 flex items-center justify-between bg-zinc-900/40">
                       <div className="flex items-center gap-2.5 text-emerald-400">
@@ -286,7 +329,7 @@ export default function Dashboard() {
                             Username
                           </label>
                           <input
-                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-500/70 focus:ring-1 focus:ring-emerald-500/30 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200"
+                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-300"
                             placeholder="operator_user"
                             value={memberData.username}
                             onChange={(e) => setMemberData({ ...memberData, username: e.target.value })}
@@ -299,7 +342,7 @@ export default function Dashboard() {
                             Email Address
                           </label>
                           <input
-                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-500/70 focus:ring-1 focus:ring-emerald-500/30 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200"
+                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-300"
                             placeholder="name@company.com"
                             value={memberData.email}
                             onChange={(e) => setMemberData({ ...memberData, email: e.target.value })}
@@ -313,7 +356,7 @@ export default function Dashboard() {
                           </label>
                           <input
                             type="password"
-                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-500/70 focus:ring-1 focus:ring-emerald-500/30 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200"
+                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-300"
                             placeholder="••••••••"
                             value={memberData.password}
                             onChange={(e) => setMemberData({ ...memberData, password: e.target.value })}
@@ -326,7 +369,7 @@ export default function Dashboard() {
                             Role Authority
                           </label>
                           <select
-                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-500/70 focus:ring-1 focus:ring-emerald-500/30 rounded-xl text-zinc-100 text-sm outline-none transition-all duration-200"
+                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 text-sm outline-none transition-all duration-300"
                             value={memberData.role}
                             onChange={(e) => setMemberData({ ...memberData, role: e.target.value })}
                           >
@@ -339,10 +382,10 @@ export default function Dashboard() {
 
                       <div className="mt-6 flex justify-end">
                         <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.96 }}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={addMember}
-                          className="w-full md:w-auto px-8 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-zinc-950 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                          className="w-full md:w-auto px-8 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 hover:from-emerald-300 hover:to-teal-300 text-zinc-950 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20 relative overflow-hidden group"
                         >
                           <HiPlusCircle className="text-lg" />
                           <span>Save Workspace Member</span>
