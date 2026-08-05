@@ -16,7 +16,7 @@ import {
   HiArrowSmUp
 } from "react-icons/hi";
 
-// 1. Smooth Spring Number Counter
+
 function AnimatedNumber({ value }) {
   const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
   const display = useTransform(spring, (current) => Math.round(current));
@@ -33,7 +33,6 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const navigate = useNavigate();
 
-  // Mouse spotlight tracking state
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const [counts, setCounts] = useState({
@@ -160,7 +159,7 @@ export default function Dashboard() {
       onMouseMove={handleMouseMove}
       className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative selection:bg-emerald-500/30 selection:text-emerald-200"
     >
-      {/* 2. DYNAMIC CURSOR SPOTLIGHT BG EFFECT */}
+
       <div 
         className="pointer-events-none fixed -inset-px z-30 transition-opacity duration-300"
         style={{
@@ -168,14 +167,14 @@ export default function Dashboard() {
         }}
       />
 
-      {/* Ambient Blurred Orbs */}
+
       <motion.div 
         animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/20 blur-[130px] pointer-events-none rounded-full" 
       />
 
-      {/* SIDEBAR */}
+
       <aside className="w-64 bg-zinc-900/80 backdrop-blur-xl text-zinc-100 flex flex-col p-5 border-r border-zinc-800/80 shadow-2xl h-full z-40">
         <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer group" onClick={() => setActiveTab("Dashboard")}>
           <motion.div 
@@ -228,7 +227,6 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950/90 relative z-20">
         <Navbar />
 
@@ -243,7 +241,7 @@ export default function Dashboard() {
                 exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
                 className="max-w-6xl mx-auto space-y-8"
               >
-                {/* Header */}
+
                 <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/80 pb-5">
                   <div>
                     <h1 className="text-2xl font-bold text-zinc-100 tracking-tight flex items-center gap-2">
@@ -267,7 +265,7 @@ export default function Dashboard() {
                   </div>
                 </motion.header>
 
-                {/* Animated Interactive Stats Cards */}
+
                 <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   {stats.map((stat, idx) => (
                     <motion.div
@@ -277,7 +275,7 @@ export default function Dashboard() {
                       transition={{ type: "spring", stiffness: 350, damping: 25 }}
                       className="relative overflow-hidden bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl transition-all duration-300 hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/10 group cursor-pointer"
                     >
-                      {/* Subtle hover shine line */}
+
                       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transform duration-1000" />
 
                       <div className="flex items-center justify-between">
@@ -292,7 +290,7 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      {/* Animated Percentage Badge */}
+
                       <div className="mt-4 flex items-center justify-between text-[11px] font-medium border-t border-zinc-800/60 pt-3">
                         <span className="text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                           <HiArrowSmUp className="text-sm" />
@@ -304,7 +302,6 @@ export default function Dashboard() {
                   ))}
                 </motion.div>
 
-                {/* Member Input Form */}
                 {role === "admin" ? (
                   <motion.div 
                     variants={itemVariants}
