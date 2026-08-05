@@ -12,7 +12,8 @@ import {
   HiOfficeBuilding,
   HiBriefcase,
   HiChartPie,
-  HiCube
+  HiCube,
+  HiFilter
 } from "react-icons/hi";
 
 export default function Funds() {
@@ -49,7 +50,7 @@ export default function Funds() {
 
   useEffect(() => { fetchFunds(); }, []);
 
-  // Calculate Metrics dynamically for Dashboard Cards
+  // Dashboard Dynamic Counts
   const totalFundsCount = funds.length;
   const ventureCount = funds.filter(f => f.type === "Venture").length;
   const peCount = funds.filter(f => f.type === "Private Equity").length;
@@ -313,11 +314,15 @@ export default function Funds() {
   return (
     <div className="p-4 sm:p-6 space-y-6 relative z-10 font-sans text-slate-200 min-h-screen">
 
-      {/* Header Section */}
+      {/* Modern Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Funds Overview</h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">Manage fund classifications, industry focus, and data imports.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+            Funds Intelligence Center
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Real-time liquidity matrix and investment vector metrics.
+          </p>
         </div>
         
         <div className="flex items-center gap-3 self-end sm:self-auto">
@@ -333,25 +338,25 @@ export default function Funds() {
             onClick={handleImportClick}
             className="flex items-center gap-2 px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/80 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all shadow-md active:scale-95"
           >
-            <HiDownload className="text-slate-400 text-sm" /> Import CSV
+            <HiDownload className="text-slate-400 text-sm" /> Batch CSV Import
           </button>
 
           <button
             onClick={() => setShowModal(true)}
             className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
           >
-            <HiPlus className="text-sm" /> Add Fund
+            <HiPlus className="text-sm" /> Create Fund Entity
           </button>
         </div>
       </div>
 
-      {/* Dynamic Dashboard Metrics Cards */}
+      {/* Dynamic Glassmorphism Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        {/* Card 1: Total Funds */}
-        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-slate-700 transition-all">
+        {/* Total Managed Funds */}
+        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-blue-500/40 transition-all">
           <div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Active Funds</p>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Entities</p>
             <h3 className="text-2xl font-black text-white mt-1.5 tracking-tight">{totalFundsCount}</h3>
           </div>
           <div className="p-3.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
@@ -359,8 +364,8 @@ export default function Funds() {
           </div>
         </div>
 
-        {/* Card 2: Venture Capital */}
-        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-slate-700 transition-all">
+        {/* Venture Capital Focus */}
+        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-indigo-500/40 transition-all">
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Venture Capital</p>
             <h3 className="text-2xl font-black text-white mt-1.5 tracking-tight">{ventureCount}</h3>
@@ -370,8 +375,8 @@ export default function Funds() {
           </div>
         </div>
 
-        {/* Card 3: Private Equity */}
-        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-slate-700 transition-all">
+        {/* Private Equity Focus */}
+        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-purple-500/40 transition-all">
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Private Equity</p>
             <h3 className="text-2xl font-black text-white mt-1.5 tracking-tight">{peCount}</h3>
@@ -381,8 +386,8 @@ export default function Funds() {
           </div>
         </div>
 
-        {/* Card 4: Hedge Funds */}
-        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-slate-700 transition-all">
+        {/* Hedge Fund Focus */}
+        <div className="bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl shadow-xl backdrop-blur-xl flex items-center justify-between group hover:border-emerald-500/40 transition-all">
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Hedge Funds</p>
             <h3 className="text-2xl font-black text-white mt-1.5 tracking-tight">{hedgeCount}</h3>
@@ -394,10 +399,10 @@ export default function Funds() {
 
       </div>
 
-      {/* Main Container */}
+      {/* Primary Table Container */}
       <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden backdrop-blur-xl">
 
-        {/* Filter Navigation Tabs */}
+        {/* Tab Selection Row */}
         <div className="flex gap-6 border-b border-slate-800/80 px-6 pt-4 bg-[#11192e]/40">
           {["All", "AI based funds", "GeoPref"].map(tab => (
             <div
@@ -419,49 +424,52 @@ export default function Funds() {
           ))}
         </div>
 
-        {/* Search & Filter Toolbar */}
+        {/* Control & Toolbar Header */}
         <div className="flex flex-wrap justify-between items-center p-4 gap-4 border-b border-slate-800/80 bg-[#11192e]/20">
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div className="relative w-full sm:w-64">
               <HiSearch className="absolute left-3 top-3 text-slate-500 text-sm" />
               <input
                 type="text"
-                placeholder="Search funds or location..."
+                placeholder="Search funds or geography..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-xs focus:border-blue-500 outline-none transition-all"
               />
             </div>
             
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 outline-none focus:border-blue-500 transition-all cursor-pointer"
-            >
-              <option value="All" className="bg-[#0f172a]">All Types</option>
-              <option value="Venture" className="bg-[#0f172a]">Venture</option>
-              <option value="Private Equity" className="bg-[#0f172a]">Private Equity</option>
-              <option value="Hedge Fund" className="bg-[#0f172a]">Hedge Fund</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <HiFilter className="text-slate-500 text-sm hidden sm:block" />
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="px-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 outline-none focus:border-blue-500 transition-all cursor-pointer"
+              >
+                <option value="All" className="bg-[#0f172a]">All Allocations</option>
+                <option value="Venture" className="bg-[#0f172a]">Venture</option>
+                <option value="Private Equity" className="bg-[#0f172a]">Private Equity</option>
+                <option value="Hedge Fund" className="bg-[#0f172a]">Hedge Fund</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Data Table */}
+        {/* Funds Index Table */}
         <div className="overflow-x-auto">
           {loading ? (
             <div className="p-24 text-center text-slate-500 text-xs font-bold tracking-wide uppercase">
-              Loading operational index...
+              Initializing Analytics Matrix...
             </div>
           ) : (
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-[#11192e]/60">
-                  <th className="p-4 pl-6">Fund Name</th>
-                  <th className="p-4">Type</th>
-                  <th className="p-4">Location</th>
-                  <th className="p-4">Website</th>
-                  <th className="p-4">Industry</th>
-                  <th className="p-4 text-right pr-6">Actions</th>
+                  <th className="p-4 pl-6">Fund Designation</th>
+                  <th className="p-4">Structure Type</th>
+                  <th className="p-4">Geography</th>
+                  <th className="p-4">Web Presence</th>
+                  <th className="p-4">Industry Sector</th>
+                  <th className="p-4 text-right pr-6">Manage</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -470,7 +478,7 @@ export default function Funds() {
                     <tr key={fund.id} className="hover:bg-slate-800/30 transition-colors duration-150 group">
                       <td className="p-4 text-sm font-bold text-white pl-6">
                         <div className="flex items-center gap-2.5">
-                          <div className="p-1.5 bg-slate-800/80 border border-slate-700/80 rounded-lg text-slate-400">
+                          <div className="p-1.5 bg-slate-800/80 border border-slate-700/80 rounded-lg text-slate-400 group-hover:text-blue-400 transition-colors">
                             <HiOfficeBuilding size={14} />
                           </div>
                           {fund.name}
@@ -521,7 +529,7 @@ export default function Funds() {
                 ) : (
                   <tr>
                     <td colSpan="6" className="p-20 text-center text-slate-500 text-xs font-bold tracking-wide uppercase italic">
-                      No funds registered matching criteria.
+                      No registered entities match search criteria.
                     </td>
                   </tr>
                 )}
@@ -537,8 +545,8 @@ export default function Funds() {
           <div className="bg-[#131c35] border border-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-5 border-b border-slate-800 pb-3">
               <div>
-                <h2 className="text-lg font-bold text-white">{isEditing ? "Edit Particulars" : "Register Fund"}</h2>
-                <p className="text-slate-400 text-[11px] mt-0.5">Fill out database records parameters.</p>
+                <h2 className="text-lg font-bold text-white">{isEditing ? "Update Particulars" : "Register Fund Entity"}</h2>
+                <p className="text-slate-400 text-[11px] mt-0.5">Configure operational record attributes.</p>
               </div>
               <button onClick={closeModal} className="text-slate-400 hover:text-white p-1 hover:bg-slate-800 rounded-lg transition-all">
                 <HiX className="text-lg" />
@@ -558,7 +566,7 @@ export default function Funds() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Type</label>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Structure Type</label>
                   <select 
                     className="w-full p-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200 outline-none focus:border-blue-500 transition-all cursor-pointer" 
                     value={fundData.type} 
@@ -602,7 +610,7 @@ export default function Funds() {
                 type="submit" 
                 className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all text-xs tracking-wider mt-2 uppercase"
               >
-                {isEditing ? "Update Instance" : "Execute Entry"}
+                {isEditing ? "Save Modifications" : "Confirm Entry"}
               </button>
             </form>
           </div>
