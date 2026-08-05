@@ -15,7 +15,7 @@ export default function Navbar() {
     <nav className="w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-xl px-8 py-4 text-zinc-100 z-30">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         
-        {/* Brand Identity matched with Dashboard */}
+
         <div className="flex items-center gap-3">
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -26,7 +26,6 @@ export default function Navbar() {
           </h1>
         </div>
 
-        {/* User Badge & Logout Button */}
         <div className="flex items-center gap-5">
           {username && (
             <motion.div 
