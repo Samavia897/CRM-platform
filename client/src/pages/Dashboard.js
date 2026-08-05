@@ -20,6 +20,10 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const navigate = useNavigate();
 
+  // Custom Animated Cursor States
+  const [mousePosition, setMousePosition] = useState({ x: -100, y: -100 });
+  const [isHovered, setIsHovered] = useState(false);
+
   const [counts, setCounts] = useState({
     investors: 0,
     funds: 0,
@@ -40,6 +44,16 @@ export default function Dashboard() {
     },
     buttonsStyling: false
   });
+
+  // Track Mouse Movement
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const currentRole = localStorage.getItem("role");
@@ -125,10 +139,37 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans">
+    <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative cursor-none">
 
+      {/* 1. ANIMATED CURSOR DOT & GLOW RING */}
+      <motion.div
+        className="fixed top-0 left-0 w-3 h-3 bg-emerald-400 rounded-full pointer-events-none z-50 mix-blend-difference"
+        animate={{
+          x: mousePosition.x - 6,
+          y: mousePosition.y - 6,
+          scale: isHovered ? 2.5 : 1,
+        }}
+        transition={{ type: "spring", stiffness: 800, damping: 35 }}
+      />
+      <motion.div
+        className="fixed top-0 left-0 w-10 h-10 border border-emerald-400/50 rounded-full pointer-events-none z-40 bg-emerald-500/10 backdrop-blur-[1px]"
+        animate={{
+          x: mousePosition.x - 20,
+          y: mousePosition.y - 20,
+          scale: isHovered ? 1.8 : 1,
+          borderColor: isHovered ? "rgba(52, 211, 153, 0.8)" : "rgba(52, 211, 153, 0.3)",
+        }}
+        transition={{ type: "spring", stiffness: 250, damping: 20 }}
+      />
+
+      {/* SIDEBAR */}
       <div className="w-64 bg-zinc-900 text-zinc-100 flex flex-col p-5 border-r border-zinc-800 shadow-xl h-full z-20">
-        <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer" onClick={() => setActiveTab("Dashboard")}>
+        <div 
+          className="flex items-center gap-3 mb-10 px-2 cursor-pointer" 
+          onClick={() => setActiveTab("Dashboard")}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           <div className="bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/30">
             <HiViewGrid className="text-xl text-emerald-400" />
           </div>
@@ -142,8 +183,10 @@ export default function Dashboard() {
               <button
                 key={item.name}
                 onClick={() => setActiveTab(item.name)}
-                className={`relative flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-sm font-medium ${
-                  isActive ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className={`relative flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-sm font-medium cursor-none ${
+                  isActive ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"
                 }`}
               >
                 {isActive && (
@@ -171,6 +214,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950">
         <Navbar />
 
@@ -203,9 +247,11 @@ export default function Dashboard() {
                   {stats.map((stat, idx) => (
                     <motion.div
                       key={idx}
-                      whileHover={{ scale: 1.02, y: -3 }}
+                      whileHover={{ scale: 1.03, y: -4 }}
+                      onMouseEnter={() => setIsHovered(true)}
+                      onMouseLeave={() => setIsHovered(false)}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl transition-colors hover:border-zinc-700 shadow-lg"
+                      className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl transition-colors hover:border-emerald-500/40 shadow-lg cursor-none"
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -248,7 +294,7 @@ export default function Dashboard() {
                             Username
                           </label>
                           <input
-                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500/70 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200"
+                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500/70 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200 cursor-none"
                             placeholder="operator_user"
                             value={memberData.username}
                             onChange={(e) => setMemberData({ ...memberData, username: e.target.value })}
@@ -261,7 +307,7 @@ export default function Dashboard() {
                             Email Address
                           </label>
                           <input
-                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500/70 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200"
+                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500/70 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200 cursor-none"
                             placeholder="name@company.com"
                             value={memberData.email}
                             onChange={(e) => setMemberData({ ...memberData, email: e.target.value })}
@@ -275,7 +321,7 @@ export default function Dashboard() {
                           </label>
                           <input
                             type="password"
-                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500/70 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200"
+                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500/70 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200 cursor-none"
                             placeholder="••••••••"
                             value={memberData.password}
                             onChange={(e) => setMemberData({ ...memberData, password: e.target.value })}
@@ -288,7 +334,7 @@ export default function Dashboard() {
                             Role Authority
                           </label>
                           <select
-                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500/70 rounded-xl text-zinc-100 text-sm outline-none transition-all duration-200"
+                            className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500/70 rounded-xl text-zinc-100 text-sm outline-none transition-all duration-200 cursor-none"
                             value={memberData.role}
                             onChange={(e) => setMemberData({ ...memberData, role: e.target.value })}
                           >
@@ -303,8 +349,10 @@ export default function Dashboard() {
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.97 }}
+                          onMouseEnter={() => setIsHovered(true)}
+                          onMouseLeave={() => setIsHovered(false)}
                           onClick={addMember}
-                          className="w-full md:w-auto px-8 bg-emerald-400 hover:bg-emerald-300 text-zinc-950 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10"
+                          className="w-full md:w-auto px-8 bg-emerald-400 hover:bg-emerald-300 text-zinc-950 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 cursor-none"
                         >
                           <HiPlusCircle className="text-lg" />
                           <span>Save Workspace Member</span>
