@@ -1,623 +1,452 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import Swal from 'sweetalert2';
-import { 
-  HiPlus, 
-  HiX, 
-  HiLocationMarker, 
-  HiDownload, 
-  HiPencilAlt, 
-  HiTrash, 
-  HiSearch, 
-  HiOfficeBuilding,
-  HiBriefcase,
-  HiChartPie,
-  HiCube,
-  HiFilter
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "axios";
+import Swal from "sweetalert2";
+import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
+import Navbar from "../components/Navbar";
+import Pipeline from "./Pipeline";
+import InvestorsTable from "./InvestorsTable";
+import Funds from "./Funds";
+import TasksTable from "./TasksTable";
+
+import {
+  HiUsers, HiChartBar, HiClipboardList, HiViewGrid,
+  HiPlusCircle, HiUserCircle, HiOfficeBuilding, HiTrendingUp, 
+  HiShieldCheck, HiMail, HiLockClosed, HiSparkles, HiLightningBolt,
+  HiArrowSmUp
 } from "react-icons/hi";
 
-export default function Funds() {
-  const [funds, setFunds] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("All");
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentFundId, setCurrentFundId] = useState(null);
+function AnimatedNumber({ value }) {
+  const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
+  const display = useTransform(spring, (current) => Math.round(current));
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("All");
+  useEffect(() => {
+    spring.set(value);
+  }, [value, spring]);
 
-  const [fundData, setFundData] = useState({
-    name: "", type: "Venture", location: "", website: "", industry: "",
-  });
-  
-  const BASE_URL = "https://crm-backend-live-4541.onrender.com";
+  return <motion.span>{display}</motion.span>;
+}
 
-  const fetchFunds = async () => {
-    try {
-      setLoading(true);
-      const currentToken = localStorage.getItem("token");
-      const res = await axios.get(`${BASE_URL}/api/funds`, { 
-        headers: { "Authorization": `Bearer ${currentToken}` } 
-      });
-      setFunds(res.data);
-    } catch (err) {
-      console.error("Error fetching funds", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function Dashboard() {
+  const [role, setRole] = useState("");
+  const [activeTab, setActiveTab] = useState("Dashboard");
+  const navigate = useNavigate();
 
-  useEffect(() => { fetchFunds(); }, []);
+  const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Dashboard Dynamic Counts
-  const totalFundsCount = funds.length;
-  const ventureCount = funds.filter(f => f.type === "Venture").length;
-  const peCount = funds.filter(f => f.type === "Private Equity").length;
-  const hedgeCount = funds.filter(f => f.type === "Hedge Fund").length;
+  // Smooth springs for custom cursor motion
+  const cursorX = useSpring(mousePos.x, { stiffness: 400, damping: 28 });
+  const cursorY = useSpring(mousePos.y, { stiffness: 400, damping: 28 });
 
-  const filteredFunds = funds.filter(fund => {
-    const nameMatch = fund.name ? fund.name.toLowerCase() : "";
-    const locMatch = fund.location ? fund.location.toLowerCase() : "";
-    const searchLower = searchTerm.toLowerCase();
-
-    const matchesSearch = nameMatch.includes(searchLower) || locMatch.includes(searchLower);
-    const matchesType = filterType === "All" || fund.type === filterType;
-
-    if (activeTab === "AI based funds") {
-      return matchesSearch && matchesType && fund.industry && (
-        Array.isArray(fund.industry) 
-          ? fund.industry.some(i => i.toLowerCase().includes('ai'))
-          : String(fund.industry).toLowerCase().includes('ai')
-      );
-    }
-    if (activeTab === "GeoPref") {
-      return matchesSearch && matchesType && (fund.location && fund.location !== "---");
-    }
-
-    return matchesSearch && matchesType;
+  const [counts, setCounts] = useState({
+    investors: 0,
+    funds: 0,
+    pipelines: 0,
+    tasks: 0
   });
 
-  const handleEdit = (fund) => {
-    setIsEditing(true);
-    setCurrentFundId(fund.id);
-    
-    let industryString = "";
-    if (fund.industry) {
-      industryString = Array.isArray(fund.industry) ? fund.industry.join(', ') : fund.industry;
-    }
+  const [memberData, setMemberData] = useState({
+    username: "", email: "", password: "", role: "user"
+  });
 
-    setFundData({
-      name: fund.name || "",
-      type: fund.type || "Venture",
-      location: fund.location || "",
-      website: fund.website || "",
-      industry: industryString,
-    });
-    setShowModal(true);
+  const customSwal = Swal.mixin({
+    customClass: {
+      popup: "rounded-2xl border border-zinc-800 bg-zinc-900 text-zinc-100 shadow-2xl p-6 font-sans backdrop-blur-lg",
+      title: "text-lg font-bold text-zinc-100",
+      htmlContainer: "text-xs text-zinc-400 mt-1",
+      confirmButton: "px-5 py-2 rounded-lg text-xs font-semibold text-zinc-950 bg-emerald-400 hover:bg-emerald-300 transition-all duration-200"
+    },
+    buttonsStyling: false
+  });
+
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    setMousePos({ x: clientX, y: clientY });
+    cursorX.set(clientX);
+    cursorY.set(clientY);
+
+    // Detect if hovering interactive elements (buttons, links, inputs, selects, cards)
+    const target = e.target;
+    const isInteractive = target.closest("button, a, input, select, .cursor-pointer, [role='button']");
+    setIsHovered(!!isInteractive);
   };
 
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#34d399',
-      cancelButtonColor: '#ef4444',
-      confirmButtonText: 'Yes, delete it!',
-      background: '#18181b',
-      color: '#f4f4f5',
-      customClass: {
-        popup: 'border border-zinc-800 rounded-2xl'
-      }
-    });
+  useEffect(() => {
+    const currentRole = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
 
-    if (result.isConfirmed) {
-      try {
-        const currentToken = localStorage.getItem("token");
-        await axios.delete(`${BASE_URL}/api/funds/${id}`, { 
-          headers: { "Authorization": `Bearer ${currentToken}` } 
-        });
-        Swal.fire({
-          title: 'Deleted!',
-          text: 'Fund has been removed.',
-          icon: 'success',
-          background: '#18181b',
-          color: '#f4f4f5'
-        });
-        fetchFunds();
-      } catch (err) {
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to delete fund.',
-          icon: 'error',
-          background: '#18181b',
-          color: '#f4f4f5'
-        });
-      }
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      let industryArray = [];
-      if (typeof fundData.industry === 'string') {
-        industryArray = fundData.industry ? fundData.industry.split(',').map(i => i.trim()).filter(Boolean) : [];
-      } else if (Array.isArray(fundData.industry)) {
-        industryArray = fundData.industry;
-      }
-
-      const payload = {
-        name: fundData.name.trim(),
-        type: fundData.type,
-        location: fundData.location ? fundData.location.trim() : "",
-        website: fundData.website ? fundData.website.trim() : "",
-        industry: industryArray
-      };
-
-      const currentToken = localStorage.getItem("token");
-      const requestConfig = { headers: { "Authorization": `Bearer ${currentToken}` } };
-
-      if (isEditing) {
-        await axios.put(`${BASE_URL}/api/funds/${currentFundId}`, payload, requestConfig);
-        Swal.fire({ title: 'Updated!', text: 'Fund details updated.', icon: 'success', background: '#18181b', color: '#f4f4f5' });
-      } else {
-        await axios.post(`${BASE_URL}/api/funds`, payload, requestConfig);
-        Swal.fire({ title: 'Success!', text: 'New fund created.', icon: 'success', background: '#18181b', color: '#f4f4f5' });
-      }
-
-      closeModal();
-      fetchFunds();
-    } catch (err) {
-      console.error(err);
-      Swal.fire({ title: 'Error!', text: err.response?.data?.error || 'Operation failed.', icon: 'error', background: '#18181b', color: '#f4f4f5' });
-    }
-  };
-
-  const handleImportClick = () => {
-    document.getElementById('csvImportInput').click();
-  };
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.name.endsWith('.csv') && file.type !== "text/csv") {
-      return Swal.fire({ title: 'Error', text: 'Please upload a valid CSV file', icon: 'error', background: '#18181b', color: '#f4f4f5' });
-    }
-
-    const fileFormData = new FormData();
-    fileFormData.append("file", file);
-
-    Swal.fire({
-      title: 'Processing CSV File...',
-      text: 'Validating columns and importing records...',
-      allowOutsideClick: false,
-      background: '#18181b',
-      color: '#f4f4f5',
-      didOpen: () => { Swal.showLoading(); }
-    });
-
-    try {
-      const currentToken = localStorage.getItem("token");
-      
-      const res = await axios.post(`${BASE_URL}/api/funds/import`, fileFormData, {
-        headers: {
-          "Authorization": `Bearer ${currentToken}`,
-          "Content-Type": "multipart/form-data"
-        }
-      });
-
-      const jobId = res.data?.jobId || res.data?.id || res.data?.importId;
-
-      if (jobId) {
-        pollImportStatus(jobId, e);
-      } else {
-        Swal.fire({ title: 'Success', text: 'Import completed successfully!', icon: 'success', background: '#18181b', color: '#f4f4f5' });
-        e.target.value = "";
-        fetchFunds();
-      }
-
-    } catch (err) {
-      console.error("Import Error:", err.response?.data);
-      e.target.value = "";
-      Swal.fire({ title: 'Import Failed', text: err.response?.data?.message || 'Failed to submit file.', icon: 'error', background: '#18181b', color: '#f4f4f5' });
-      fetchFunds();
-    }
-  };
-
-  const pollImportStatus = (jobId, e, attempts = 0) => {
-    const currentToken = localStorage.getItem("token");
-    
-    if (attempts > 10) {
-      Swal.fire({ title: 'Import Processed', text: 'CSV import complete.', icon: 'info', background: '#18181b', color: '#f4f4f5' });
-      if (e?.target) e.target.value = "";
-      fetchFunds();
+    setRole(currentRole);
+    if (!token) {
+      navigate("/login");
       return;
     }
 
-    setTimeout(async () => {
+    const fetchCounts = async () => {
+      const authHeader = { headers: { Authorization: `Bearer ${token}` } };
       try {
-        await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
-          headers: { "Authorization": `Bearer ${currentToken}` }
+        const [investorsRes, fundsRes, pipelinesRes, tasksRes] = await Promise.allSettled([
+          axiosInstance.get("http://localhost:5000/api/investors", authHeader),
+          axiosInstance.get("http://localhost:5000/api/funds", authHeader),
+          axiosInstance.get("http://localhost:5000/api/pipelines", authHeader),
+          axiosInstance.get("http://localhost:5000/api/tasks", authHeader)
+        ]);
+
+        setCounts({
+          investors: investorsRes.status === "fulfilled" ? (Array.isArray(investorsRes.value.data) ? investorsRes.value.data.length : investorsRes.value.data.count || 0) : 0,
+          funds: fundsRes.status === "fulfilled" ? (Array.isArray(fundsRes.value.data) ? fundsRes.value.data.length : fundsRes.value.data.count || 0) : 0,
+          pipelines: pipelinesRes.status === "fulfilled" ? (Array.isArray(pipelinesRes.value.data) ? pipelinesRes.value.data.length : pipelinesRes.value.data.count || 0) : 0,
+          tasks: tasksRes.status === "fulfilled" ? (Array.isArray(tasksRes.value.data) ? tasksRes.value.data.length : tasksRes.value.data.count || 0) : 0
         });
-
-        showPartialFailureModal(jobId);
-        if (e?.target) e.target.value = "";
-        fetchFunds();
-
       } catch (err) {
-        const statusCode = err.response?.status;
-
-        if (statusCode === 404) {
-          if (attempts >= 2) {
-            Swal.fire({ title: 'Success!', text: 'All funds imported with zero errors!', icon: 'success', background: '#18181b', color: '#f4f4f5' });
-            if (e?.target) e.target.value = "";
-            fetchFunds();
-          } else {
-            pollImportStatus(jobId, e, attempts + 1);
-          }
-        } 
-        else if (statusCode === 500) {
-          Swal.fire({ title: 'Import Completed', text: 'Import batch finished processing.', icon: 'success', background: '#18181b', color: '#f4f4f5' });
-          if (e?.target) e.target.value = "";
-          fetchFunds();
-        } 
-        else {
-          pollImportStatus(jobId, e, attempts + 1);
-        }
+        console.error("Failed to fetch dynamic counts", err);
       }
-    }, 1200);
-  };
+    };
 
-  const showPartialFailureModal = async (jobId) => {
+    fetchCounts();
+  }, [navigate]);
+
+  const addMember = async () => {
+    if (!memberData.username || !memberData.email || !memberData.password) {
+      customSwal.fire({
+        title: "Validation Error",
+        text: "Please fulfill all required fields before saving.",
+        icon: "warning"
+      });
+      return;
+    }
+
     try {
-      const currentToken = localStorage.getItem("token");
-      const response = await axios.get(`${BASE_URL}/api/funds/failed-report/${jobId}`, {
-        headers: { "Authorization": `Bearer ${currentToken}` }
+      const token = localStorage.getItem("token");
+      await axiosInstance.post("http://localhost:5000/api/auth/add-member", memberData, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      const { errors, totalFailed } = response.data || {};
-
-      if (!errors || errors.length === 0) {
-        Swal.fire({ title: 'Import Complete', text: 'All valid funds imported!', icon: 'success', background: '#18181b', color: '#f4f4f5' });
-        return;
-      }
-
-      const errorsHtml = errors.map(err => `
-        <div style="text-align: left; padding: 8px 12px; margin-bottom: 8px; background: #27191b; border-left: 4px solid #ef4444; border-radius: 6px; font-size: 12px;">
-          <strong style="color: #f87171;">Row ${err.row || 'N/A'}:</strong> 
-          <span style="color: #a1a1aa; font-weight: 500; display: block; margin-top: 2px;">${err.reason || err.message || 'Validation error'}</span>
-        </div>
-      `).join('');
-
-      Swal.fire({
-        title: 'Validation Errors Detected!',
-        icon: 'warning',
-        background: '#18181b',
-        color: '#f4f4f5',
-        html: `
-          <p style="font-size: 12px; color: #a1a1aa; text-align: left; margin-bottom: 12px;">
-            Found ${totalFailed || errors.length} issue(s) during CSV processing:
-          </p>
-          <div style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
-            ${errorsHtml}
-          </div>
-        `,
-        confirmButtonText: 'Understood',
-        confirmButtonColor: '#34d399'
+      
+      customSwal.fire({
+        title: "Success",
+        text: "Member added successfully to corporate workspace!",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false
       });
-
+      
+      setMemberData({ username: "", email: "", password: "", role: "user" });
     } catch (err) {
-      console.error("FAILED TO FETCH LOGS:", err);
-      if (err.response?.status === 404) {
-        Swal.fire({ title: 'Success', text: 'Import completed with zero errors!', icon: 'success', background: '#18181b', color: '#f4f4f5' });
-      } else {
-        Swal.fire({
-          title: 'Import Processed',
-          text: 'CSV file was processed. Please check your funds table.',
-          icon: 'info',
-          confirmButtonColor: '#34d399',
-          background: '#18181b',
-          color: '#f4f4f5'
-        });
-      }
+      customSwal.fire({
+        title: "Addition Failed",
+        text: err.response?.data?.error || "Failed to append organization member.",
+        icon: "error"
+      });
     }
   };
 
-  const closeModal = () => {
-    setShowModal(false);
-    setIsEditing(false);
-    setCurrentFundId(null);
-    setFundData({ name: "", type: "Venture", location: "", website: "", industry: "" });
+  const menuItems = [
+    { name: "Dashboard", icon: HiViewGrid },
+    { name: "Investors", icon: HiUsers },
+    { name: "Funds", icon: HiOfficeBuilding },
+    { name: "Pipelines", icon: HiChartBar },
+    { name: "Tasks", icon: HiClipboardList },
+  ];
+
+  const stats = [
+    { title: "Total Investors", count: counts.investors, growth: "+12.5%", icon: HiUsers, color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+    { title: "Total Funds", count: counts.funds, growth: "+8.2%", icon: HiOfficeBuilding, color: "text-teal-400 bg-teal-500/10 border-teal-500/20" },
+    { title: "Active Pipelines", count: counts.pipelines, growth: "+24.0%", icon: HiTrendingUp, color: "text-violet-400 bg-violet-500/10 border-violet-500/20" },
+    { title: "Pending Tasks", count: counts.tasks, growth: "-3.1%", icon: HiClipboardList, color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.12 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 25, scale: 0.98 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 260, damping: 20 } }
   };
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto text-zinc-100 font-sans">
+    <div 
+      onMouseMove={handleMouseMove}
+      className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative selection:bg-emerald-500/30 selection:text-emerald-200 cursor-none"
+    >
 
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800/80 pb-5">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">
-            Funds Intelligence Center
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Real-time liquidity matrix and investment vector metrics.
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-3 self-end sm:self-auto">
-          <input
-            type="file"
-            id="csvImportInput"
-            className="hidden"
-            accept=".csv, text/csv, application/vnd.ms-excel, application/csv, text/x-csv"
-            onChange={handleFileChange}
-          />
+      {/* CUSTOM CURSOR 1: INNER DOT */}
+      <div 
+        className="pointer-events-none fixed top-0 left-0 z-50 w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]"
+        style={{
+          transform: `translate3d(${mousePos.x - 4}px, ${mousePos.y - 4}px, 0)`
+        }}
+      />
 
-          <button
-            onClick={handleImportClick}
-            className="flex items-center gap-2 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800/90 rounded-xl text-xs font-semibold text-zinc-300 transition-all shadow-md"
+      {/* CUSTOM CURSOR 2: OUTER SPRING RING WITH HOVER DYNAMICS */}
+      <motion.div
+        className="pointer-events-none fixed top-0 left-0 z-50 rounded-full border border-emerald-400/60"
+        style={{
+          x: cursorX,
+          y: cursorY,
+          translateX: "-50%",
+          translateY: "-50%"
+        }}
+        animate={{
+          width: isHovered ? 48 : 28,
+          height: isHovered ? 48 : 28,
+          backgroundColor: isHovered ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.02)",
+          borderColor: isHovered ? "rgba(52, 211, 153, 0.9)" : "rgba(52, 211, 153, 0.4)",
+          scale: isHovered ? 1.2 : 1
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      />
+
+      {/* SPOTLIGHT GRADIENT */}
+      <div 
+        className="pointer-events-none fixed -inset-px z-30 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(16, 185, 129, 0.06), transparent 80%)`
+        }}
+      />
+
+      {/* AMBIENT GLOW */}
+      <motion.div 
+        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/20 blur-[130px] pointer-events-none rounded-full" 
+      />
+
+      {/* SIDEBAR */}
+      <aside className="w-64 bg-zinc-900/80 backdrop-blur-xl text-zinc-100 flex flex-col p-5 border-r border-zinc-800/80 shadow-2xl h-full z-40">
+        <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer group" onClick={() => setActiveTab("Dashboard")}>
+          <motion.div 
+            whileHover={{ rotate: 180 }}
+            transition={{ duration: 0.4 }}
+            className="bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 p-2.5 rounded-xl border border-emerald-500/30 group-hover:border-emerald-400 shadow-lg shadow-emerald-500/10"
           >
-            <HiDownload className="text-zinc-400 text-sm" /> Batch CSV Import
-          </button>
-
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-emerald-400 hover:bg-emerald-300 text-zinc-950 font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/10 transition-all active:scale-95"
-          >
-            <HiPlus className="text-sm stroke-2" /> Create Fund Entity
-          </button>
-        </div>
-      </div>
-
-      {/* Metric Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl shadow-xl flex items-center justify-between">
+            <HiLightningBolt className="text-xl text-emerald-400" />
+          </motion.div>
           <div>
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Total Entities</p>
-            <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">{totalFundsCount}</h3>
-          </div>
-          <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
-            <HiOfficeBuilding className="text-2xl" />
+            <h2 className="text-lg font-black tracking-wider text-zinc-100 uppercase bg-gradient-to-r from-zinc-100 via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+              NEXUS <span className="text-emerald-400 font-light text-sm">// CRM</span>
+            </h2>
           </div>
         </div>
 
-        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl shadow-xl flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Venture Capital</p>
-            <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">{ventureCount}</h3>
-          </div>
-          <div className="p-3 bg-teal-500/10 text-teal-400 rounded-xl border border-teal-500/20">
-            <HiBriefcase className="text-2xl" />
-          </div>
-        </div>
-
-        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl shadow-xl flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Private Equity</p>
-            <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">{peCount}</h3>
-          </div>
-          <div className="p-3 bg-violet-500/10 text-violet-400 rounded-xl border border-violet-500/20">
-            <HiChartPie className="text-2xl" />
-          </div>
-        </div>
-
-        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl shadow-xl flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Hedge Funds</p>
-            <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">{hedgeCount}</h3>
-          </div>
-          <div className="p-3 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
-            <HiCube className="text-2xl" />
-          </div>
-        </div>
-      </div>
-
-      {/* Main Table Container */}
-      <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 rounded-2xl shadow-2xl overflow-hidden">
-
-        {/* Filter Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between p-4 gap-4 border-b border-zinc-800/80 bg-zinc-900/40">
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <div className="relative w-full sm:w-72">
-              <HiSearch className="absolute left-3.5 top-3 text-zinc-500 text-sm" />
-              <input
-                type="text"
-                placeholder="Search funds or geography..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs outline-none transition-all duration-300"
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <HiFilter className="text-zinc-500 text-sm hidden sm:block" />
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="px-3 py-2 bg-zinc-950/80 border border-zinc-800 rounded-xl text-xs font-medium text-zinc-300 outline-none focus:border-emerald-400 transition-all cursor-pointer"
-              >
-                <option value="All" className="bg-zinc-900">All Allocations</option>
-                <option value="Venture" className="bg-zinc-900">Venture</option>
-                <option value="Private Equity" className="bg-zinc-900">Private Equity</option>
-                <option value="Hedge Fund" className="bg-zinc-900">Hedge Fund</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Sub Navigation */}
-          <div className="flex items-center gap-4 text-xs font-semibold">
-            {["All", "AI based funds", "GeoPref"].map((tab) => (
+        <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto">
+          {menuItems.map((item) => {
+            const isActive = activeTab === item.name;
+            return (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`transition-colors ${
-                  activeTab === tab 
-                    ? "text-emerald-400 font-bold border-b-2 border-emerald-400 pb-1" 
-                    : "text-zinc-400 hover:text-zinc-200"
+                key={item.name}
+                onClick={() => setActiveTab(item.name)}
+                className={`relative flex items-center gap-3 p-3 rounded-xl transition-all duration-300 text-sm font-medium ${
+                  isActive ? "text-emerald-400 font-semibold" : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/40"
                 }`}
               >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Table View */}
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-16 text-center text-zinc-500 text-xs font-medium uppercase tracking-wider">
-              Syncing Funds Network...
-            </div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-zinc-800/80 text-[10px] font-bold text-zinc-400 uppercase tracking-wider bg-zinc-900/40">
-                  <th className="p-4 pl-6">Fund Designation</th>
-                  <th className="p-4">Structure Type</th>
-                  <th className="p-4">Geography</th>
-                  <th className="p-4">Web Presence</th>
-                  <th className="p-4">Industry Sector</th>
-                  <th className="p-4 text-right pr-6">Manage</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/60 text-xs">
-                {filteredFunds.length > 0 ? (
-                  filteredFunds.map((fund) => (
-                    <tr key={fund.id} className="hover:bg-zinc-800/30 transition-colors">
-                      <td className="p-4 pl-6 font-bold text-zinc-100">{fund.name}</td>
-                      <td className="p-4 text-zinc-400">{fund.type}</td>
-                      <td className="p-4 text-zinc-400">
-                        <div className="flex items-center gap-1.5">
-                          <HiLocationMarker size={14} className="text-zinc-500" />
-                          <span>{fund.location || "N/A"}</span>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        {fund.website ? (
-                          <a 
-                            href={fund.website.startsWith('http') ? fund.website : `https://${fund.website}`} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="text-emerald-400 hover:underline font-medium"
-                          >
-                            {fund.website}
-                          </a>
-                        ) : (
-                          <span className="text-zinc-600">N/A</span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex flex-wrap gap-1">
-                          {fund.industry && (
-                            Array.isArray(fund.industry) 
-                              ? fund.industry.map((tag, i) => (
-                                  <span key={i} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-semibold">{tag}</span>
-                                ))
-                              : String(fund.industry).split(',').map((tag, i) => (
-                                  <span key={i} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-semibold">{tag.trim()}</span>
-                                ))
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-4 text-right pr-6">
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => handleEdit(fund)} className="p-1.5 text-zinc-400 hover:text-emerald-400 rounded transition-colors"><HiPencilAlt size={16} /></button>
-                          <button onClick={() => handleDelete(fund.id)} className="p-1.5 text-zinc-400 hover:text-rose-400 rounded transition-colors"><HiTrash size={16} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" className="p-12 text-center text-zinc-500 text-xs italic">
-                      No matching fund entities registered.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
-      {/* Action Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex justify-center items-center z-50 p-4">
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-md text-zinc-100">
-            <div className="flex justify-between items-center mb-5 border-b border-zinc-800 pb-3">
-              <h2 className="text-base font-bold text-zinc-100">{isEditing ? "Edit Fund Entity" : "Add Fund Entity"}</h2>
-              <button onClick={closeModal} className="text-zinc-400 hover:text-zinc-100 p-1 rounded">
-                <HiX className="text-lg" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Entity Name</label>
-                <input 
-                  className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
-                  value={fundData.name} 
-                  onChange={(e) => setFundData({ ...fundData, name: e.target.value })} 
-                  required 
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Structure Type</label>
-                  <select 
-                    className="w-full p-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-200 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
-                    value={fundData.type} 
-                    onChange={(e) => setFundData({ ...fundData, type: e.target.value })}
-                  >
-                    <option value="Venture" className="bg-zinc-900">Venture</option>
-                    <option value="Private Equity" className="bg-zinc-900">Private Equity</option>
-                    <option value="Hedge Fund" className="bg-zinc-900">Hedge Fund</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Geography</label>
-                  <input 
-                    className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
-                    value={fundData.location} 
-                    onChange={(e) => setFundData({ ...fundData, location: e.target.value })} 
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute inset-0 bg-zinc-800/90 border border-zinc-700/60 rounded-xl shadow-inner"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Web Domain</label>
-                <input 
-                  className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
-                  value={fundData.website} 
-                  onChange={(e) => setFundData({ ...fundData, website: e.target.value })} 
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Sectors (comma separated)</label>
-                <input 
-                  className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
-                  value={fundData.industry} 
-                  onChange={(e) => setFundData({ ...fundData, industry: e.target.value })} 
-                  placeholder="AI, SaaS, HealthTech" 
-                />
-              </div>
-
-              <button 
-                type="submit" 
-                className="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-zinc-950 font-bold rounded-xl transition-all mt-2 shadow-lg shadow-emerald-500/10"
-              >
-                {isEditing ? "Save Entity Changes" : "Confirm Fund Creation"}
+                )}
+                <span className="relative z-10 flex items-center gap-3">
+                  <item.icon className={`text-lg transition-colors ${isActive ? "text-emerald-400" : "text-zinc-400"}`} />
+                  <span>{item.name}</span>
+                </span>
               </button>
-            </form>
+            );
+          })}
+        </nav>
+
+        <div className="mt-auto p-3 bg-zinc-950/70 border border-zinc-800/80 rounded-xl flex items-center gap-3 backdrop-blur-sm">
+          <HiUserCircle className="text-3xl text-emerald-400" />
+          <div className="overflow-hidden">
+            <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-wider">Active Workspace</p>
+            <p className="text-xs font-semibold text-zinc-200 truncate capitalize">{role}</p>
           </div>
         </div>
-      )}
+      </aside>
+
+      {/* MAIN CONTAINER */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950/90 relative z-20">
+        <Navbar />
+
+        <main className="flex-1 overflow-y-auto p-8 relative">
+          <AnimatePresence mode="wait">
+            {activeTab === "Dashboard" && (
+              <motion.div
+                key="dashboard"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
+                className="max-w-6xl mx-auto space-y-8"
+              >
+
+                <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/80 pb-5">
+                  <div>
+                    <h1 className="text-2xl font-bold text-zinc-100 tracking-tight flex items-center gap-2">
+                      Admin Control Hub
+                      <motion.span
+                        animate={{ rotate: [0, 15, -15, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                      >
+                        <HiSparkles className="text-emerald-400 text-xl" />
+                      </motion.span>
+                    </h1>
+                    <p className="text-xs text-zinc-400 mt-1">Real-time pipeline analytics & enterprise access control.</p>
+                  </div>
+                  <div className="flex items-center gap-2 px-3.5 py-1.5 bg-zinc-900/90 border border-zinc-800/90 rounded-xl w-fit shadow-md backdrop-blur-md">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <HiShieldCheck className="text-emerald-400 text-base ml-1" />
+                    <span className="text-xs text-zinc-300 font-medium capitalize">Role: {role}</span>
+                  </div>
+                </motion.header>
+
+                {/* STATS CARDS */}
+                <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                  {stats.map((stat, idx) => (
+                    <motion.div
+                      key={idx}
+                      whileHover={{ scale: 1.04, y: -6 }}
+                      whileTap={{ scale: 0.97 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                      className="relative overflow-hidden bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl transition-all duration-300 hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/10 group cursor-pointer"
+                    >
+
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transform duration-1000" />
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">{stat.title}</p>
+                          <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">
+                            <AnimatedNumber value={stat.count} />
+                          </h3>
+                        </div>
+                        <div className={`p-3 rounded-xl border transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg ${stat.color}`}>
+                          <stat.icon className="text-2xl" />
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between text-[11px] font-medium border-t border-zinc-800/60 pt-3">
+                        <span className="text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                          <HiArrowSmUp className="text-sm" />
+                          {stat.growth}
+                        </span>
+                        <span className="text-zinc-500 text-[10px]">vs last month</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+
+                {/* MEMBER FORM */}
+                {role === "admin" ? (
+                  <motion.div 
+                    variants={itemVariants}
+                    className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl relative"
+                  >
+                    <div className="p-6 border-b border-zinc-800/80 flex items-center justify-between bg-zinc-900/40">
+                      <div className="flex items-center gap-2.5 text-emerald-400">
+                        <HiPlusCircle className="text-2xl" />
+                        <h3 className="text-md font-bold text-zinc-100">Add Organization Member</h3>
+                      </div>
+                      <span className="text-[11px] font-semibold text-zinc-400 bg-zinc-800/80 px-3 py-1 rounded-full border border-zinc-700/60">
+                        Admin Privilege
+                      </span>
+                    </div>
+
+                    <div className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <HiUsers className="text-zinc-500" />
+                            Username
+                          </label>
+                          <input
+                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-300"
+                            placeholder="operator_user"
+                            value={memberData.username}
+                            onChange={(e) => setMemberData({ ...memberData, username: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <HiMail className="text-zinc-500" />
+                            Email Address
+                          </label>
+                          <input
+                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-300"
+                            placeholder="name@company.com"
+                            value={memberData.email}
+                            onChange={(e) => setMemberData({ ...memberData, email: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <HiLockClosed className="text-zinc-500" />
+                            Password
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-300"
+                            placeholder="••••••••"
+                            value={memberData.password}
+                            onChange={(e) => setMemberData({ ...memberData, password: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <HiShieldCheck className="text-zinc-500" />
+                            Role Authority
+                          </label>
+                          <select
+                            className="w-full px-4 py-2.5 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 text-sm outline-none transition-all duration-300"
+                            value={memberData.role}
+                            onChange={(e) => setMemberData({ ...memberData, role: e.target.value })}
+                          >
+                            <option value="user" className="bg-zinc-900">User</option>
+                            <option value="manager" className="bg-zinc-900">Manager</option>
+                          </select>
+                        </div>
+
+                      </div>
+
+                      <div className="mt-6 flex justify-end">
+                        <motion.button
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={addMember}
+                          className="w-full md:w-auto px-8 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 hover:from-emerald-300 hover:to-teal-300 text-zinc-950 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20 relative overflow-hidden group"
+                        >
+                          <HiPlusCircle className="text-lg" />
+                          <span>Save Workspace Member</span>
+                        </motion.button>
+                      </div>
+
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="bg-zinc-900/60 p-8 rounded-2xl border border-zinc-800 text-center">
+                    <p className="text-zinc-400 text-sm font-medium">Limited Access View — Contact Admin to modify organization settings.</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {activeTab === "Investors" && <InvestorsTable />}
+          {activeTab === "Funds" && <Funds />}
+          {activeTab === "Pipelines" && <Pipeline />}
+          {activeTab === "Tasks" && <TasksTable />}
+
+        </main>
+      </div>
     </div>
   );
 }

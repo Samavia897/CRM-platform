@@ -103,11 +103,14 @@ export default function Funds() {
       text: "You won't be able to revert this!",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#00e699',
+      confirmButtonColor: '#34d399',
       cancelButtonColor: '#ef4444',
       confirmButtonText: 'Yes, delete it!',
-      background: '#14171f',
-      color: '#ffffff'
+      background: '#18181b',
+      color: '#f4f4f5',
+      customClass: {
+        popup: 'border border-zinc-800 rounded-2xl'
+      }
     });
 
     if (result.isConfirmed) {
@@ -120,8 +123,8 @@ export default function Funds() {
           title: 'Deleted!',
           text: 'Fund has been removed.',
           icon: 'success',
-          background: '#14171f',
-          color: '#ffffff'
+          background: '#18181b',
+          color: '#f4f4f5'
         });
         fetchFunds();
       } catch (err) {
@@ -129,8 +132,8 @@ export default function Funds() {
           title: 'Error!',
           text: 'Failed to delete fund.',
           icon: 'error',
-          background: '#14171f',
-          color: '#ffffff'
+          background: '#18181b',
+          color: '#f4f4f5'
         });
       }
     }
@@ -159,17 +162,17 @@ export default function Funds() {
 
       if (isEditing) {
         await axios.put(`${BASE_URL}/api/funds/${currentFundId}`, payload, requestConfig);
-        Swal.fire({ title: 'Updated!', text: 'Fund details updated.', icon: 'success', background: '#14171f', color: '#fff' });
+        Swal.fire({ title: 'Updated!', text: 'Fund details updated.', icon: 'success', background: '#18181b', color: '#f4f4f5' });
       } else {
         await axios.post(`${BASE_URL}/api/funds`, payload, requestConfig);
-        Swal.fire({ title: 'Success!', text: 'New fund created.', icon: 'success', background: '#14171f', color: '#fff' });
+        Swal.fire({ title: 'Success!', text: 'New fund created.', icon: 'success', background: '#18181b', color: '#f4f4f5' });
       }
 
       closeModal();
       fetchFunds();
     } catch (err) {
       console.error(err);
-      Swal.fire({ title: 'Error!', text: err.response?.data?.error || 'Operation failed.', icon: 'error', background: '#14171f', color: '#fff' });
+      Swal.fire({ title: 'Error!', text: err.response?.data?.error || 'Operation failed.', icon: 'error', background: '#18181b', color: '#f4f4f5' });
     }
   };
 
@@ -182,7 +185,7 @@ export default function Funds() {
     if (!file) return;
 
     if (!file.name.endsWith('.csv') && file.type !== "text/csv") {
-      return Swal.fire({ title: 'Error', text: 'Please upload a valid CSV file', icon: 'error', background: '#14171f', color: '#fff' });
+      return Swal.fire({ title: 'Error', text: 'Please upload a valid CSV file', icon: 'error', background: '#18181b', color: '#f4f4f5' });
     }
 
     const fileFormData = new FormData();
@@ -192,8 +195,8 @@ export default function Funds() {
       title: 'Processing CSV File...',
       text: 'Validating columns and importing records...',
       allowOutsideClick: false,
-      background: '#14171f',
-      color: '#fff',
+      background: '#18181b',
+      color: '#f4f4f5',
       didOpen: () => { Swal.showLoading(); }
     });
 
@@ -212,7 +215,7 @@ export default function Funds() {
       if (jobId) {
         pollImportStatus(jobId, e);
       } else {
-        Swal.fire({ title: 'Success', text: 'Import completed successfully!', icon: 'success', background: '#14171f', color: '#fff' });
+        Swal.fire({ title: 'Success', text: 'Import completed successfully!', icon: 'success', background: '#18181b', color: '#f4f4f5' });
         e.target.value = "";
         fetchFunds();
       }
@@ -220,7 +223,7 @@ export default function Funds() {
     } catch (err) {
       console.error("Import Error:", err.response?.data);
       e.target.value = "";
-      Swal.fire({ title: 'Import Failed', text: err.response?.data?.message || 'Failed to submit file.', icon: 'error', background: '#14171f', color: '#fff' });
+      Swal.fire({ title: 'Import Failed', text: err.response?.data?.message || 'Failed to submit file.', icon: 'error', background: '#18181b', color: '#f4f4f5' });
       fetchFunds();
     }
   };
@@ -229,7 +232,7 @@ export default function Funds() {
     const currentToken = localStorage.getItem("token");
     
     if (attempts > 10) {
-      Swal.fire({ title: 'Import Processed', text: 'CSV import complete.', icon: 'info', background: '#14171f', color: '#fff' });
+      Swal.fire({ title: 'Import Processed', text: 'CSV import complete.', icon: 'info', background: '#18181b', color: '#f4f4f5' });
       if (e?.target) e.target.value = "";
       fetchFunds();
       return;
@@ -250,7 +253,7 @@ export default function Funds() {
 
         if (statusCode === 404) {
           if (attempts >= 2) {
-            Swal.fire({ title: 'Success!', text: 'All funds imported with zero errors!', icon: 'success', background: '#14171f', color: '#fff' });
+            Swal.fire({ title: 'Success!', text: 'All funds imported with zero errors!', icon: 'success', background: '#18181b', color: '#f4f4f5' });
             if (e?.target) e.target.value = "";
             fetchFunds();
           } else {
@@ -258,7 +261,7 @@ export default function Funds() {
           }
         } 
         else if (statusCode === 500) {
-          Swal.fire({ title: 'Import Completed', text: 'Import batch finished processing.', icon: 'success', background: '#14171f', color: '#fff' });
+          Swal.fire({ title: 'Import Completed', text: 'Import batch finished processing.', icon: 'success', background: '#18181b', color: '#f4f4f5' });
           if (e?.target) e.target.value = "";
           fetchFunds();
         } 
@@ -279,24 +282,24 @@ export default function Funds() {
       const { errors, totalFailed } = response.data || {};
 
       if (!errors || errors.length === 0) {
-        Swal.fire({ title: 'Import Complete', text: 'All valid funds imported!', icon: 'success', background: '#14171f', color: '#fff' });
+        Swal.fire({ title: 'Import Complete', text: 'All valid funds imported!', icon: 'success', background: '#18181b', color: '#f4f4f5' });
         return;
       }
 
       const errorsHtml = errors.map(err => `
-        <div style="text-align: left; padding: 8px 12px; margin-bottom: 8px; background: #221517; border-left: 4px solid #ef4444; border-radius: 6px; font-size: 12px;">
+        <div style="text-align: left; padding: 8px 12px; margin-bottom: 8px; background: #27191b; border-left: 4px solid #ef4444; border-radius: 6px; font-size: 12px;">
           <strong style="color: #f87171;">Row ${err.row || 'N/A'}:</strong> 
-          <span style="color: #9ca3af; font-weight: 500; display: block; margin-top: 2px;">${err.reason || err.message || 'Validation error'}</span>
+          <span style="color: #a1a1aa; font-weight: 500; display: block; margin-top: 2px;">${err.reason || err.message || 'Validation error'}</span>
         </div>
       `).join('');
 
       Swal.fire({
         title: 'Validation Errors Detected!',
         icon: 'warning',
-        background: '#14171f',
-        color: '#ffffff',
+        background: '#18181b',
+        color: '#f4f4f5',
         html: `
-          <p style="font-size: 12px; color: #9ca3af; text-align: left; margin-bottom: 12px;">
+          <p style="font-size: 12px; color: #a1a1aa; text-align: left; margin-bottom: 12px;">
             Found ${totalFailed || errors.length} issue(s) during CSV processing:
           </p>
           <div style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
@@ -304,21 +307,21 @@ export default function Funds() {
           </div>
         `,
         confirmButtonText: 'Understood',
-        confirmButtonColor: '#00e699'
+        confirmButtonColor: '#34d399'
       });
 
     } catch (err) {
       console.error("FAILED TO FETCH LOGS:", err);
       if (err.response?.status === 404) {
-        Swal.fire({ title: 'Success', text: 'Import completed with zero errors!', icon: 'success', background: '#14171f', color: '#fff' });
+        Swal.fire({ title: 'Success', text: 'Import completed with zero errors!', icon: 'success', background: '#18181b', color: '#f4f4f5' });
       } else {
         Swal.fire({
           title: 'Import Processed',
           text: 'CSV file was processed. Please check your funds table.',
           icon: 'info',
-          confirmButtonColor: '#00e699',
-          background: '#14171f',
-          color: '#fff'
+          confirmButtonColor: '#34d399',
+          background: '#18181b',
+          color: '#f4f4f5'
         });
       }
     }
@@ -332,15 +335,15 @@ export default function Funds() {
   };
 
   return (
-    <div className="p-6 sm:p-8 space-y-6 min-h-screen bg-[#0d0f12] text-neutral-200 font-sans">
+    <div className="space-y-8 max-w-6xl mx-auto text-zinc-100 font-sans">
 
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800/80 pb-5">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">
             Funds Intelligence Center
           </h1>
-          <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+          <p className="text-xs text-zinc-400 mt-1">
             Real-time liquidity matrix and investment vector metrics.
           </p>
         </div>
@@ -356,14 +359,14 @@ export default function Funds() {
 
           <button
             onClick={handleImportClick}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#1b1e24] hover:bg-[#252830] border border-neutral-800 rounded-xl text-xs font-semibold text-neutral-300 transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800/90 rounded-xl text-xs font-semibold text-zinc-300 transition-all shadow-md"
           >
-            <HiDownload className="text-neutral-400 text-sm" /> Batch CSV Import
+            <HiDownload className="text-zinc-400 text-sm" /> Batch CSV Import
           </button>
 
           <button
             onClick={() => setShowModal(true)}
-            className="bg-[#00e699] hover:bg-[#00cc88] text-black font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-md transition-all active:scale-95"
+            className="bg-emerald-400 hover:bg-emerald-300 text-zinc-950 font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/10 transition-all active:scale-95"
           >
             <HiPlus className="text-sm stroke-2" /> Create Fund Entity
           </button>
@@ -371,76 +374,76 @@ export default function Funds() {
       </div>
 
       {/* Metric Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#14171f] border border-neutral-800/80 p-5 rounded-2xl shadow-sm flex items-center justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl shadow-xl flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Total Entities</p>
-            <h3 className="text-3xl font-extrabold text-white mt-1">{totalFundsCount}</h3>
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Total Entities</p>
+            <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">{totalFundsCount}</h3>
           </div>
-          <div className="p-3 bg-emerald-500/10 text-[#00e699] rounded-xl border border-emerald-500/20">
+          <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
             <HiOfficeBuilding className="text-2xl" />
           </div>
         </div>
 
-        <div className="bg-[#14171f] border border-neutral-800/80 p-5 rounded-2xl shadow-sm flex items-center justify-between">
+        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl shadow-xl flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Venture Capital</p>
-            <h3 className="text-3xl font-extrabold text-white mt-1">{ventureCount}</h3>
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Venture Capital</p>
+            <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">{ventureCount}</h3>
           </div>
-          <div className="p-3 bg-emerald-500/10 text-[#00e699] rounded-xl border border-emerald-500/20">
+          <div className="p-3 bg-teal-500/10 text-teal-400 rounded-xl border border-teal-500/20">
             <HiBriefcase className="text-2xl" />
           </div>
         </div>
 
-        <div className="bg-[#14171f] border border-neutral-800/80 p-5 rounded-2xl shadow-sm flex items-center justify-between">
+        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl shadow-xl flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Private Equity</p>
-            <h3 className="text-3xl font-extrabold text-white mt-1">{peCount}</h3>
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Private Equity</p>
+            <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">{peCount}</h3>
           </div>
-          <div className="p-3 bg-emerald-500/10 text-[#00e699] rounded-xl border border-emerald-500/20">
+          <div className="p-3 bg-violet-500/10 text-violet-400 rounded-xl border border-violet-500/20">
             <HiChartPie className="text-2xl" />
           </div>
         </div>
 
-        <div className="bg-[#14171f] border border-neutral-800/80 p-5 rounded-2xl shadow-sm flex items-center justify-between">
+        <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl shadow-xl flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Hedge Funds</p>
-            <h3 className="text-3xl font-extrabold text-white mt-1">{hedgeCount}</h3>
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Hedge Funds</p>
+            <h3 className="text-3xl font-black text-zinc-100 mt-2 tracking-tight">{hedgeCount}</h3>
           </div>
-          <div className="p-3 bg-emerald-500/10 text-[#00e699] rounded-xl border border-emerald-500/20">
+          <div className="p-3 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
             <HiCube className="text-2xl" />
           </div>
         </div>
       </div>
 
       {/* Main Table Container */}
-      <div className="bg-[#14171f] border border-neutral-800/80 rounded-2xl shadow-xl overflow-hidden">
+      <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 rounded-2xl shadow-2xl overflow-hidden">
 
         {/* Filter Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between p-4 gap-4 border-b border-neutral-800/80 bg-[#101218]">
+        <div className="flex flex-wrap items-center justify-between p-4 gap-4 border-b border-zinc-800/80 bg-zinc-900/40">
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div className="relative w-full sm:w-72">
-              <HiSearch className="absolute left-3.5 top-3 text-neutral-500 text-sm" />
+              <HiSearch className="absolute left-3.5 top-3 text-zinc-500 text-sm" />
               <input
                 type="text"
                 placeholder="Search funds or geography..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-[#0a0c0e] border border-neutral-800 rounded-xl text-white placeholder-neutral-500 text-xs focus:border-[#00e699] outline-none transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs outline-none transition-all duration-300"
               />
             </div>
 
             <div className="flex items-center gap-2">
-              <HiFilter className="text-neutral-500 text-sm hidden sm:block" />
+              <HiFilter className="text-zinc-500 text-sm hidden sm:block" />
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="px-3 py-2 bg-[#0a0c0e] border border-neutral-800 rounded-xl text-xs font-medium text-neutral-300 outline-none focus:border-[#00e699] transition-all cursor-pointer"
+                className="px-3 py-2 bg-zinc-950/80 border border-zinc-800 rounded-xl text-xs font-medium text-zinc-300 outline-none focus:border-emerald-400 transition-all cursor-pointer"
               >
-                <option value="All">All Allocations</option>
-                <option value="Venture">Venture</option>
-                <option value="Private Equity">Private Equity</option>
-                <option value="Hedge Fund">Hedge Fund</option>
+                <option value="All" className="bg-zinc-900">All Allocations</option>
+                <option value="Venture" className="bg-zinc-900">Venture</option>
+                <option value="Private Equity" className="bg-zinc-900">Private Equity</option>
+                <option value="Hedge Fund" className="bg-zinc-900">Hedge Fund</option>
               </select>
             </div>
           </div>
@@ -453,8 +456,8 @@ export default function Funds() {
                 onClick={() => setActiveTab(tab)}
                 className={`transition-colors ${
                   activeTab === tab 
-                    ? "text-[#00e699] font-bold border-b-2 border-[#00e699] pb-1" 
-                    : "text-neutral-400 hover:text-neutral-200"
+                    ? "text-emerald-400 font-bold border-b-2 border-emerald-400 pb-1" 
+                    : "text-zinc-400 hover:text-zinc-200"
                 }`}
               >
                 {tab}
@@ -466,13 +469,13 @@ export default function Funds() {
         {/* Table View */}
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="p-16 text-center text-neutral-500 text-xs font-medium uppercase tracking-wider">
+            <div className="p-16 text-center text-zinc-500 text-xs font-medium uppercase tracking-wider">
               Syncing Funds Network...
             </div>
           ) : (
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-neutral-800/80 text-[11px] font-bold text-neutral-400 uppercase tracking-wider bg-[#101218]/60">
+                <tr className="border-b border-zinc-800/80 text-[10px] font-bold text-zinc-400 uppercase tracking-wider bg-zinc-900/40">
                   <th className="p-4 pl-6">Fund Designation</th>
                   <th className="p-4">Structure Type</th>
                   <th className="p-4">Geography</th>
@@ -481,15 +484,15 @@ export default function Funds() {
                   <th className="p-4 text-right pr-6">Manage</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-800/60 text-xs">
+              <tbody className="divide-y divide-zinc-800/60 text-xs">
                 {filteredFunds.length > 0 ? (
                   filteredFunds.map((fund) => (
-                    <tr key={fund.id} className="hover:bg-neutral-800/20 transition-colors">
-                      <td className="p-4 pl-6 font-bold text-white">{fund.name}</td>
-                      <td className="p-4 text-neutral-400">{fund.type}</td>
-                      <td className="p-4 text-neutral-400">
+                    <tr key={fund.id} className="hover:bg-zinc-800/30 transition-colors">
+                      <td className="p-4 pl-6 font-bold text-zinc-100">{fund.name}</td>
+                      <td className="p-4 text-zinc-400">{fund.type}</td>
+                      <td className="p-4 text-zinc-400">
                         <div className="flex items-center gap-1.5">
-                          <HiLocationMarker size={14} className="text-neutral-500" />
+                          <HiLocationMarker size={14} className="text-zinc-500" />
                           <span>{fund.location || "N/A"}</span>
                         </div>
                       </td>
@@ -499,12 +502,12 @@ export default function Funds() {
                             href={fund.website.startsWith('http') ? fund.website : `https://${fund.website}`} 
                             target="_blank" 
                             rel="noreferrer"
-                            className="text-[#00e699] hover:underline font-medium"
+                            className="text-emerald-400 hover:underline font-medium"
                           >
                             {fund.website}
                           </a>
                         ) : (
-                          <span className="text-neutral-600">N/A</span>
+                          <span className="text-zinc-600">N/A</span>
                         )}
                       </td>
                       <td className="p-4">
@@ -512,25 +515,25 @@ export default function Funds() {
                           {fund.industry && (
                             Array.isArray(fund.industry) 
                               ? fund.industry.map((tag, i) => (
-                                  <span key={i} className="bg-emerald-500/10 text-[#00e699] border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-semibold">{tag}</span>
+                                  <span key={i} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-semibold">{tag}</span>
                                 ))
                               : String(fund.industry).split(',').map((tag, i) => (
-                                  <span key={i} className="bg-emerald-500/10 text-[#00e699] border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-semibold">{tag.trim()}</span>
+                                  <span key={i} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-semibold">{tag.trim()}</span>
                                 ))
                           )}
                         </div>
                       </td>
                       <td className="p-4 text-right pr-6">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => handleEdit(fund)} className="p-1.5 text-neutral-400 hover:text-[#00e699] rounded transition-colors"><HiPencilAlt size={16} /></button>
-                          <button onClick={() => handleDelete(fund.id)} className="p-1.5 text-neutral-400 hover:text-red-400 rounded transition-colors"><HiTrash size={16} /></button>
+                          <button onClick={() => handleEdit(fund)} className="p-1.5 text-zinc-400 hover:text-emerald-400 rounded transition-colors"><HiPencilAlt size={16} /></button>
+                          <button onClick={() => handleDelete(fund.id)} className="p-1.5 text-zinc-400 hover:text-rose-400 rounded transition-colors"><HiTrash size={16} /></button>
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="p-12 text-center text-neutral-500 text-xs italic">
+                    <td colSpan="6" className="p-12 text-center text-zinc-500 text-xs italic">
                       No matching fund entities registered.
                     </td>
                   </tr>
@@ -543,20 +546,20 @@ export default function Funds() {
 
       {/* Action Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-          <div className="bg-[#14171f] border border-neutral-800 p-6 rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="flex justify-between items-center mb-5 border-b border-neutral-800 pb-3">
-              <h2 className="text-base font-bold text-white">{isEditing ? "Edit Fund Entity" : "Add Fund Entity"}</h2>
-              <button onClick={closeModal} className="text-neutral-400 hover:text-white p-1 rounded">
+        <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex justify-center items-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-md text-zinc-100">
+            <div className="flex justify-between items-center mb-5 border-b border-zinc-800 pb-3">
+              <h2 className="text-base font-bold text-zinc-100">{isEditing ? "Edit Fund Entity" : "Add Fund Entity"}</h2>
+              <button onClick={closeModal} className="text-zinc-400 hover:text-zinc-100 p-1 rounded">
                 <HiX className="text-lg" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-neutral-400 mb-1">Entity Name</label>
+                <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Entity Name</label>
                 <input 
-                  className="w-full px-3 py-2 bg-[#0a0c0e] border border-neutral-800 rounded-xl text-white outline-none focus:border-[#00e699]" 
+                  className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
                   value={fundData.name} 
                   onChange={(e) => setFundData({ ...fundData, name: e.target.value })} 
                   required 
@@ -565,21 +568,21 @@ export default function Funds() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-neutral-400 mb-1">Structure Type</label>
+                  <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Structure Type</label>
                   <select 
-                    className="w-full p-2 bg-[#0a0c0e] border border-neutral-800 rounded-xl text-neutral-200 outline-none focus:border-[#00e699]" 
+                    className="w-full p-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-200 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
                     value={fundData.type} 
                     onChange={(e) => setFundData({ ...fundData, type: e.target.value })}
                   >
-                    <option value="Venture">Venture</option>
-                    <option value="Private Equity">Private Equity</option>
-                    <option value="Hedge Fund">Hedge Fund</option>
+                    <option value="Venture" className="bg-zinc-900">Venture</option>
+                    <option value="Private Equity" className="bg-zinc-900">Private Equity</option>
+                    <option value="Hedge Fund" className="bg-zinc-900">Hedge Fund</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-neutral-400 mb-1">Geography</label>
+                  <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Geography</label>
                   <input 
-                    className="w-full px-3 py-2 bg-[#0a0c0e] border border-neutral-800 rounded-xl text-white outline-none focus:border-[#00e699]" 
+                    className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
                     value={fundData.location} 
                     onChange={(e) => setFundData({ ...fundData, location: e.target.value })} 
                   />
@@ -587,18 +590,18 @@ export default function Funds() {
               </div>
 
               <div>
-                <label className="block font-semibold text-neutral-400 mb-1">Web Domain</label>
+                <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Web Domain</label>
                 <input 
-                  className="w-full px-3 py-2 bg-[#0a0c0e] border border-neutral-800 rounded-xl text-white outline-none focus:border-[#00e699]" 
+                  className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
                   value={fundData.website} 
                   onChange={(e) => setFundData({ ...fundData, website: e.target.value })} 
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-neutral-400 mb-1">Sectors (comma separated)</label>
+                <label className="block font-bold text-zinc-400 uppercase text-[10px] tracking-wider mb-1">Sectors (comma separated)</label>
                 <input 
-                  className="w-full px-3 py-2 bg-[#0a0c0e] border border-neutral-800 rounded-xl text-white outline-none focus:border-[#00e699]" 
+                  className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" 
                   value={fundData.industry} 
                   onChange={(e) => setFundData({ ...fundData, industry: e.target.value })} 
                   placeholder="AI, SaaS, HealthTech" 
@@ -607,7 +610,7 @@ export default function Funds() {
 
               <button 
                 type="submit" 
-                className="w-full py-2.5 bg-[#00e699] hover:bg-[#00cc88] text-black font-bold rounded-xl transition-all mt-2"
+                className="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-zinc-950 font-bold rounded-xl transition-all mt-2 shadow-lg shadow-emerald-500/10"
               >
                 {isEditing ? "Save Entity Changes" : "Confirm Fund Creation"}
               </button>
