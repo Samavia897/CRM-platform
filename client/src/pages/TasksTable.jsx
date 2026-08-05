@@ -74,11 +74,24 @@ export default function TasksTable() {
 
       setShowModal(false);
       setNewTask({ title: "", description: "", dueDate: "", investorId: "", priority: "Medium" });
-      Swal.fire({ icon: "success", title: "Task Added!", timer: 1000, showConfirmButton: false });
+      Swal.fire({ 
+        icon: "success", 
+        title: "Task Added!", 
+        timer: 1000, 
+        showConfirmButton: false,
+        background: "#09090b",
+        color: "#f43f5e"
+      });
       fetchData();
     } catch (err) {
       console.error("Save error:", err);
-      Swal.fire("Error", err.response?.data?.message || "Error saving task", "error");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.response?.data?.message || "Error saving task",
+        background: "#09090b",
+        color: "#f43f5e"
+      });
     }
   };
 
@@ -109,11 +122,24 @@ export default function TasksTable() {
 
       setShowEditModal(false);
       setEditingTask(null);
-      Swal.fire({ icon: "success", title: "Task Updated!", timer: 1000, showConfirmButton: false });
+      Swal.fire({ 
+        icon: "success", 
+        title: "Task Updated!", 
+        timer: 1000, 
+        showConfirmButton: false,
+        background: "#09090b",
+        color: "#f43f5e"
+      });
       fetchData();
     } catch (err) {
       console.error("Edit error:", err);
-      Swal.fire("Error", "Could not update task", "error");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Could not update task",
+        background: "#09090b",
+        color: "#f43f5e"
+      });
     }
   };
 
@@ -123,18 +149,32 @@ export default function TasksTable() {
       text: "You won't be able to revert this task!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3b82f6", 
-      cancelButtonColor: "#ef4444",
-      confirmButtonText: "Yes, delete it!"
+      confirmButtonColor: "#10b981", 
+      cancelButtonColor: "#f43f5e",
+      confirmButtonText: "Yes, delete it!",
+      background: "#09090b",
+      color: "#f43f5e"
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await axios.delete(`${TASKS_API_URL}/${id}`, getAuthHeaders());
-          Swal.fire("Deleted!", "Your task has been deleted.", "success");
+          Swal.fire({
+            title: "Deleted!",
+            text: "Your task has been deleted.",
+            icon: "success",
+            background: "#09090b",
+            color: "#f43f5e"
+          });
           fetchData();
         } catch (err) {
           console.error("Delete error:", err);
-          Swal.fire("Error", "Could not delete task", "error");
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Could not delete task",
+            background: "#09090b",
+            color: "#f43f5e"
+          });
         }
       }
     });
@@ -160,26 +200,32 @@ export default function TasksTable() {
   });
 
   return (
-    <div className="bg-[#060b19] min-h-screen p-4 font-sans text-white">
+    <div className="bg-zinc-950 min-h-screen p-6 font-sans text-zinc-100">
 
-      <div className="flex justify-between items-center mb-6">
+      {/* Header section */}
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">Tasks</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Tasks</h1>
+          <p className="text-xs text-zinc-400 mt-1">Manage, prioritize, and track your pending and active pipelines</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/10 transition-all duration-200">
-          <HiPlus /> Add Task
+        <button 
+          onClick={() => setShowModal(true)} 
+          className="bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 text-zinc-950 px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-lg shadow-emerald-500/10 hover:opacity-90 transition-all duration-200"
+        >
+          <HiPlus className="text-sm font-bold" /> Add Task
         </button>
       </div>
 
-      <div className="flex gap-6 border-b border-slate-800/60 pl-1 mb-6 relative z-10">
+      {/* Tabs */}
+      <div className="flex gap-8 border-b border-zinc-800/80 pl-1 mb-6 relative z-10">
         {["Overdue Tasks", "Due Tasks", "Upcoming Tasks", "Complete Tasks"].map((tab) => (
           <button 
             key={tab} 
             onClick={() => setActiveTab(tab)} 
-            className={`pb-3 text-[12px] font-semibold transition-all border-b-2 -mb-[2px] ${
+            className={`pb-3 text-xs font-medium transition-all border-b-2 -mb-[2px] ${
               activeTab === tab 
-                ? "border-blue-500 text-white" 
-                : "border-transparent text-slate-500 hover:text-slate-300"
+                ? "border-emerald-400 text-emerald-400" 
+                : "border-transparent text-zinc-400 hover:text-zinc-200"
             }`}
           >
             {tab}
@@ -187,44 +233,46 @@ export default function TasksTable() {
         ))}
       </div>
 
-      <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl shadow-xl backdrop-blur-xl relative overflow-visible">
+      {/* Main Card Container */}
+      <div className="bg-zinc-900/80 border border-zinc-800/80 rounded-2xl shadow-xl backdrop-blur-xl relative overflow-visible">
 
-        <div className="p-4 flex justify-between items-center border-b border-slate-800/80 bg-[#11192e]/40 relative">
-          <div className="relative w-64">
-            <HiSearch className="absolute left-3 top-3 text-slate-500" />
+        {/* Filters and Search Bar */}
+        <div className="p-4 flex justify-between items-center border-b border-zinc-800/80 bg-zinc-900/40 relative">
+          <div className="relative w-72">
+            <HiSearch className="absolute left-3.5 top-3 text-zinc-500" />
             <input 
               type="text" 
               placeholder="Search tasks..." 
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
-              className="pl-9 pr-4 py-2 w-full bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-[13px] focus:border-blue-500 outline-none transition-all" 
+              className="pl-10 pr-4 py-2.5 w-full bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" 
             />
           </div>
 
           <div className="relative">
             <button 
               onClick={() => setShowFilterDropdown(!showFilterDropdown)} 
-              className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-[12px] font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-xs font-medium transition-all ${
                 appliedStart || appliedEnd 
-                  ? "border-blue-500 text-blue-400 bg-blue-500/10" 
-                  : "border-slate-700 text-slate-400 bg-[#0f172a]/90 hover:text-white"
+                  ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" 
+                  : "border-zinc-800 text-zinc-400 bg-zinc-950/80 hover:text-zinc-200 hover:border-zinc-700"
               }`}
             >
               <HiFilter /> Filter {(appliedStart || appliedEnd) && "•"}
             </button>
 
             {showFilterDropdown && (
-              <div className="absolute right-0 mt-2 w-72 bg-[#131c35] border border-slate-700 shadow-2xl rounded-xl z-[999] p-4 border-t-4 border-t-blue-500">
-                <div className="flex justify-between items-center mb-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              <div className="absolute right-0 mt-2 w-72 bg-zinc-900 border border-zinc-800 shadow-2xl rounded-xl z-[999] p-4 border-t-4 border-t-emerald-400">
+                <div className="flex justify-between items-center mb-4 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                   <span>Date Range</span>
-                  <button onClick={() => setShowFilterDropdown(false)} className="hover:text-white text-slate-400"><HiX size={16}/></button>
+                  <button onClick={() => setShowFilterDropdown(false)} className="hover:text-zinc-100 text-zinc-400"><HiX size={16}/></button>
                 </div>
                 <div className="space-y-4">
-                  <input type="date" value={tempStart} onChange={(e) => setTempStart(e.target.value)} className="w-full p-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-lg text-xs text-white outline-none focus:border-blue-500 [color-scheme:dark]" />
-                  <input type="date" value={tempEnd} onChange={(e) => setTempEnd(e.target.value)} className="w-full p-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-lg text-xs text-white outline-none focus:border-blue-500 [color-scheme:dark]" />
+                  <input type="date" value={tempStart} onChange={(e) => setTempStart(e.target.value)} className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 outline-none focus:border-emerald-500/50 [color-scheme:dark]" />
+                  <input type="date" value={tempEnd} onChange={(e) => setTempEnd(e.target.value)} className="w-full p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-zinc-100 outline-none focus:border-emerald-500/50 [color-scheme:dark]" />
                   <div className="flex gap-2">
-                    <button onClick={() => { setTempStart(""); setTempEnd(""); setAppliedStart(""); setAppliedEnd(""); setShowFilterDropdown(false) }} className="flex-1 py-2 text-[11px] font-bold text-red-400 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-all">Clear</button>
-                    <button onClick={() => { setAppliedStart(tempStart); setAppliedEnd(tempEnd); setShowFilterDropdown(false) }} className="flex-1 py-2 bg-blue-600 text-white text-[11px] font-bold rounded-lg hover:bg-blue-500 transition-all">Apply</button>
+                    <button onClick={() => { setTempStart(""); setTempEnd(""); setAppliedStart(""); setAppliedEnd(""); setShowFilterDropdown(false) }} className="flex-1 py-2 text-xs font-medium text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-all">Clear</button>
+                    <button onClick={() => { setAppliedStart(tempStart); setAppliedEnd(tempEnd); setShowFilterDropdown(false) }} className="flex-1 py-2 bg-emerald-500 text-zinc-950 text-xs font-semibold rounded-lg hover:bg-emerald-400 transition-all">Apply</button>
                   </div>
                 </div>
               </div>
@@ -232,10 +280,11 @@ export default function TasksTable() {
           </div>
         </div>
 
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-[#11192e]/60 border-b border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <tr className="bg-zinc-900/60 border-b border-zinc-800 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                 <th className="p-4 pl-6">Task Title</th>
                 <th className="p-4">Due Date</th>
                 <th className="p-4">Investor</th>
@@ -243,74 +292,84 @@ export default function TasksTable() {
                 <th className="p-4 text-center w-52">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {filteredTasks.map((task) => {
-                const isCompleted = task.status === "Completed";
-                return (
-                  <tr key={task.id} className={`${isCompleted ? 'bg-emerald-500/5' : 'hover:bg-slate-800/30'} transition-colors`}>
-                    <td className="p-4 pl-6">
-                      <div className={`text-[13px] font-semibold ${isCompleted ? 'line-through text-slate-500' : 'text-white'}`}>{task.title}</div>
-                      {task.description && <div className="text-[11px] text-slate-400 font-normal max-w-xs truncate mt-0.5">{task.description}</div>}
-                    </td>
-                    <td className="p-4 text-[12px] text-slate-400">
-                      <div className="flex items-center gap-1.5"><HiCalendar className="text-slate-500" /> {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No Date"}</div>
-                    </td>
-                    <td className="p-4 text-[13px] text-blue-400 font-medium">{task.investor || "N/A"}</td>
-                    <td className="p-4 text-center">
-                      <span className={`text-[9px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider border ${
-                        task.priority === "High" ? "bg-red-500/10 text-red-400 border-red-500/20" :
-                        task.priority === "Medium" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : 
-                        "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                      }`}>{task.priority}</span>
-                    </td>
+            <tbody className="divide-y divide-zinc-800/60">
+              {filteredTasks.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-xs text-zinc-500">No tasks found.</td>
+                </tr>
+              ) : (
+                filteredTasks.map((task) => {
+                  const isCompleted = task.status === "Completed";
+                  return (
+                    <tr key={task.id} className={`${isCompleted ? 'bg-emerald-500/5' : 'hover:bg-zinc-800/30'} transition-colors`}>
+                      <td className="p-4 pl-6">
+                        <div className={`text-xs font-medium ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-100'}`}>{task.title}</div>
+                        {task.description && <div className="text-[11px] text-zinc-400 font-normal max-w-xs truncate mt-0.5">{task.description}</div>}
+                      </td>
+                      <td className="p-4 text-xs text-zinc-400">
+                        <div className="flex items-center gap-1.5"><HiCalendar className="text-zinc-500" /> {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No Date"}</div>
+                      </td>
+                      <td className="p-4 text-xs text-emerald-400 font-medium">{task.investor || "N/A"}</td>
+                      <td className="p-4 text-center">
+                        <span className={`text-[10px] px-2.5 py-1 rounded-md font-medium uppercase tracking-wider border ${
+                          task.priority === "High" ? "bg-red-500/10 text-red-400 border-red-500/20" :
+                          task.priority === "Medium" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : 
+                          "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        }`}>{task.priority}</span>
+                      </td>
 
-                    <td className="p-4 flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => toggleComplete(task)}
-                        className={`p-1.5 rounded-lg transition-all border ${
-                          isCompleted 
-                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500' 
-                            : 'bg-transparent text-slate-500 border-slate-700 hover:text-emerald-400 hover:border-emerald-400'
-                        }`}
-                      >
-                        <HiCheck className="text-base" />
-                      </button>
+                      <td className="p-4 flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => toggleComplete(task)}
+                          title={isCompleted ? "Mark as Pending" : "Mark as Completed"}
+                          className={`p-1.5 rounded-lg transition-all border ${
+                            isCompleted 
+                              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' 
+                              : 'bg-transparent text-zinc-500 border-zinc-800 hover:text-emerald-400 hover:border-emerald-400/40'
+                          }`}
+                        >
+                          <HiCheck className="text-base" />
+                        </button>
 
-                      <button
-                        onClick={() => { setEditingTask(task); setShowEditModal(true); }}
-                        className="p-1.5 rounded-lg bg-transparent text-slate-500 hover:text-blue-400 hover:bg-slate-800 transition-all"
-                      >
-                        <HiPencil className="text-base" />
-                      </button>
+                        <button
+                          onClick={() => { setEditingTask(task); setShowEditModal(true); }}
+                          title="Edit Task"
+                          className="p-1.5 rounded-lg bg-transparent text-zinc-500 border border-transparent hover:text-emerald-400 hover:border-zinc-800 hover:bg-zinc-800/50 transition-all"
+                        >
+                          <HiPencil className="text-base" />
+                        </button>
 
-                      <button
-                        onClick={() => handleDeleteTask(task.id)}
-                        className="p-1.5 rounded-lg bg-transparent text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-all"
-                      >
-                        <HiTrash className="text-base" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                        <button
+                          onClick={() => handleDeleteTask(task.id)}
+                          title="Delete Task"
+                          className="p-1.5 rounded-lg bg-transparent text-zinc-500 border border-transparent hover:text-red-400 hover:border-zinc-800 hover:bg-zinc-800/50 transition-all"
+                        >
+                          <HiTrash className="text-base" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
+      {/* Add Task Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex items-center justify-center z-[1000] p-4">
-          <div className="bg-[#131c35] border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h2 className="text-lg font-black text-white uppercase mb-6 tracking-wide">New Task</h2>
+        <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+            <h2 className="text-sm font-semibold text-zinc-100 uppercase mb-6 tracking-wide">New Task</h2>
             <form onSubmit={handleAddTask} className="space-y-4">
-              <input required type="text" value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-xs focus:border-blue-500 outline-none" placeholder="Task Title" />
+              <input required type="text" value={newTask.title} onChange={(e) => setNewTask({ ...newTask, title: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none" placeholder="Task Title" />
 
-              <textarea value={newTask.description} onChange={(e) => setNewTask({ ...newTask, description: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-xs focus:border-blue-500 outline-none resize-none" placeholder="Description (Optional)" rows={2} />
+              <textarea value={newTask.description} onChange={(e) => setNewTask({ ...newTask, description: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none resize-none" placeholder="Description (Optional)" rows={2} />
 
               <div className="grid grid-cols-2 gap-4">
-                <input required type="date" value={newTask.dueDate} onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white text-xs focus:border-blue-500 outline-none [color-scheme:dark]" />
+                <input required type="date" value={newTask.dueDate} onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none [color-scheme:dark]" />
 
-                <select value={newTask.priority} onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white text-xs focus:border-blue-500 outline-none">
+                <select value={newTask.priority} onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none">
                   <option value="Low">Low Priority</option>
                   <option value="Medium">Medium Priority</option>
                   <option value="High">High Priority</option>
@@ -318,7 +377,7 @@ export default function TasksTable() {
               </div>
 
               <div>
-                <select required value={newTask.investorId} onChange={(e) => setNewTask({ ...newTask, investorId: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white text-xs focus:border-blue-500 outline-none">
+                <select required value={newTask.investorId} onChange={(e) => setNewTask({ ...newTask, investorId: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none">
                   <option value="">Select Investor</option>
                   {investors.map(inv => (
                     <option key={inv.id} value={inv.id}>{inv.firstName} {inv.lastName}</option>
@@ -326,26 +385,29 @@ export default function TasksTable() {
                 </select>
               </div>
 
-              <button type="submit" className="w-full py-3 bg-blue-600 text-white text-xs font-black rounded-xl shadow-lg shadow-blue-600/10 hover:bg-blue-500 transition-all mt-2">SAVE TASK</button>
-              <button type="button" onClick={() => setShowModal(false)} className="w-full py-2 text-slate-400 hover:text-white text-xs font-bold transition-colors">CANCEL</button>
+              <div className="pt-2 flex flex-col gap-2">
+                <button type="submit" className="w-full py-3 bg-emerald-500 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-emerald-500/10 hover:bg-emerald-400 transition-all">SAVE TASK</button>
+                <button type="button" onClick={() => setShowModal(false)} className="w-full py-2 text-zinc-400 hover:text-zinc-200 text-xs font-medium transition-colors">CANCEL</button>
+              </div>
             </form>
           </div>
         </div>
       )}
 
+      {/* Edit Task Modal */}
       {showEditModal && editingTask && (
-        <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex items-center justify-center z-[1000] p-4">
-          <div className="bg-[#131c35] border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h2 className="text-lg font-black text-white uppercase mb-6 tracking-wide">Edit Task</h2>
+        <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+            <h2 className="text-sm font-semibold text-zinc-100 uppercase mb-6 tracking-wide">Edit Task</h2>
             <form onSubmit={handleEditTask} className="space-y-4">
-              <input required type="text" value={editingTask.title} onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-xs focus:border-blue-500 outline-none" />
+              <input required type="text" value={editingTask.title} onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none" />
 
-              <textarea value={editingTask.description || ""} onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-xs focus:border-blue-500 outline-none resize-none" rows={2} />
+              <textarea value={editingTask.description || ""} onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none resize-none" rows={2} />
 
               <div className="grid grid-cols-2 gap-4">
-                <input required type="date" value={editingTask.dueDate ? editingTask.dueDate.substring(0, 10) : ""} onChange={(e) => setEditingTask({ ...editingTask, dueDate: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white text-xs focus:border-blue-500 outline-none [color-scheme:dark]" />
+                <input required type="date" value={editingTask.dueDate ? editingTask.dueDate.substring(0, 10) : ""} onChange={(e) => setEditingTask({ ...editingTask, dueDate: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none [color-scheme:dark]" />
 
-                <select value={editingTask.priority} onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white text-xs focus:border-blue-500 outline-none">
+                <select value={editingTask.priority} onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none">
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
                   <option value="High">High</option>
@@ -353,7 +415,7 @@ export default function TasksTable() {
               </div>
 
               <div>
-                <select required value={editingTask.investorId || ""} onChange={(e) => setEditingTask({ ...editingTask, investorId: e.target.value })} className="w-full p-3 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white text-xs focus:border-blue-500 outline-none">
+                <select required value={editingTask.investorId || ""} onChange={(e) => setEditingTask({ ...editingTask, investorId: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none">
                   <option value="">Select Investor</option>
                   {investors.map(inv => (
                     <option key={inv.id} value={inv.id}>{inv.firstName} {inv.lastName}</option>
@@ -361,8 +423,10 @@ export default function TasksTable() {
                 </select>
               </div>
 
-              <button type="submit" className="w-full py-3 bg-blue-600 text-white text-xs font-black rounded-xl shadow-lg shadow-blue-600/10 hover:bg-blue-500 transition-all mt-2 uppercase">Update Changes</button>
-              <button type="button" onClick={() => { setShowEditModal(false); setEditingTask(null); }} className="w-full py-2 text-slate-400 hover:text-white text-xs font-bold uppercase transition-colors">Cancel</button>
+              <div className="pt-2 flex flex-col gap-2">
+                <button type="submit" className="w-full py-3 bg-emerald-500 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-emerald-500/10 hover:bg-emerald-400 transition-all uppercase">Update Changes</button>
+                <button type="button" onClick={() => { setShowEditModal(false); setEditingTask(null); }} className="w-full py-2 text-zinc-400 hover:text-zinc-200 text-xs font-medium uppercase transition-colors">Cancel</button>
+              </div>
             </form>
           </div>
         </div>
