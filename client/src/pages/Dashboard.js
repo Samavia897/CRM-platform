@@ -16,7 +16,6 @@ import {
   HiArrowSmUp
 } from "react-icons/hi";
 
-
 function AnimatedNumber({ value }) {
   const spring = useSpring(0, { mass: 0.8, stiffness: 75, damping: 15 });
   const display = useTransform(spring, (current) => Math.round(current));
@@ -33,7 +32,12 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const navigate = useNavigate();
 
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Smooth springs for custom cursor motion
+  const cursorX = useSpring(mousePos.x, { stiffness: 400, damping: 28 });
+  const cursorY = useSpring(mousePos.y, { stiffness: 400, damping: 28 });
 
   const [counts, setCounts] = useState({
     investors: 0,
@@ -59,6 +63,13 @@ export default function Dashboard() {
   const handleMouseMove = (e) => {
     const { clientX, clientY } = e;
     setMousePos({ x: clientX, y: clientY });
+    cursorX.set(clientX);
+    cursorY.set(clientY);
+
+    // Detect if hovering interactive elements (buttons, links, inputs, selects, cards)
+    const target = e.target;
+    const isInteractive = target.closest("button, a, input, select, .cursor-pointer, [role='button']");
+    setIsHovered(!!isInteractive);
   };
 
   useEffect(() => {
@@ -157,9 +168,37 @@ export default function Dashboard() {
   return (
     <div 
       onMouseMove={handleMouseMove}
-      className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative selection:bg-emerald-500/30 selection:text-emerald-200"
+      className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative selection:bg-emerald-500/30 selection:text-emerald-200 cursor-none"
     >
 
+      {/* CUSTOM CURSOR 1: INNER DOT */}
+      <div 
+        className="pointer-events-none fixed top-0 left-0 z-50 w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]"
+        style={{
+          transform: `translate3d(${mousePos.x - 4}px, ${mousePos.y - 4}px, 0)`
+        }}
+      />
+
+      {/* CUSTOM CURSOR 2: OUTER SPRING RING WITH HOVER DYNAMICS */}
+      <motion.div
+        className="pointer-events-none fixed top-0 left-0 z-50 rounded-full border border-emerald-400/60"
+        style={{
+          x: cursorX,
+          y: cursorY,
+          translateX: "-50%",
+          translateY: "-50%"
+        }}
+        animate={{
+          width: isHovered ? 48 : 28,
+          height: isHovered ? 48 : 28,
+          backgroundColor: isHovered ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.02)",
+          borderColor: isHovered ? "rgba(52, 211, 153, 0.9)" : "rgba(52, 211, 153, 0.4)",
+          scale: isHovered ? 1.2 : 1
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      />
+
+      {/* SPOTLIGHT GRADIENT */}
       <div 
         className="pointer-events-none fixed -inset-px z-30 transition-opacity duration-300"
         style={{
@@ -167,14 +206,14 @@ export default function Dashboard() {
         }}
       />
 
-
+      {/* AMBIENT GLOW */}
       <motion.div 
         animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/20 blur-[130px] pointer-events-none rounded-full" 
       />
 
-
+      {/* SIDEBAR */}
       <aside className="w-64 bg-zinc-900/80 backdrop-blur-xl text-zinc-100 flex flex-col p-5 border-r border-zinc-800/80 shadow-2xl h-full z-40">
         <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer group" onClick={() => setActiveTab("Dashboard")}>
           <motion.div 
@@ -227,6 +266,7 @@ export default function Dashboard() {
         </div>
       </aside>
 
+      {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950/90 relative z-20">
         <Navbar />
 
@@ -265,7 +305,7 @@ export default function Dashboard() {
                   </div>
                 </motion.header>
 
-
+                {/* STATS CARDS */}
                 <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   {stats.map((stat, idx) => (
                     <motion.div
@@ -290,7 +330,6 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-
                       <div className="mt-4 flex items-center justify-between text-[11px] font-medium border-t border-zinc-800/60 pt-3">
                         <span className="text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                           <HiArrowSmUp className="text-sm" />
@@ -302,6 +341,7 @@ export default function Dashboard() {
                   ))}
                 </motion.div>
 
+                {/* MEMBER FORM */}
                 {role === "admin" ? (
                   <motion.div 
                     variants={itemVariants}
