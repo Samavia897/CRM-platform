@@ -24,7 +24,7 @@ const getStageBadgeStyle = (stageName) => {
   if (name.includes("deck") || name.includes("review")) 
     return "bg-amber-500/10 text-amber-400 border-amber-500/20";
   if (name.includes("meet") || name.includes("schedule")) 
-    return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+    return "bg-violet-500/10 text-violet-400 border-violet-500/20";
   if (name.includes("follow") || name.includes("close")) 
     return "bg-rose-500/10 text-rose-400 border-rose-500/20";
   return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
@@ -159,7 +159,7 @@ export default function Pipeline() {
         background: "#09090b",
         color: "#f43f5e"
       });
-    } fontFinally {
+    } finally {
       setIsSubmitting(false); 
     }
   };
@@ -376,11 +376,13 @@ export default function Pipeline() {
   return (
     <div className="bg-zinc-950 min-h-screen p-6 font-sans text-zinc-100">
 
-      {/* Header Matching Zinc-950/Zinc-900 Emerald Theme */}
+      {/* Header Matching Dashboard Active Pipelines Violet Accent Theme */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-2.5">
-            <HiBriefcase className="text-emerald-400" size={24} />
+            <span className="p-1.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400">
+              <HiBriefcase size={22} />
+            </span>
             Pipelines
           </h1>
           <p className="text-xs text-zinc-400 mt-1">Manage dynamic stage workflows & active investor pipeline leads</p>
@@ -391,7 +393,7 @@ export default function Pipeline() {
             <select
               value={activePipelineId}
               onChange={(e) => setActivePipelineId(e.target.value)} 
-              className="appearance-none pl-4 pr-10 py-2.5 bg-zinc-900/80 border border-zinc-800 rounded-xl text-xs font-semibold text-zinc-100 outline-none focus:border-emerald-500/50 transition-all cursor-pointer"
+              className="appearance-none pl-4 pr-10 py-2.5 bg-zinc-900/80 border border-zinc-800 rounded-xl text-xs font-semibold text-zinc-100 outline-none focus:border-violet-500/50 transition-all cursor-pointer"
             >
               {pipelines.map((p) => (
                 <option key={p.id} value={p.id} className="bg-zinc-950 text-zinc-100">{p.name}</option>
@@ -402,7 +404,7 @@ export default function Pipeline() {
 
           <button
             onClick={() => setShowBoardModal(true)}
-            className="p-2.5 bg-zinc-900/80 border border-zinc-800 hover:border-emerald-500/50 text-zinc-300 hover:text-emerald-400 rounded-xl transition-all active:scale-95 flex items-center justify-center"
+            className="p-2.5 bg-zinc-900/80 border border-zinc-800 hover:border-violet-500/50 text-zinc-300 hover:text-violet-400 rounded-xl transition-all active:scale-95 flex items-center justify-center"
             title="Create Custom Board"
           >
             <HiPlus size={16} />
@@ -436,7 +438,7 @@ export default function Pipeline() {
                 {/* Header */}
                 <div className="p-4 border-b border-zinc-800/80 flex items-center justify-between bg-zinc-900/40 rounded-t-2xl">
                   <div className="flex items-center gap-2.5 truncate">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-500/50"></span>
+                    <span className="w-2 h-2 rounded-full bg-violet-400 shadow-sm shadow-violet-500/50"></span>
                     <h3 className="font-bold text-xs text-zinc-100 tracking-wider uppercase truncate">{stage}</h3>
                   </div>
                   <span className={`text-[10px] px-2.5 py-1 rounded-md font-medium uppercase tracking-wider border ${getStageBadgeStyle(stage)}`}>
@@ -457,8 +459,8 @@ export default function Pipeline() {
                               {...provided.dragHandleProps}
                               className={`bg-zinc-950/80 p-4 rounded-xl border transition-all group relative ${
                                 snapshot.isDragging 
-                                  ? "shadow-2xl shadow-emerald-500/10 border-emerald-500 scale-[1.02]" 
-                                  : "border-zinc-800/80 hover:border-emerald-500/40 hover:bg-zinc-950"
+                                  ? "shadow-2xl shadow-violet-500/10 border-violet-500 scale-[1.02]" 
+                                  : "border-zinc-800/80 hover:border-violet-500/40 hover:bg-zinc-950"
                               }`}
                             >
                               <div className="flex justify-between items-start">
@@ -472,8 +474,8 @@ export default function Pipeline() {
                                   <p className="text-[11px] text-zinc-400 font-normal truncate pl-0.5">{inv.jobTitle || "Investor Lead"}</p>
                                   
                                   <div className="pt-1">
-                                    <span className="inline-flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
-                                      <HiOfficeBuilding size={11} className="text-emerald-400" />
+                                    <span className="inline-flex items-center gap-1.5 text-[10px] text-teal-400 font-medium bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-md">
+                                      <HiOfficeBuilding size={11} className="text-teal-400" />
                                       {inv.Fund?.name || "Global Fund"}
                                     </span>
                                   </div>
@@ -489,7 +491,7 @@ export default function Pipeline() {
                                       jobTitle: inv.jobTitle || "", fundId: inv.fundId || inv.Fund?.id || "", status: inv.status
                                     });
                                     setShowEditModal(true);
-                                  }} className="p-1 text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 rounded-md transition-all" title="Edit Lead"><HiPencil size={14} /></button>
+                                  }} className="p-1 text-zinc-400 hover:text-violet-400 hover:bg-zinc-800 rounded-md transition-all" title="Edit Lead"><HiPencil size={14} /></button>
 
                                   <button onClick={() => {
                                     setSelectedInvestor(inv);
@@ -498,7 +500,7 @@ export default function Pipeline() {
                                     setTaskDescription("");
                                     setTaskPriority("Medium");
                                     setShowTaskModal(true);
-                                  }} className="p-1 text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 rounded-md transition-all" title="Link Task"><HiPlus size={14} /></button>
+                                  }} className="p-1 text-zinc-400 hover:text-violet-400 hover:bg-zinc-800 rounded-md transition-all" title="Link Task"><HiPlus size={14} /></button>
 
                                   <button onClick={() => handleDelete(inv.id)} className="p-1 text-zinc-400 hover:text-red-400 hover:bg-zinc-800 rounded-md transition-all" title="Delete"><HiTrash size={14} /></button>
                                 </div>
@@ -536,15 +538,15 @@ export default function Pipeline() {
             </div>
 
             <form onSubmit={handleCreateBoard} className="space-y-4">
-              <input required placeholder="Pipeline Title (e.g. Angel Investor Stage)" value={newBoardName} onChange={(e) => setNewBoardName(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
+              <input required placeholder="Pipeline Title (e.g. Angel Investor Stage)" value={newBoardName} onChange={(e) => setNewBoardName(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
 
-              <textarea required rows={3} placeholder="Workflow Stages (e.g. Initial Contact, Pitch Deck Sent, Meeting, Won)" value={newBoardStages} onChange={(e) => setNewBoardStages(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none resize-none transition-all" />
+              <textarea required rows={3} placeholder="Workflow Stages (e.g. Initial Contact, Pitch Deck Sent, Meeting, Won)" value={newBoardStages} onChange={(e) => setNewBoardStages(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none resize-none transition-all" />
 
               <div className="pt-2 flex flex-col gap-2">
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className={`w-full py-3 bg-emerald-500 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-emerald-500/10 hover:bg-emerald-400 transition-all uppercase ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full py-3 bg-violet-500 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-violet-500/10 hover:bg-violet-400 transition-all uppercase ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {isSubmitting ? "Saving..." : "Save Pipeline"}
                 </button>
@@ -567,7 +569,7 @@ export default function Pipeline() {
             <form onSubmit={handleAddNew} className="space-y-4">
               <div>
                 <select
-                  className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none transition-all cursor-pointer"
+                  className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-violet-500/50 outline-none transition-all cursor-pointer"
                   required
                   value={formData.fundId}
                   onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
@@ -580,26 +582,26 @@ export default function Pipeline() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
-                <input required placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
+                <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
+                <input required placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
               </div>
 
-              <input placeholder="Job Title" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
-              <input required type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
+              <input placeholder="Job Title" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
+              <input required type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
 
               <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Office Phone" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
-                <input placeholder="Mobile Phone" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
+                <input placeholder="Office Phone" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
+                <input placeholder="Mobile Phone" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
               </div>
 
               <div>
-                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none cursor-pointer transition-all">
+                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-violet-500/50 outline-none cursor-pointer transition-all">
                   {dynamicStages.map(st => <option key={st} value={st} className="bg-zinc-950">{st}</option>)}
                 </select>
               </div>
 
               <div className="pt-2 flex flex-col gap-2">
-                <button type="submit" className="w-full py-3 bg-emerald-500 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-emerald-500/10 hover:bg-emerald-400 transition-all uppercase">
+                <button type="submit" className="w-full py-3 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-emerald-500/10 hover:opacity-90 transition-all uppercase">
                   Submit Lead
                 </button>
                 <button type="button" onClick={() => setShowAddModal(false)} className="w-full py-2 text-zinc-400 hover:text-zinc-200 text-xs font-medium uppercase transition-colors">Cancel</button>
@@ -621,7 +623,7 @@ export default function Pipeline() {
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
                 <select 
-                  className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none transition-all cursor-pointer" 
+                  className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-violet-500/50 outline-none transition-all cursor-pointer" 
                   value={formData.fundId} 
                   onChange={(e) => setFormData({ ...formData, fundId: e.target.value })} 
                   required
@@ -634,26 +636,26 @@ export default function Pipeline() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
-                <input required placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
+                <input required placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
+                <input required placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
               </div>
 
-              <input placeholder="Job Title" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
-              <input required type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
+              <input placeholder="Job Title" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
+              <input required type="email" placeholder="Email Address" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
 
               <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Office Phone" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
-                <input placeholder="Mobile Phone" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
+                <input placeholder="Office Phone" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
+                <input placeholder="Mobile Phone" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-violet-500/50 outline-none transition-all" />
               </div>
 
               <div>
-                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none cursor-pointer transition-all">
+                <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-violet-500/50 outline-none cursor-pointer transition-all">
                   {dynamicStages.map(st => <option key={st} value={st} className="bg-zinc-950">{st}</option>)}
                 </select>
               </div>
 
               <div className="pt-2 flex flex-col gap-2">
-                <button type="submit" className="w-full py-3 bg-emerald-500 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-emerald-500/10 hover:bg-emerald-400 transition-all uppercase">
+                <button type="submit" className="w-full py-3 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-emerald-500/10 hover:opacity-90 transition-all uppercase">
                   Update Record
                 </button>
                 <button type="button" onClick={() => setShowEditModal(false)} className="w-full py-2 text-zinc-400 hover:text-zinc-200 text-xs font-medium uppercase transition-colors">Cancel</button>
@@ -670,20 +672,20 @@ export default function Pipeline() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-sm font-semibold text-zinc-100 uppercase tracking-wide">Link New Task</h2>
-                <p className="text-xs text-emerald-400 font-medium mt-0.5">Investor: {selectedInvestor?.firstName} {selectedInvestor?.lastName}</p>
+                <p className="text-xs text-amber-400 font-medium mt-0.5">Investor: {selectedInvestor?.firstName} {selectedInvestor?.lastName}</p>
               </div>
               <button onClick={() => setShowTaskModal(false)} className="text-zinc-400 hover:text-zinc-100 p-1 rounded-lg transition-all"><HiX size={18} /></button>
             </div>
 
             <form onSubmit={handleAddTask} className="space-y-4">
-              <input required type="text" placeholder="Task Title" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none transition-all" />
+              <input required type="text" placeholder="Task Title" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-amber-500/50 outline-none transition-all" />
 
-              <textarea placeholder="Description (Optional)" value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-emerald-500/50 outline-none resize-none transition-all" rows={2} />
+              <textarea placeholder="Description (Optional)" value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs focus:border-amber-500/50 outline-none resize-none transition-all" rows={2} />
 
               <div className="grid grid-cols-2 gap-4">
-                <input required type="date" value={taskDueDate} onChange={(e) => setTaskDueDate(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none [color-scheme:dark] transition-all" />
+                <input required type="date" value={taskDueDate} onChange={(e) => setTaskDueDate(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-amber-500/50 outline-none [color-scheme:dark] transition-all" />
 
-                <select value={taskPriority} onChange={(e) => setTaskPriority(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-emerald-500/50 outline-none transition-all">
+                <select value={taskPriority} onChange={(e) => setTaskPriority(e.target.value)} className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 text-xs focus:border-amber-500/50 outline-none transition-all">
                   <option value="Low">Low Priority</option>
                   <option value="Medium">Medium Priority</option>
                   <option value="High">High Priority</option>
@@ -691,7 +693,7 @@ export default function Pipeline() {
               </div>
 
               <div className="pt-2 flex flex-col gap-2">
-                <button type="submit" className="w-full py-3 bg-emerald-500 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-emerald-500/10 hover:bg-emerald-400 transition-all uppercase">
+                <button type="submit" className="w-full py-3 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 text-zinc-950 text-xs font-semibold rounded-xl shadow-lg shadow-emerald-500/10 hover:opacity-90 transition-all uppercase">
                   Create Task
                 </button>
                 <button type="button" onClick={() => setShowTaskModal(false)} className="w-full py-2 text-zinc-400 hover:text-zinc-200 text-xs font-medium uppercase transition-colors">Cancel</button>
