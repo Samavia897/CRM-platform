@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { HiPlus, HiSearch, HiX, HiOfficeBuilding, HiUserGroup } from "react-icons/hi";
+import { HiPlus, HiSearch, HiX, HiOfficeBuilding } from "react-icons/hi";
 
 export default function InvestorsTable() {
   const [investors, setInvestors] = useState([]);
@@ -126,89 +126,82 @@ export default function InvestorsTable() {
   });
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto text-zinc-100 font-sans">
+    <div className="p-2 relative z-10 font-sans">
       
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800/80 pb-5">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">Investors Directory</h1>
-          <p className="text-xs text-zinc-400 mt-1">Manage global pipeline assets and corporate backers</p>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">Investors Directory</h1>
+          <p className="text-xs text-slate-400 mt-1">Manage global pipeline assets and corporate backers</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-emerald-400 hover:bg-emerald-300 text-zinc-950 font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/10 transition-all active:scale-95 self-end sm:self-auto"
+          className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-xs font-semibold hover:bg-blue-500 flex items-center gap-2 shadow-lg shadow-blue-600/10 transition-all duration-200 active:scale-95"
         >
-          <HiPlus className="text-sm stroke-2" /> Add Investor
+          <HiPlus className="text-sm" /> Add Investor
         </button>
       </div>
 
-      {/* Main Container */}
-      <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden backdrop-blur-xl">
         
-        {/* Search Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between p-4 gap-4 border-b border-zinc-800/80 bg-zinc-900/40">
+        <div className="flex flex-wrap justify-between items-center p-4 gap-4 border-b border-slate-800/80 bg-[#11192e]/40">
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            
-            {/* Search Name/Email */}
-            <div className="relative w-full sm:w-64">
-              <HiSearch className="absolute left-3.5 top-3 text-zinc-500 text-sm" />
+            {/* Standard Name/Email Search */}
+            <div className="relative">
+              <HiSearch className="absolute left-3 top-3 text-slate-500 text-sm" />
               <input
                 type="text"
                 placeholder="Search name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs outline-none transition-all duration-300"
+                className="pl-9 pr-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none transition-all w-60"
               />
             </div>
 
-            {/* Search Fund */}
-            <div className="relative w-full sm:w-64">
-              <HiOfficeBuilding className="absolute left-3.5 top-3 text-zinc-500 text-sm" />
+            <div className="relative">
+              <HiOfficeBuilding className="absolute left-3 top-3 text-slate-500 text-sm" />
               <input
                 type="text"
                 placeholder="Search by Fund..."
                 value={fundSearchTerm}
                 onChange={(e) => setFundSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-500 text-xs outline-none transition-all duration-300"
+                className="pl-9 pr-4 py-2 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none transition-all w-60"
               />
             </div>
-
           </div>
         </div>
 
-        {/* Table View */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-zinc-800/80 text-[10px] font-bold text-zinc-400 uppercase tracking-wider bg-zinc-900/40">
-                <th className="p-4 pl-6">Name</th>
+              <tr className="border-b border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-[#11192e]/60">
+                <th className="p-4">Name</th>
                 <th className="p-4">Job Title</th>
                 <th className="p-4">Email</th>
                 <th className="p-4">Office Phone</th>
                 <th className="p-4">Mobile Phone</th>
                 <th className="p-4">Fund</th>
-                <th className="p-4 text-center pr-6">Status</th>
+                <th className="p-4 text-center">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/60 text-xs">
+            <tbody className="divide-y divide-slate-800/60">
               {filteredInvestors.length > 0 ? (
                 filteredInvestors.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-zinc-800/30 transition-colors">
-                    <td className="p-4 pl-6 font-bold text-zinc-100">{inv.firstName} {inv.lastName}</td>
-                    <td className="p-4 text-zinc-400">{inv.jobTitle || inv.job_title || "N/A"}</td>
-                    <td className="p-4 text-emerald-400 font-medium">{inv.email}</td>
-                    <td className="p-4 text-zinc-400">{inv.officePhone || inv.office_phone || "N/A"}</td>
-                    <td className="p-4 text-zinc-400">{inv.mobilePhone || inv.mobile_phone || "N/A"}</td>
-                    <td className="p-4 font-semibold text-zinc-200">{inv.Fund?.name || inv.fund?.name || "N/A"}</td>
-                    <td className="p-4 text-center pr-6">
+                  <tr key={inv.id} className="hover:bg-slate-800/30 transition-colors duration-150">
+                    <td className="p-4 text-sm font-bold text-white">{inv.firstName} {inv.lastName}</td>
+                    <td className="p-4 text-xs text-slate-400">{inv.jobTitle || inv.job_title || "N/A"}</td>
+                    <td className="p-4 text-xs text-blue-400 font-medium">{inv.email}</td>
+                    <td className="p-4 text-xs text-slate-400">{inv.officePhone || inv.office_phone || "N/A"}</td>
+                    <td className="p-4 text-xs text-slate-400">{inv.mobilePhone || inv.mobile_phone || "N/A"}</td>
+                    <td className="p-4 text-xs font-semibold text-slate-200">{inv.Fund?.name || inv.fund?.name || "N/A"}</td>
+                    <td className="p-4 text-center">
                       <span
                         onClick={() => toggleStatus(inv)}
                         className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider cursor-pointer select-none border transition-all duration-200 ${
                           inv.status === "New"
-                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
+                            ? "bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20"
                             : inv.status === "Follow-Up"
                             ? "bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20"
-                            : "bg-teal-500/10 text-teal-400 border-teal-500/20 hover:bg-teal-500/20"
+                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
                         }`}
                       >
                         {inv.status}
@@ -218,9 +211,7 @@ export default function InvestorsTable() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="p-12 text-center text-zinc-500 text-xs italic">
-                    No records found matching criterion parameters.
-                  </td>
+                  <td colSpan="7" className="p-8 text-center text-xs text-slate-500">No records found matching criterion parameters.</td>
                 </tr>
               )}
             </tbody>
@@ -228,55 +219,54 @@ export default function InvestorsTable() {
         </div>
       </div>
 
-      {/* Action Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex justify-center items-center z-50 p-4">
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto text-zinc-100 scrollbar-thin">
-            <div className="flex justify-between items-center mb-5 border-b border-zinc-800 pb-3">
-              <h2 className="text-base font-bold text-zinc-100">New Investor Profile</h2>
-              <button onClick={() => setShowModal(false)} className="text-zinc-400 hover:text-zinc-100 p-1 rounded transition-colors">
+        <div className="fixed inset-0 bg-[#060b19]/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 animate-fadeIn">
+          <div className="bg-[#131c35] border border-slate-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto scrollbar-thin">
+            <div className="flex justify-between items-center mb-5 border-b border-slate-800 pb-3">
+              <h2 className="text-lg font-bold text-white">New Investor Profile</h2>
+              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white transition-colors">
                 <HiX className="text-lg" />
               </button>
             </div>
 
-            <form onSubmit={handleAddInvestor} className="space-y-4 text-xs">
+            <form onSubmit={handleAddInvestor} className="space-y-4">
               
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                   Select Fund *
                 </label>
                 <select
-                  className="w-full p-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-200 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full p-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200 outline-none focus:border-blue-500 transition-all"
                   required
                   value={formData.fundId}
                   onChange={(e) => setFormData({ ...formData, fundId: e.target.value })}
                 >
-                  <option value="" className="bg-zinc-900">-- Choose a Fund --</option>
+                  <option value="" className="bg-[#0f172a]">-- Choose a Fund --</option>
                   {funds && funds.length > 0 && funds.map((f) => (
-                    <option key={f.id} value={f.id} className="bg-zinc-900">{f.name}</option>
+                    <option key={f.id} value={f.id} className="bg-[#0f172a]">{f.name}</option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                   Assign to Pipeline Board *
                 </label>
                 <select
-                  className="w-full p-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-200 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full p-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200 outline-none focus:border-blue-500 transition-all"
                   required
                   value={formData.pipelineId}
                   onChange={(e) => setFormData({ ...formData, pipelineId: e.target.value, status: "" })}
                 >
-                  <option value="" className="bg-zinc-900">-- Choose a Pipeline Board --</option>
+                  <option value="" className="bg-[#0f172a]">-- Choose a Pipeline Board --</option>
                   {pipelines && pipelines.length > 0 && pipelines.map((p) => (
-                    <option key={p.id} value={p.id} className="bg-zinc-900">{p.name}</option>
+                    <option key={p.id} value={p.id} className="bg-[#0f172a]">{p.name}</option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">
                   Stage / Status *
                 </label>
                 <select
@@ -284,14 +274,14 @@ export default function InvestorsTable() {
                   disabled={!formData.pipelineId}
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full p-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-200 disabled:opacity-50 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  className="w-full p-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200 disabled:opacity-50 outline-none focus:border-blue-500 transition-all"
                 >
-                  <option value="" className="bg-zinc-900">-- Choose a Stage --</option>
+                  <option value="" className="bg-[#0f172a]">-- Choose a Stage --</option>
                   {formData.pipelineId && (() => {
                     const activeBoard = pipelines.find(p => String(p.id) === String(formData.pipelineId));
                     if (activeBoard && activeBoard.stages) {
                       return activeBoard.stages.split(",").map((stage, idx) => (
-                        <option key={idx} value={stage.trim()} className="bg-zinc-900">{stage.trim()}</option>
+                        <option key={idx} value={stage.trim()} className="bg-[#0f172a]">{stage.trim()}</option>
                       ));
                     }
                     return null;
@@ -301,37 +291,37 @@ export default function InvestorsTable() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">First Name</label>
-                  <input required placeholder="John" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" />
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">First Name</label>
+                  <input required placeholder="John" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full px-3 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none" />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Last Name</label>
-                  <input required placeholder="Doe" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" />
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Last Name</label>
+                  <input required placeholder="Doe" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full px-3 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none" />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Job Title</label>
-                <input placeholder="Manager / Director" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" />
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Job Title</label>
+                <input placeholder="Manager / Director" value={formData.jobTitle} onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })} className="w-full px-3 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none" />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Email Address</label>
-                <input required type="email" placeholder="example@mail.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" />
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Email Address</label>
+                <input required type="email" placeholder="example@mail.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-3 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Office Phone</label>
-                  <input placeholder="Office No" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" />
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Office Phone</label>
+                  <input placeholder="Office No" value={formData.officePhone} onChange={(e) => setFormData({ ...formData, officePhone: e.target.value })} className="w-full px-3 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none" />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Mobile Phone</label>
-                  <input placeholder="Mobile No" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full px-3 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" />
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Mobile Phone</label>
+                  <input placeholder="Mobile No" value={formData.mobilePhone} onChange={(e) => setFormData({ ...formData, mobilePhone: e.target.value })} className="w-full px-3 py-2.5 bg-[#0f172a]/90 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-xs focus:border-blue-500 outline-none" />
                 </div>
               </div>
 
-              <button type="submit" className="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-zinc-950 font-bold rounded-xl transition-all mt-2 shadow-lg shadow-emerald-500/10">
+              <button type="submit" className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/10 hover:bg-blue-500 transition-all text-xs tracking-wider mt-2 uppercase">
                 Save & Update List
               </button>
             </form>
