@@ -31,10 +31,10 @@ export default function Dashboard() {
 
   const customSwal = Swal.mixin({
     customClass: {
-      popup: "rounded-2xl border border-slate-800 bg-[#131c35] text-white shadow-2xl p-6 font-sans",
-      title: "text-lg font-bold text-white",
-      htmlContainer: "text-xs text-slate-400 mt-1",
-      confirmButton: "px-5 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
+      popup: "rounded-2xl border border-zinc-800 bg-zinc-900 text-zinc-100 shadow-2xl p-6 font-sans",
+      title: "text-lg font-bold text-zinc-100",
+      htmlContainer: "text-xs text-zinc-400 mt-1",
+      confirmButton: "px-5 py-2 rounded-lg text-xs font-semibold text-zinc-900 bg-emerald-400 hover:bg-emerald-300 transition-all duration-200"
     },
     buttonsStyling: false
   });
@@ -116,21 +116,21 @@ export default function Dashboard() {
   ];
 
   const stats = [
-    { title: "Total Investors", count: counts.investors, icon: HiUsers, color: "from-blue-500 to-indigo-600", shadow: "shadow-blue-500/20" },
-    { title: "Total Funds", count: counts.funds, icon: HiOfficeBuilding, color: "from-emerald-500 to-teal-600", shadow: "shadow-emerald-500/20" },
-    { title: "Active Pipelines", count: counts.pipelines, icon: HiTrendingUp, color: "from-violet-500 to-purple-600", shadow: "shadow-violet-500/20" },
-    { title: "Pending Tasks", count: counts.tasks, icon: HiClipboardList, color: "from-amber-500 to-orange-600", shadow: "shadow-amber-500/20" },
+    { title: "Total Investors", count: counts.investors, icon: HiUsers, color: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" },
+    { title: "Total Funds", count: counts.funds, icon: HiOfficeBuilding, color: "bg-teal-500/10 text-teal-400 border border-teal-500/20" },
+    { title: "Active Pipelines", count: counts.pipelines, icon: HiTrendingUp, color: "bg-violet-500/10 text-violet-400 border border-violet-500/20" },
+    { title: "Pending Tasks", count: counts.tasks, icon: HiClipboardList, color: "bg-amber-500/10 text-amber-400 border border-amber-500/20" },
   ];
 
   return (
-    <div className="flex h-screen bg-[#0b1329] text-slate-100 overflow-hidden font-sans">
+    <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans">
 
-      <div className="w-64 bg-[#11192e] text-white flex flex-col p-5 border-r border-slate-800/60 shadow-2xl h-full z-20">
+      <div className="w-64 bg-zinc-900 text-zinc-100 flex flex-col p-5 border-r border-zinc-800 shadow-xl h-full z-20">
         <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer" onClick={() => setActiveTab("Dashboard")}>
-          <div className="bg-gradient-to-tr from-blue-500 to-indigo-600 p-2 rounded-xl shadow-lg shadow-blue-500/20">
-            <HiViewGrid className="text-xl text-white" />
+          <div className="bg-emerald-500/10 p-2 rounded-xl border border-emerald-500/30">
+            <HiViewGrid className="text-xl text-emerald-400" />
           </div>
-          <h2 className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">CRM PORTAL</h2>
+          <h2 className="text-lg font-bold tracking-wider text-zinc-100 uppercase">CRM PORTAL</h2>
         </div>
 
         <nav className="flex-1 flex flex-col gap-1.5 overflow-y-auto">
@@ -140,8 +140,8 @@ export default function Dashboard() {
               onClick={() => setActiveTab(item.name)}
               className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-sm font-medium ${
                 activeTab === item.name
-                  ? "bg-blue-600 shadow-lg shadow-blue-600/20 text-white"
-                  : "hover:bg-slate-800/50 text-slate-400 hover:text-slate-200"
+                  ? "bg-zinc-800 text-emerald-400 border border-zinc-700 font-semibold"
+                  : "hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200"
               }`}
             >
               <item.icon className="text-lg" />
@@ -150,32 +150,30 @@ export default function Dashboard() {
           ))}
         </nav>
 
-        <div className="mt-auto p-3 bg-[#131c35]/60 border border-slate-800/80 rounded-xl flex items-center gap-3">
-          <HiUserCircle className="text-3xl text-blue-500" />
+        <div className="mt-auto p-3 bg-zinc-950 border border-zinc-800 rounded-xl flex items-center gap-3">
+          <HiUserCircle className="text-3xl text-emerald-400" />
           <div className="overflow-hidden">
-            <p className="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Active Workspace</p>
-            <p className="text-xs font-semibold text-slate-200 truncate capitalize">{role}</p>
+            <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-wider">Active Workspace</p>
+            <p className="text-xs font-semibold text-zinc-200 truncate capitalize">{role}</p>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#0b1329]">
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950">
         <Navbar />
 
         <main className="flex-1 overflow-y-auto p-8 relative">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293d_1px,transparent_1px),linear-gradient(to_bottom,#1f293d_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none"></div>
-
           {activeTab === "Dashboard" && (
             <div className="max-w-6xl mx-auto space-y-8 relative z-10">
               
-              <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 pb-5">
                 <div>
-                  <h1 className="text-2xl font-extrabold text-white tracking-tight">Admin Overview Environment</h1>
-                  <p className="text-xs text-slate-400 mt-1">Configure company pipeline metrics and workspace access permissions.</p>
+                  <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">Admin Overview Environment</h1>
+                  <p className="text-xs text-zinc-400 mt-1">Configure company pipeline metrics and workspace access permissions.</p>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg w-fit">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg w-fit">
                   <HiShieldCheck className="text-emerald-400 text-base" />
-                  <span className="text-xs text-slate-300 font-medium capitalize">Role: {role}</span>
+                  <span className="text-xs text-zinc-300 font-medium capitalize">Role: {role}</span>
                 </div>
               </header>
 
@@ -183,17 +181,17 @@ export default function Dashboard() {
                 {stats.map((stat, idx) => (
                   <div
                     key={idx}
-                    className="group relative bg-[#131c35]/80 border border-slate-800/80 p-5 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-slate-700 hover:shadow-2xl hover:bg-[#162242]"
+                    className="bg-zinc-900 border border-zinc-800 p-5 rounded-2xl transition-all duration-200 hover:border-zinc-700"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{stat.title}</p>
-                        <h3 className="text-3xl font-extrabold text-white mt-2 group-hover:scale-105 transition-transform duration-200 origin-left">
+                        <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">{stat.title}</p>
+                        <h3 className="text-3xl font-extrabold text-zinc-100 mt-2 origin-left">
                           {stat.count}
                         </h3>
                       </div>
-                      <div className={`p-3.5 rounded-xl bg-gradient-to-tr ${stat.color} shadow-lg ${stat.shadow} group-hover:scale-110 transition-transform duration-300`}>
-                        <stat.icon className="text-2xl text-white" />
+                      <div className={`p-3 rounded-xl ${stat.color}`}>
+                        <stat.icon className="text-2xl" />
                       </div>
                     </div>
                   </div>
@@ -201,14 +199,14 @@ export default function Dashboard() {
               </div>
 
               {role === "admin" ? (
-                <div className="bg-[#131c35]/80 border border-slate-800/80 rounded-2xl backdrop-blur-xl shadow-xl overflow-hidden">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
                   
-                  <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 text-blue-500">
+                  <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 text-emerald-400">
                       <HiPlusCircle className="text-2xl" />
-                      <h3 className="text-md font-bold text-white">Add Organization Member</h3>
+                      <h3 className="text-md font-bold text-zinc-100">Add Organization Member</h3>
                     </div>
-                    <span className="text-[11px] font-semibold text-slate-400 bg-slate-800/60 px-3 py-1 rounded-full border border-slate-700/50">
+                    <span className="text-[11px] font-semibold text-zinc-400 bg-zinc-800 px-3 py-1 rounded-full border border-zinc-700">
                       Admin Privilege
                     </span>
                   </div>
@@ -217,9 +215,9 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Username</label>
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Username</label>
                         <input
-                          className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 focus:border-blue-500 rounded-xl text-white placeholder-slate-600 text-sm outline-none transition-all duration-200"
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200"
                           placeholder="operator_user"
                           value={memberData.username}
                           onChange={(e) => setMemberData({ ...memberData, username: e.target.value })}
@@ -227,9 +225,9 @@ export default function Dashboard() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Email Address</label>
                         <input
-                          className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 focus:border-blue-500 rounded-xl text-white placeholder-slate-600 text-sm outline-none transition-all duration-200"
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200"
                           placeholder="name@company.com"
                           value={memberData.email}
                           onChange={(e) => setMemberData({ ...memberData, email: e.target.value })}
@@ -237,10 +235,10 @@ export default function Dashboard() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Password</label>
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Password</label>
                         <input
                           type="password"
-                          className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 focus:border-blue-500 rounded-xl text-white placeholder-slate-600 text-sm outline-none transition-all duration-200"
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-200"
                           placeholder="••••••••"
                           value={memberData.password}
                           onChange={(e) => setMemberData({ ...memberData, password: e.target.value })}
@@ -248,14 +246,14 @@ export default function Dashboard() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Role Authority</label>
+                        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Role Authority</label>
                         <select
-                          className="w-full px-4 py-2.5 bg-[#0f172a]/90 border border-slate-700 focus:border-blue-500 rounded-xl text-white text-sm outline-none transition-all duration-200"
+                          className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 focus:border-emerald-500 rounded-xl text-zinc-100 text-sm outline-none transition-all duration-200"
                           value={memberData.role}
                           onChange={(e) => setMemberData({ ...memberData, role: e.target.value })}
                         >
-                          <option value="user" className="bg-[#0f172a]">User</option>
-                          <option value="manager" className="bg-[#0f172a]">Manager</option>
+                          <option value="user" className="bg-zinc-900">User</option>
+                          <option value="manager" className="bg-zinc-900">Manager</option>
                         </select>
                       </div>
 
@@ -264,7 +262,7 @@ export default function Dashboard() {
                     <div className="mt-6 flex justify-end">
                       <button
                         onClick={addMember}
-                        className="w-full md:w-auto px-8 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
+                        className="w-full md:w-auto px-8 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
                       >
                         <HiPlusCircle className="text-lg" />
                         <span>Save Workspace Member</span>
@@ -274,8 +272,8 @@ export default function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-[#1c1212]/40 p-8 rounded-2xl border border-red-950/50 text-center backdrop-blur-sm">
-                  <p className="text-red-400 text-sm font-medium">Limited Access View — Contact Admin to modify organization settings.</p>
+                <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 text-center">
+                  <p className="text-zinc-400 text-sm font-medium">Limited Access View — Contact Admin to modify organization settings.</p>
                 </div>
               )}
 

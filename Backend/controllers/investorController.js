@@ -44,7 +44,7 @@ exports.createInvestor = async (req, res) => {
     if (!pipelineId) return res.status(400).json({ error: "Please select a Pipeline Board." });
     if (!status) return res.status(400).json({ error: "Please select a valid Pipeline Stage." });
 
-    // Fallback companyId agar req.user miss ho jaye test payloads mein
+  
     const companyId = req.user ? req.user.companyId : null; 
 
     const newInvestor = await Investor.create({

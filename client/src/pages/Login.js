@@ -3,7 +3,6 @@ import axios from "axios";
 import { Link } from "react-router-dom"; 
 import Swal from "sweetalert2"; 
 
-// Dynamic API URL detection (Render / Localhost)
 const BASE_URL = process.env.REACT_APP_API_URL || "https://crm-backend-live-4541.onrender.com";
 
 export default function Login() {
@@ -33,7 +32,6 @@ export default function Login() {
 
     setIsLoading(true);
     try {
-      // 🔑 CRITICAL FIX: withCredentials: true added so browser saves HTTP-only Refresh Token cookie
       const res = await axios.post(`${BASE_URL}/api/auth/login`, data, {
         withCredentials: true
       });
