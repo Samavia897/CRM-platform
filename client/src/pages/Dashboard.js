@@ -66,7 +66,7 @@ export default function Dashboard() {
     cursorX.set(clientX);
     cursorY.set(clientY);
 
-    // Detect if hovering interactive elements (buttons, links, inputs, selects, cards)
+
     const target = e.target;
     const isInteractive = target.closest("button, a, input, select, .cursor-pointer, [role='button']");
     setIsHovered(!!isInteractive);
@@ -171,7 +171,7 @@ export default function Dashboard() {
       className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans relative selection:bg-emerald-500/30 selection:text-emerald-200 cursor-none"
     >
 
-      {/* CUSTOM CURSOR 1: INNER DOT */}
+
       <div 
         className="pointer-events-none fixed top-0 left-0 z-50 w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]"
         style={{
@@ -179,7 +179,7 @@ export default function Dashboard() {
         }}
       />
 
-      {/* CUSTOM CURSOR 2: OUTER SPRING RING WITH HOVER DYNAMICS */}
+
       <motion.div
         className="pointer-events-none fixed top-0 left-0 z-50 rounded-full border border-emerald-400/60"
         style={{
@@ -198,7 +198,7 @@ export default function Dashboard() {
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />
 
-      {/* SPOTLIGHT GRADIENT */}
+
       <div 
         className="pointer-events-none fixed -inset-px z-30 transition-opacity duration-300"
         style={{
@@ -206,14 +206,13 @@ export default function Dashboard() {
         }}
       />
 
-      {/* AMBIENT GLOW */}
       <motion.div 
         animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/20 blur-[130px] pointer-events-none rounded-full" 
       />
 
-      {/* SIDEBAR */}
+
       <aside className="w-64 bg-zinc-900/80 backdrop-blur-xl text-zinc-100 flex flex-col p-5 border-r border-zinc-800/80 shadow-2xl h-full z-40">
         <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer group" onClick={() => setActiveTab("Dashboard")}>
           <motion.div 
@@ -266,7 +265,6 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950/90 relative z-20">
         <Navbar />
 
@@ -305,7 +303,6 @@ export default function Dashboard() {
                   </div>
                 </motion.header>
 
-                {/* STATS CARDS */}
                 <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   {stats.map((stat, idx) => (
                     <motion.div
@@ -341,7 +338,7 @@ export default function Dashboard() {
                   ))}
                 </motion.div>
 
-                {/* MEMBER FORM */}
+
                 {role === "admin" ? (
                   <motion.div 
                     variants={itemVariants}

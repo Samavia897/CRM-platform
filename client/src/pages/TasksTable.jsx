@@ -12,7 +12,7 @@ export default function TasksTable() {
   const [activeTab, setActiveTab] = useState("Overdue Tasks");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Modals state
+
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -202,7 +202,6 @@ export default function TasksTable() {
   return (
     <div className="bg-zinc-950 min-h-screen p-6 font-sans text-zinc-100">
 
-      {/* Header section */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Tasks</h1>
@@ -216,7 +215,7 @@ export default function TasksTable() {
         </button>
       </div>
 
-      {/* Tabs */}
+
       <div className="flex gap-8 border-b border-zinc-800/80 pl-1 mb-6 relative z-10">
         {["Overdue Tasks", "Due Tasks", "Upcoming Tasks", "Complete Tasks"].map((tab) => (
           <button 
@@ -233,10 +232,10 @@ export default function TasksTable() {
         ))}
       </div>
 
-      {/* Main Card Container */}
+
       <div className="bg-zinc-900/80 border border-zinc-800/80 rounded-2xl shadow-xl backdrop-blur-xl relative overflow-visible">
 
-        {/* Filters and Search Bar */}
+
         <div className="p-4 flex justify-between items-center border-b border-zinc-800/80 bg-zinc-900/40 relative">
           <div className="relative w-72">
             <HiSearch className="absolute left-3.5 top-3 text-zinc-500" />
@@ -280,7 +279,7 @@ export default function TasksTable() {
           </div>
         </div>
 
-        {/* Table */}
+
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -356,7 +355,7 @@ export default function TasksTable() {
         </div>
       </div>
 
-      {/* Add Task Modal */}
+
       {showModal && (
         <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
@@ -394,7 +393,7 @@ export default function TasksTable() {
         </div>
       )}
 
-      {/* Edit Task Modal */}
+
       {showEditModal && editingTask && (
         <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">

@@ -50,7 +50,7 @@ export default function Funds() {
 
   useEffect(() => { fetchFunds(); }, []);
 
-  // Dashboard Dynamic Counts
+
   const totalFundsCount = funds.length;
   const ventureCount = funds.filter(f => f.type === "Venture").length;
   const peCount = funds.filter(f => f.type === "Private Equity").length;
@@ -337,7 +337,6 @@ export default function Funds() {
   return (
     <div className="space-y-8 max-w-6xl mx-auto text-zinc-100 font-sans">
 
-      {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800/80 pb-5">
         <div>
           <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">
@@ -373,7 +372,7 @@ export default function Funds() {
         </div>
       </div>
 
-      {/* Metric Cards Row */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 p-5 rounded-2xl shadow-xl flex items-center justify-between">
           <div>
@@ -416,10 +415,9 @@ export default function Funds() {
         </div>
       </div>
 
-      {/* Main Table Container */}
       <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 rounded-2xl shadow-2xl overflow-hidden">
 
-        {/* Filter Controls Bar */}
+
         <div className="flex flex-wrap items-center justify-between p-4 gap-4 border-b border-zinc-800/80 bg-zinc-900/40">
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div className="relative w-full sm:w-72">
@@ -448,7 +446,7 @@ export default function Funds() {
             </div>
           </div>
 
-          {/* Sub Navigation */}
+
           <div className="flex items-center gap-4 text-xs font-semibold">
             {["All", "AI based funds", "GeoPref"].map((tab) => (
               <button
@@ -466,7 +464,7 @@ export default function Funds() {
           </div>
         </div>
 
-        {/* Table View */}
+
         <div className="overflow-x-auto">
           {loading ? (
             <div className="p-16 text-center text-zinc-500 text-xs font-medium uppercase tracking-wider">
@@ -544,7 +542,6 @@ export default function Funds() {
         </div>
       </div>
 
-      {/* Action Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex justify-center items-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-md text-zinc-100">

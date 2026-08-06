@@ -18,7 +18,7 @@ export default function Login() {
   const [data, setData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   
-  // Custom Cursor Mouse Tracker State (Matching Dashboard spring physics)
+
   const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
   const [isHovered, setIsHovered] = useState(false);
 
@@ -114,8 +114,7 @@ export default function Login() {
       onMouseMove={handleMouseMove}
       className="relative flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100 overflow-hidden font-sans cursor-none select-none selection:bg-emerald-500/30 selection:text-emerald-200"
     >
-      
-      {/* 🟢 CUSTOM CURSOR 1: INNER DOT (Exact Dashboard Sync) */}
+
       <div 
         className="pointer-events-none fixed top-0 left-0 z-50 w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]"
         style={{
@@ -123,7 +122,6 @@ export default function Login() {
         }}
       />
 
-      {/* 🟢 CUSTOM CURSOR 2: OUTER SPRING RING WITH HOVER DYNAMICS */}
       <motion.div
         className="pointer-events-none fixed top-0 left-0 z-50 rounded-full border border-emerald-400/60"
         style={{
@@ -142,7 +140,6 @@ export default function Login() {
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />
 
-      {/* 🌟 SPOTLIGHT GRADIENT */}
       <div 
         className="pointer-events-none fixed -inset-px z-30 transition-opacity duration-300"
         style={{
@@ -150,7 +147,6 @@ export default function Login() {
         }}
       />
 
-      {/* 🌌 AMBIENT GLOW ORBS */}
       <motion.div 
         animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
@@ -162,10 +158,8 @@ export default function Login() {
         className="absolute bottom-10 right-1/4 w-96 h-96 bg-teal-500/20 blur-[130px] pointer-events-none rounded-full" 
       />
 
-      {/* 🕸 TECH MESH GRID */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#27272a_1px,transparent_1px),linear-gradient(to_bottom,#27272a_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30 pointer-events-none" />
 
-      {/* 💳 MAIN GLASSMORPHIC CARD WITH FRAMER MOTION */}
       <motion.div 
         variants={containerVariants}
         initial="hidden"
@@ -173,10 +167,9 @@ export default function Login() {
         className="relative z-40 w-full max-w-md p-8 mx-4 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl shadow-emerald-950/30 transition-all duration-300 hover:border-zinc-700/80"
       >
         
-        {/* Animated Top Glow Accent */}
+
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] animate-pulse" />
 
-        {/* LOGO & BRANDING MATCHING DASHBOARD SIDEBAR */}
         <div className="flex flex-col items-center mb-8">
           <motion.div 
             whileHover={{ rotate: 180, scale: 1.05 }}
@@ -198,10 +191,9 @@ export default function Login() {
           <p className="text-xs text-zinc-400 mt-1 font-medium">Enter workspace environment credentials</p>
         </div>
 
-        {/* FORM INPUTS */}
+
         <form onSubmit={handleLogin} className="space-y-5">
-          
-          {/* Email Field */}
+
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
               <HiMail className="text-emerald-400 text-sm" /> Email Address
@@ -215,7 +207,7 @@ export default function Login() {
             />
           </div>
 
-          {/* Password Field */}
+
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
               <HiLockClosed className="text-emerald-400 text-sm" /> Password
@@ -229,7 +221,7 @@ export default function Login() {
             />
           </div>
 
-          {/* Action Trigger Button */}
+
           <motion.button 
             type="submit"
             disabled={isLoading}
@@ -248,7 +240,7 @@ export default function Login() {
           </motion.button>
         </form>
 
-        {/* Security Badge & Link Footer */}
+
         <div className="mt-6 pt-5 border-t border-zinc-800/80 flex flex-col items-center gap-3">
           <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium">
             <HiShieldCheck className="text-emerald-400 text-base" />

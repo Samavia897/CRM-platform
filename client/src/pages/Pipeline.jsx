@@ -376,7 +376,6 @@ export default function Pipeline() {
   return (
     <div className="bg-zinc-950 min-h-screen p-6 font-sans text-zinc-100">
 
-      {/* Header Matching Dashboard Active Pipelines Violet Accent Theme */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-100 flex items-center gap-2.5">
@@ -422,7 +421,7 @@ export default function Pipeline() {
         </div>
       </div>
 
-      {/* Columns */}
+
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-5 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
           {dynamicStages.map((stage) => {
@@ -435,7 +434,7 @@ export default function Pipeline() {
                 key={stage} 
                 className="min-w-[320px] max-w-[320px] bg-zinc-900/80 border border-zinc-800/80 rounded-2xl flex flex-col h-fit shadow-xl backdrop-blur-xl transition-all"
               >
-                {/* Header */}
+
                 <div className="p-4 border-b border-zinc-800/80 flex items-center justify-between bg-zinc-900/40 rounded-t-2xl">
                   <div className="flex items-center gap-2.5 truncate">
                     <span className="w-2 h-2 rounded-full bg-violet-400 shadow-sm shadow-violet-500/50"></span>
@@ -446,7 +445,7 @@ export default function Pipeline() {
                   </span>
                 </div>
 
-                {/* Droppable Area */}
+
                 <Droppable droppableId={stage}>
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef} className="p-3 min-h-[500px] space-y-3">
@@ -481,7 +480,6 @@ export default function Pipeline() {
                                   </div>
                                 </div>
 
-                                {/* Controls */}
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-3 top-3 bg-zinc-900 border border-zinc-800 p-1 rounded-lg shadow-xl">
                                   <button onClick={() => {
                                     setSelectedInvestor(inv);
@@ -506,7 +504,7 @@ export default function Pipeline() {
                                 </div>
                               </div>
 
-                              {/* Email */}
+
                               <div className="mt-3.5 flex items-center gap-2 text-[11px] text-zinc-400 border-t border-zinc-800/60 pt-2.5 truncate">
                                 <HiMail size={13} className="text-zinc-500 flex-shrink-0" /> 
                                 <span className="truncate">{inv.email}</span>
@@ -525,7 +523,7 @@ export default function Pipeline() {
         </div>
       </DragDropContext>
 
-      {/* Create Board Modal */}
+
       {showBoardModal && (
         <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex justify-center items-center z-[1000] p-4">
           <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-md relative">
@@ -557,7 +555,7 @@ export default function Pipeline() {
         </div>
       )}
 
-      {/* Add Lead Modal */}
+
       {showAddModal && (
         <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex justify-center items-center z-[1000] p-4">
           <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative">
@@ -611,7 +609,6 @@ export default function Pipeline() {
         </div>
       )}
 
-      {/* Edit Lead Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex justify-center items-center z-[1000] p-4">
           <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative">
@@ -665,7 +662,7 @@ export default function Pipeline() {
         </div>
       )}
 
-      {/* Task Creation Modal */}
+
       {showTaskModal && (
         <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex justify-center items-center z-[1000] p-4">
           <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-md relative">

@@ -128,7 +128,7 @@ export default function InvestorsTable() {
   return (
     <div className="space-y-8 max-w-6xl mx-auto text-zinc-100 font-sans">
       
-      {/* Header Section */}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-800/80 pb-5">
         <div>
           <h1 className="text-2xl font-bold text-zinc-100 tracking-tight">Investors Directory</h1>
@@ -142,14 +142,13 @@ export default function InvestorsTable() {
         </button>
       </div>
 
-      {/* Main Container */}
+
       <div className="bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/90 rounded-2xl shadow-2xl overflow-hidden">
         
-        {/* Search Controls Bar */}
+
         <div className="flex flex-wrap items-center justify-between p-4 gap-4 border-b border-zinc-800/80 bg-zinc-900/40">
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            
-            {/* Search Name/Email */}
+
             <div className="relative w-full sm:w-64">
               <HiSearch className="absolute left-3.5 top-3 text-zinc-500 text-sm" />
               <input
@@ -161,7 +160,6 @@ export default function InvestorsTable() {
               />
             </div>
 
-            {/* Search Fund */}
             <div className="relative w-full sm:w-64">
               <HiOfficeBuilding className="absolute left-3.5 top-3 text-zinc-500 text-sm" />
               <input
@@ -176,7 +174,6 @@ export default function InvestorsTable() {
           </div>
         </div>
 
-        {/* Table View */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -228,7 +225,7 @@ export default function InvestorsTable() {
         </div>
       </div>
 
-      {/* Action Modal */}
+
       {showModal && (
         <div className="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex justify-center items-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto text-zinc-100 scrollbar-thin">

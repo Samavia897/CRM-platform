@@ -25,7 +25,7 @@ export default function Signup() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- CUSTOM DUAL-RING CURSOR & MOUSE TRACKING (MATCHING DASHBOARD) ---
+
   const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
   const [isHovered, setIsHovered] = useState(false);
 
@@ -45,7 +45,6 @@ export default function Signup() {
     setIsHovered(!!isInteractive);
   };
 
-  // --- SWEETALERT CUSTOM MATCHING DASHBOARD ZINC & EMERALD STYLE ---
   const customSwal = Swal.mixin({
     customClass: {
       popup:
@@ -104,7 +103,7 @@ export default function Signup() {
     }
   };
 
-  // Animated Entrance Variants
+
   const cardVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.96 },
     visible: {
@@ -120,7 +119,7 @@ export default function Signup() {
       onMouseMove={handleMouseMove}
       className="relative flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100 overflow-hidden font-sans p-4 selection:bg-emerald-500/30 selection:text-emerald-200 cursor-none select-none"
     >
-      {/* 🟢 CUSTOM CURSOR 1: INNER DOT */}
+
       <div
         className="pointer-events-none fixed top-0 left-0 z-50 w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]"
         style={{
@@ -128,7 +127,7 @@ export default function Signup() {
         }}
       />
 
-      {/* 🟢 CUSTOM CURSOR 2: OUTER SPRING RING WITH HOVER DYNAMICS */}
+
       <motion.div
         className="pointer-events-none fixed top-0 left-0 z-50 rounded-full border border-emerald-400/60"
         style={{
@@ -151,7 +150,6 @@ export default function Signup() {
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       />
 
-      {/* 🌟 SPOTLIGHT RADIAL GRADIENT (Dashboard Matching) */}
       <div
         className="pointer-events-none fixed -inset-px z-0 transition-opacity duration-300"
         style={{
@@ -159,7 +157,6 @@ export default function Signup() {
         }}
       />
 
-      {/* 🔮 AMBIENT PULSING GLOW ORBS */}
       <motion.div
         animate={{ scale: [1, 1.25, 1], opacity: [0.12, 0.22, 0.12] }}
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
@@ -171,10 +168,8 @@ export default function Signup() {
         className="absolute bottom-[-10%] right-[-10%] w-[45rem] h-[45rem] rounded-full bg-teal-500/15 blur-[140px] pointer-events-none"
       />
 
-      {/* 📐 HIGH-TECH MESH GRID MASK */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#27272a_1px,transparent_1px),linear-gradient(to_bottom,#27272a_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-35 pointer-events-none" />
 
-      {/* 🌊 ANIMATED VECTOR STROKE PATHS */}
       <div className="absolute inset-0 opacity-20 pointer-events-none hidden md:block">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -194,17 +189,14 @@ export default function Signup() {
         </svg>
       </div>
 
-      {/* 💳 MAIN SIGNUP CARD (NEXUS CRM MATCHING) */}
       <motion.div
         variants={cardVariants}
         initial="hidden"
         animate="visible"
         className="relative z-10 w-full max-w-lg p-8 mx-4 bg-zinc-900/80 border border-zinc-800/90 rounded-2xl backdrop-blur-xl shadow-2xl my-8 transition-all duration-300 hover:border-zinc-700/90"
       >
-        {/* Animated Top Emerald Border Glow Line */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] animate-pulse" />
 
-        {/* Branding Badge & Title matching Dashboard Sidebar Header */}
         <div className="flex flex-col items-center mb-6">
           <motion.div
             whileHover={{ rotate: 180 }}
@@ -224,7 +216,6 @@ export default function Signup() {
           </p>
         </div>
 
-        {/* Signup Form */}
         <form onSubmit={handleSignup} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -270,7 +261,7 @@ export default function Signup() {
             />
           </div>
 
-          {/* Glowing Section Separator */}
+
           <div className="relative flex py-2 items-center">
             <div className="flex-grow border-t border-zinc-800/80"></div>
             <span className="flex-shrink mx-4 text-[9px] font-extrabold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
@@ -325,7 +316,6 @@ export default function Signup() {
             />
           </div>
 
-          {/* Action Trigger Button with Framer Motion hover & tap */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
