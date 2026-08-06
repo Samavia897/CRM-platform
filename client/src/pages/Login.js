@@ -2,6 +2,15 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
+import { motion, useSpring } from "framer-motion";
+import {
+  HiLightningBolt,
+  HiMail,
+  HiLockClosed,
+  HiSparkles,
+  HiShieldCheck,
+  HiArrowRight
+} from "react-icons/hi";
 
 const BASE_URL = process.env.REACT_APP_API_URL || "https://crm-backend-live-4541.onrender.com";
 
@@ -9,21 +18,32 @@ export default function Login() {
   const [data, setData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   
-  // Custom Cursor Mouse Tracker State
-  const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 });
+  // Custom Cursor Mouse Tracker State (Matching Dashboard spring physics)
+  const [mousePos, setMousePos] = useState({ x: -100, y: -100 });
   const [isHovered, setIsHovered] = useState(false);
 
+  const cursorX = useSpring(mousePos.x, { stiffness: 400, damping: 28 });
+  const cursorY = useSpring(mousePos.y, { stiffness: 400, damping: 28 });
+
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    setMousePos({ x: clientX, y: clientY });
+    cursorX.set(clientX);
+    cursorY.set(clientY);
+
+    const target = e.target;
+    const isInteractive = target.closest("button, a, input, select, .cursor-pointer, [role='button']");
+    setIsHovered(!!isInteractive);
+  };
+
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      setCursorPos({ x: e.clientX, y: e.clientY });
-    };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   const customSwal = Swal.mixin({
     customClass: {
-      popup: "rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl p-6 font-sans text-zinc-100",
+      popup: "rounded-2xl border border-zinc-800 bg-zinc-900 text-zinc-100 shadow-2xl p-6 font-sans backdrop-blur-lg",
       title: "text-lg font-bold text-zinc-100",
       htmlContainer: "text-xs text-zinc-400 mt-1",
       confirmButton: "px-5 py-2.5 rounded-xl text-xs font-bold text-zinc-950 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 hover:opacity-90 transition-all duration-200"
@@ -79,141 +99,174 @@ export default function Login() {
     }
   };
 
-  return (
-    // 'cursor-none' class hides the default mouse pointer across the screen
-    <div className="relative flex min-h-screen items-center justify-center bg-zinc-950 overflow-hidden font-sans text-zinc-100 cursor-none select-none">
-      
-      {/* 🟢 CUSTOM ANIMATED CURSOR (Dashboard Style) */}
-      <div 
-        className="fixed pointer-events-none z-50 transition-transform duration-75 ease-out -translate-x-1/2 -translate-y-1/2"
-        style={{ left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}
-      >
-        {/* Inner Glowing Cursor Dot */}
-        <div className={`w-4 h-4 rounded-full bg-emerald-400 shadow-[0_0_15px_#10b981] transition-all duration-200 ${isHovered ? 'scale-150 bg-teal-300' : 'scale-100'}`} />
-        {/* Outer Ring Animation */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-emerald-400/40 animate-ping pointer-events-none" />
-      </div>
+  const containerVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1, 
+      transition: { type: "spring", stiffness: 260, damping: 20 } 
+    }
+  };
 
-      {/* 🌟 SPOTLIGHT MOUSE FOLLOW GLOW */}
+  return (
+    <div 
+      onMouseMove={handleMouseMove}
+      className="relative flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100 overflow-hidden font-sans cursor-none select-none selection:bg-emerald-500/30 selection:text-emerald-200"
+    >
+      
+      {/* 🟢 CUSTOM CURSOR 1: INNER DOT (Exact Dashboard Sync) */}
       <div 
-        className="fixed pointer-events-none z-0 transition-opacity duration-300 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-emerald-500/15 blur-[120px]"
-        style={{ left: `${cursorPos.x}px`, top: `${cursorPos.y}px` }}
+        className="pointer-events-none fixed top-0 left-0 z-50 w-2 h-2 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.8)]"
+        style={{
+          transform: `translate3d(${mousePos.x - 4}px, ${mousePos.y - 4}px, 0)`
+        }}
       />
 
-      {/* 🚀 ANIMATED BACKGROUND ELEMENTS */}
-      
-      {/* 1. Ambient Rotating Orbs */}
-      <div className="absolute w-[700px] h-[700px] rounded-full bg-gradient-to-tr from-emerald-500/10 via-teal-500/10 to-violet-500/10 blur-[140px] pointer-events-none animate-[spin_25s_linear_infinite]" />
-      
-      {/* 2. Floating Animated Particles */}
-      <div className="absolute top-1/4 left-10 w-2 h-2 rounded-full bg-emerald-400/60 blur-[1px] animate-bounce duration-[3000ms]" />
-      <div className="absolute bottom-1/3 right-12 w-3 h-3 rounded-full bg-teal-400/50 blur-[1px] animate-bounce duration-[4500ms]" />
-      <div className="absolute top-2/3 left-1/3 w-2 h-2 rounded-full bg-violet-400/50 blur-[1px] animate-pulse duration-[2000ms]" />
+      {/* 🟢 CUSTOM CURSOR 2: OUTER SPRING RING WITH HOVER DYNAMICS */}
+      <motion.div
+        className="pointer-events-none fixed top-0 left-0 z-50 rounded-full border border-emerald-400/60"
+        style={{
+          x: cursorX,
+          y: cursorY,
+          translateX: "-50%",
+          translateY: "-50%"
+        }}
+        animate={{
+          width: isHovered ? 48 : 28,
+          height: isHovered ? 48 : 28,
+          backgroundColor: isHovered ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.02)",
+          borderColor: isHovered ? "rgba(52, 211, 153, 0.9)" : "rgba(52, 211, 153, 0.4)",
+          scale: isHovered ? 1.2 : 1
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      />
 
-      {/* 3. Tech Mesh Grid with Masking */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#27272a_1px,transparent_1px),linear-gradient(to_bottom,#27272a_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30" />
+      {/* 🌟 SPOTLIGHT GRADIENT */}
+      <div 
+        className="pointer-events-none fixed -inset-px z-30 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(16, 185, 129, 0.08), transparent 80%)`
+        }}
+      />
 
-      {/* 4. Animated Vector Waves */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none hidden md:block">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <path 
-            d="M 0 300 Q 300 150 600 350 T 1200 200 T 1920 400" 
-            fill="none" 
-            stroke="#10b981" 
-            strokeWidth="2" 
-            className="animate-[pulse_3s_ease-in-out_infinite]" 
-          />
-          <path 
-            d="M 0 400 Q 400 250 800 450 T 1600 300 T 1920 500" 
-            fill="none" 
-            stroke="#2dd4bf" 
-            strokeWidth="1.5" 
-            strokeDasharray="6 4" 
-          />
-        </svg>
-      </div>
+      {/* 🌌 AMBIENT GLOW ORBS */}
+      <motion.div 
+        animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-10 left-1/4 w-96 h-96 bg-emerald-500/20 blur-[130px] pointer-events-none rounded-full" 
+      />
+      <motion.div 
+        animate={{ scale: [1.2, 1, 1.2], opacity: [0.1, 0.2, 0.1] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-10 right-1/4 w-96 h-96 bg-teal-500/20 blur-[130px] pointer-events-none rounded-full" 
+      />
 
-      {/* 💳 MAIN GLASSMORPHIC CARD */}
-      <div className="relative z-10 w-full max-w-md p-8 mx-4 bg-zinc-900/80 border border-zinc-800/80 rounded-2xl backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-zinc-700/80">
+      {/* 🕸 TECH MESH GRID */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#27272a_1px,transparent_1px),linear-gradient(to_bottom,#27272a_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30 pointer-events-none" />
+
+      {/* 💳 MAIN GLASSMORPHIC CARD WITH FRAMER MOTION */}
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-40 w-full max-w-md p-8 mx-4 bg-zinc-900/80 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl shadow-emerald-950/30 transition-all duration-300 hover:border-zinc-700/80"
+      >
         
-        {/* Animated Top Glow Border Line */}
+        {/* Animated Top Glow Accent */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] animate-pulse" />
 
-        {/* Logo Badge & Headings */}
+        {/* LOGO & BRANDING MATCHING DASHBOARD SIDEBAR */}
         <div className="flex flex-col items-center mb-8">
-          <div 
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="h-14 w-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10 mb-3 group hover:scale-110 hover:rotate-6 transition-all duration-300 cursor-none"
+          <motion.div 
+            whileHover={{ rotate: 180, scale: 1.05 }}
+            transition={{ duration: 0.4 }}
+            className="bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 p-3.5 rounded-2xl border border-emerald-500/30 shadow-lg shadow-emerald-500/10 mb-3 cursor-pointer"
           >
-            <svg className="w-7 h-7 text-emerald-400 group-hover:scale-110 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-black text-zinc-100 tracking-tight">CRM Analytics Portal</h2>
+            <HiLightningBolt className="text-3xl text-emerald-400" />
+          </motion.div>
+
+          <h2 className="text-2xl font-black tracking-wider text-zinc-100 uppercase bg-gradient-to-r from-zinc-100 via-zinc-200 to-zinc-400 bg-clip-text text-transparent flex items-center gap-2">
+            NEXUS <span className="text-emerald-400 font-light text-base">// CRM</span>
+            <motion.span
+              animate={{ rotate: [0, 15, -15, 0] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+            >
+              <HiSparkles className="text-emerald-400 text-lg" />
+            </motion.span>
+          </h2>
           <p className="text-xs text-zinc-400 mt-1 font-medium">Enter workspace environment credentials</p>
         </div>
 
-        {/* Input Form */}
+        {/* FORM INPUTS */}
         <form onSubmit={handleLogin} className="space-y-5">
+          
           {/* Email Field */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Email Address</label>
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+              <HiMail className="text-emerald-400 text-sm" /> Email Address
+            </label>
             <input 
               type="email" 
               required
-              placeholder="operator@crm.com" 
-              onFocus={() => setIsHovered(true)}
-              onBlur={() => setIsHovered(false)}
-              className="w-full px-4 py-3 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-sm focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/60 outline-none transition-all duration-200 cursor-none"
+              placeholder="operator@nexus.com" 
+              className="w-full px-4 py-3 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-300 cursor-none"
               onChange={(e) => setData({ ...data, email: e.target.value })} 
             />
           </div>
 
           {/* Password Field */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Password</label>
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+              <HiLockClosed className="text-emerald-400 text-sm" /> Password
+            </label>
             <input 
               type="password" 
               required
               placeholder="••••••••" 
-              onFocus={() => setIsHovered(true)}
-              onBlur={() => setIsHovered(false)}
-              className="w-full px-4 py-3 bg-zinc-950/80 border border-zinc-800 rounded-xl text-zinc-100 placeholder-zinc-500 text-sm focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/60 outline-none transition-all duration-200 cursor-none"
+              className="w-full px-4 py-3 bg-zinc-950/80 border border-zinc-800 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 rounded-xl text-zinc-100 placeholder-zinc-600 text-sm outline-none transition-all duration-300 cursor-none"
               onChange={(e) => setData({ ...data, password: e.target.value })} 
             />
           </div>
 
           {/* Action Trigger Button */}
-          <button 
+          <motion.button 
             type="submit"
             disabled={isLoading}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="w-full mt-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 text-zinc-950 py-3 rounded-xl font-bold text-sm hover:opacity-90 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-emerald-500/20 flex items-center justify-center disabled:opacity-60 uppercase tracking-wider cursor-none"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full mt-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 hover:from-emerald-300 hover:to-teal-300 text-zinc-950 py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20 uppercase tracking-wider cursor-none disabled:opacity-60"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
             ) : (
-              "Sign In to Pipeline"
+              <>
+                <span>Sign In to Pipeline</span>
+                <HiArrowRight className="text-lg" />
+              </>
             )}
-          </button>
+          </motion.button>
         </form>
 
-        {/* Footer */}
-        <p className="text-center text-xs text-zinc-400 mt-6 font-medium">
-          Not part of a corporate hub?{" "}
-          <Link 
-            to="/signup" 
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="text-emerald-400 font-semibold hover:text-emerald-300 hover:underline transition-all cursor-none"
-          >
-            Register Company
-          </Link>
-        </p>
+        {/* Security Badge & Link Footer */}
+        <div className="mt-6 pt-5 border-t border-zinc-800/80 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-medium">
+            <HiShieldCheck className="text-emerald-400 text-base" />
+            <span>Encrypted Corporate Access</span>
+          </div>
 
-      </div>
+          <p className="text-xs text-zinc-400 font-medium">
+            Not part of a corporate hub?{" "}
+            <Link 
+              to="/signup" 
+              className="text-emerald-400 font-semibold hover:text-emerald-300 hover:underline transition-all cursor-none"
+            >
+              Register Company
+            </Link>
+          </p>
+        </div>
+
+      </motion.div>
     </div>
   );
 }
