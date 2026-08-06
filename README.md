@@ -8,7 +8,7 @@ A full-stack, enterprise-grade CRM Platform designed to streamline venture capit
 
 ## 📸 Interface Preview
 
-![Dashboard Overview](./Preview (3).png)
+![Dashboard Overview](./dashboard-preview.png)
 
 *Admin Analytics Environment tracking real-time dynamic metrics for Investors, Funds, Pipelines, and Tasks.*
 
