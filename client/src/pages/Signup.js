@@ -12,7 +12,7 @@ import {
   HiPhone,
   HiLightningBolt,
   HiSparkles,
-} from "react-icons/react-icons/hi";
+} from "react-icons/hi";
 
 export default function Signup() {
   const [data, setData] = useState({
